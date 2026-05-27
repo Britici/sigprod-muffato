@@ -213,7 +213,7 @@ function getUrl() {
 
 async function testarConexao() {
   var url = getUrl();
-  if (!url) { alert('https://few-falcons-double.loca.lt'); return; }
+  if (!url) { alert('Cole a URL do Colab primeiro.'); return; }
   var el = document.getElementById('connStatus');
   el.className = 'conn-status conn-wait'; el.textContent = 'Testando...';
   try {
