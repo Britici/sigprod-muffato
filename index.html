@@ -324,7 +324,7 @@ function capFrame() {
   var c=document.createElement('canvas');
   c.width=v.videoWidth||640; c.height=v.videoHeight||480;
   c.getContext('2d').drawImage(v,0,0);
-  return c.toDataURL('image/jpeg',0.82).split(',')[1];
+  return c.toDataURL('image/jpeg',0.95).split(',')[1];
 }
 
 async function loop() {
@@ -332,7 +332,8 @@ async function loop() {
   S.analyzing=true; setStatus('busy');
   var t0=Date.now();
   var b64=S.camOn?capFrame():S.img64;
-  if (!b64) { S.analyzing=false; if(S.running) loop(); return; }
+    console.log("Enviando:", b64.substring(0,80)+"...");  // Ver no F12
+    if (!b64) { S.analyzing=false; if(S.running) loop(); return; }
   var prod=S.prod||'desconhecido';
   try {
     var resp=await fetch(getUrl()+'/analisar', {
