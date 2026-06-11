@@ -1172,7 +1172,7 @@ let db = {
   inspecoes:    [],
   usuarios:     [],
   configuracoes: {
-    horas_turno_1: 7.1, horas_turno_2: 0, horas_turno_3: 0,
+    horas_turno_1: 7.1, horas_turno_2: 7.1, horas_turno_3: 0,
     meta_disponibilidade: 85, meta_performance: 90, meta_qualidade: 99
   },
   osC:1, plC:1, solC:1, inspC:1,
@@ -2056,16 +2056,24 @@ function calcDisponibilidadePorSala(ordPer, horasTurno1, horasTurno2, horasTurno
   }).filter(s => s !== null);
 }
 
-function renderSalasStatus(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPer) {
-  const dispPorSala = calcDisponibilidadePorSala(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPer);
-  const html = dispPorSala.map(s => {
-    const cor = s.disp >= 85 ? 'var(--grn)' : s.disp >= 75 ? 'var(--org)' : 'var(--red)';
+function renderSalasStatus() {
+  const salas = db.salas;  // ✅ TODAS AS 16 (ou +)
+  const html = salas.map(sala => {
+    const maquinas = db.maquinas.filter(m => m.sala === sala);
+    const ativas = maquinas.filter(m => {
+      // Conta máquinas com inspeção OK últimas 24h (ajuste conforme lógica)
+      const ultInsp = db.inspecoes.find(i => i.itens.some(it => it.sala === sala));
+      return ultInsp && ultInsp.data === today();  // Apenas if inspecionada hoje
+    });
+    const percent = maquinas.length ? Math.round((ativas.length / maquinas.length) * 100) : 0;
     return `
-      <div class="sc-card" style="color:${cor}">
-        <div class="sc-lbl">${s.sala}</div>
-        <div class="sc-val">${s.disp}%</div>
-        <div style="font-size:10px;color:var(--txt3);margin-top:4px">Parada: ${s.minParada}min</div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:${cor};opacity:.5\"></div>
+      <div class="sc-card">
+        <div class="sc-lbl">${sala}</div>
+        <div class="sc-val" style="color:${percent>=80?'var(--grn)':percent>=50?'var(--org)':'#ff5570'}">${ativas.length}/${maquinas.length}</div>
+        <div class="oee-bar">
+          <div class="oee-fill" style="width:${percent}%;background:${percent>=80?'var(--grn)':percent>=50?'var(--org)':'#ff5570'}"></div>
+        </div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">${percent}% OK</div>
       </div>
     `;
   }).join('');
@@ -2126,7 +2134,7 @@ function renderDash() {
   const topMaqSala = _topMaq?.sala || '';
   // Disponibilidade
   const horasTurno1 = parseFloat(db.configuracoes.horas_turno_1) || 7.1;
-  const horasTurno2 = parseFloat(db.configuracoes.horas_turno_2) || 0;
+  const horasTurno2 = parseFloat(db.configuracoes.horas_turno_2) || 7.1;
   const horasTurno3 = parseFloat(db.configuracoes.horas_turno_3) || 0;
   
   // Dias corridos do período (não só dias com OS)
@@ -3683,17 +3691,38 @@ function renderCritChart() {
     </div>`;
 }
   
-function addSala() {
-  const nome = v('at-sn').trim().toUpperCase();
-  if (!nome) { showToast('Informe o nome da sala.'); return; }
-  if (db.salas.includes(nome)) { showToast('Sala já existe.'); return; }
+async function addSala() {
+  const nome = v('at-sn');  // campo de input
+  if (!nome || nome.trim() === '') {
+    showAlert('al-usr','Nome da sala obrigatório','er');
+    return;
+  }
+  // Verifica se já existe
+  if (db.salas.includes(nome)) {
+    showAlert('al-usr','Sala já cadastrada','er');
+    return;
+  }
+  // Adiciona ao banco local
   db.salas.push(nome);
   db.salas.sort();
-  saveDB();
-  sv('at-sn', '');
-  populateAll();
-  renderAtivos();
-  apiAppend('salas', { Nome: nome, Ativo: 'sim', Criado_Em: new Date().toISOString() });
+  // Envia para Sheets
+  const agora = new Date().toISOString();
+  const id = nome.toUpperCase().replace(/\s+/g,'_');
+  const res = await apiPost({
+    action:'append',
+    sheet:'salas',
+    row:{ID_Sala:id, Nome:nome, Descricao:'', Ativo:'sim', Criado_Em:agora}
+  });
+  if (res && res.ok) {
+    document.getElementById('at-sn').value = '';
+    showToast('✅ Sala '+nome+' adicionada!','ok');
+    renderAtivos();          // Atualiza lista salas
+    renderDash();            // Atualiza dashboard
+    renderSalasStatus();     // Atualiza status salas
+    atualizarSelects();      // Atualiza dropdowns em todas as páginas
+  } else {
+    showAlert('al-usr','Erro ao salvar sala','er');
+  }
 }
   
 function addMaq() {
@@ -4296,6 +4325,20 @@ function setOffline(on) {
   if (b) b.classList.toggle('on', on);
 }
 
+function atualizarSelects() {
+  // Atualiza selectores em todas as páginas que usam salas
+  const selects = ['ab-sl', 'pl-sl', 'sol-sl', 'at-ms', 'insp-tmpl-sala', 'fe-sl'];
+  
+  selects.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    
+    const val = el.value;  // Preserva seleção
+    el.innerHTML = '<option value="">Selecione...</option>' +
+      db.salas.map(s => `<option value="${s}" ${s===val?'selected':''}>${s}</option>`).join('');
+  });
+}
+  
 async function init() {
   loadTheme();
   loadDB();
@@ -4341,6 +4384,7 @@ async function init() {
   sv('ab-dt',today()); sv('mc-dt',today()); sv('insp-dt',today());
   document.getElementById('loading-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+ atualizarSelects();
 }
 
 init();
