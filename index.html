@@ -1713,6 +1713,7 @@ function showPage(pid) {
   if (pid === 'inspecao')      buildInsp();
   if (pid === 'inspecao-tmpl') initInspTmpl();
   if (pid === 'preventiva')    initPreventiva();
+  if (pid === 'analise-causa-raiz') { renderRACR(); apiLoadAll(true).then(renderRACR).catch(()=>{}); }
   if (pid === 'abertura') {
     populateSalas('ab'); sv('ab-dt', today());
     if (CU.tipo !== 'producao') sv('ab-mn', CU.nome);
