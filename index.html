@@ -4436,10 +4436,14 @@ function salvarRACR() {
       usuario:       CU?.nome || 'Sistema'
     }
   }).then(res => {
-    if (res?.ok) showToast('RACR salvo no Sheets.', 'ok');
-    else showToast('Salvo localmente — Sheets indisponível.', 'war');
+    if (res?.ok) {
+      showToast('RACR salvo no Sheets.', 'ok');
+      apiLoadAll(true).then(renderRACR);
+    } else {
+      showToast('Salvo localmente — Sheets indisponível.', 'war');
+      renderRACR();
+    }
   });
-  renderRACR();
   fecharRACR();
   showToast('RACR criado com sucesso.', 'ok');
 }
