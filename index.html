@@ -870,20 +870,24 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
       <div class="card-t">1 - Identificação do Problema</div>
       <div class="fg-row">
         <div class="fg">
-          <label>TAG/EQUIPAMENTO</label>
-          <input type="text" id="racr-equip" readonly>
+          <label>SALA</label>
+          <select id="racr-sala" onchange="racrFiltrarMaq()">
+            <option value="">Selecione...</option>
+          </select>
         </div>
         <div class="fg">
-          <label>SALA</label>
-          <input type="text" id="racr-sala" readonly>
+          <label>TAG/EQUIPAMENTO</label>
+          <select id="racr-equip">
+            <option value="">Selecione a sala</option>
+          </select>
         </div>
         <div class="fg">
           <label>DATA</label>
-          <input type="date" id="racr-data" readonly>
+          <input type="date" id="racr-data">
         </div>
         <div class="fg">
           <label>HORA DA PARADA</label>
-          <input type="time" id="racr-hora" readonly>
+          <input type="time" id="racr-hora">
         </div>
       </div>
     </div>
@@ -960,7 +964,7 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
     <!-- BOTÕES -->
     <div class="fa">
       <button class="btn btn-gh" onclick="fecharRACR()">Cancelar</button>
-      <button class="btn btn-p" onclick="salvarRACR()">💾 Salvar RACR</button>
+      <button class="btn btn-p" onclick="salvarRACR()">💾 Salvar RAC</button>
       <button class="btn btn-p" onclick="imprimirRACR()">🖨️ Imprimir</button>
     </div>
   </div>
@@ -2691,34 +2695,26 @@ function abrirRAC(osNumero) {
   }
   const o = db.ordens.find(x => x.numero === osNumero);
   if (!o) { showToast('OS não encontrada.', 'er'); return; }
-
   _racrOsRef = osNumero;
-
   const equipEl = document.getElementById('racr-equip');
   const salaEl  = document.getElementById('racr-sala');
   const dtEl    = document.getElementById('racr-data');
   const hrEl    = document.getElementById('racr-hora');
-
   if (equipEl) { equipEl.value = o.maq || ''; equipEl.setAttribute('readonly',''); }
   if (salaEl)  { salaEl.value  = o.sala || ''; salaEl.setAttribute('readonly',''); }
   if (dtEl)    { dtEl.value    = o.data || today(); dtEl.setAttribute('readonly',''); }
   if (hrEl)    { hrEl.value    = o.ini  || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly',''); }
-
   const falhaEl = document.getElementById('racr-falha');
   if (falhaEl) falhaEl.value = o.prob || '';
-  
   const imediataEl = document.getElementById('racr-imediata');
   if (imediataEl) imediataEl.value = o.acao || '';
-
   const respManuEl = document.getElementById('racr-resp-manu');
   if (respManuEl) respManuEl.value = o.manut || '';
-
   ['racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
    'racr-preventiva','racr-resp-prod','racr-exec'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-
   closeM('m-det');
   openM('mb-racr');
 }
@@ -2824,6 +2820,15 @@ function darBaixaRAC(osNumero) {
       <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
     </div></td>
   </tr>`).join('');
+}
+
+function racrFiltrarMaq() {
+  const sala = document.getElementById('racr-sala')?.value;
+  const maqSel = document.getElementById('racr-equip');
+  if (!maqSel) return;
+  const maquinas = db.maquinas.filter(m => !sala || m.sala === sala);
+  maqSel.innerHTML = '<option value="">Selecione...</option>' +
+    maquinas.map(m => `<option value="${m.nome}">${m.nome}</option>`).join('');
 }
 
 function delOS(id) {
@@ -4268,8 +4273,18 @@ function abrirNovoRACR() {
     'racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
     'racr-imediata','racr-preventiva','racr-resp-prod','racr-resp-manu','racr-exec'];
   campos.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+    // Popula selects com dados do banco
+    const salaSel = document.getElementById('racr-sala');
+    if (salaSel) {
+      salaSel.innerHTML = `<option value="${o.sala}">${o.sala}</option>`;
+      salaSel.setAttribute('disabled','');
+    }
+    racrFiltrarMaq();
+    const equipSel = document.getElementById('racr-equip');
+    if (equipSel) {
+      equipSel.innerHTML = `<option value="${o.maq}">${o.maq}</option>`;
+      equipSel.setAttribute('disabled','');
+    }
   });
   // Data e hora atuais
   const dtEl = document.getElementById('racr-data');
@@ -4412,7 +4427,7 @@ function imprimirRACR() {
   </head><body>
   <div class="logo-row">
     <div>
-      <h1>🔴 RACR — Relatório de Análise de Causa Raiz</h1>
+      <h1>🔴 RAC — Análise de Causa Raiz</h1>
       <div class="sub">Muffato Foods · PCM · ${data} ${hora ? '· ' + hora : ''}</div>
     </div>
     <img src="https://muffatofoods.com.br/assets/images/foods_logo.png" style="height:40px">
@@ -4494,7 +4509,7 @@ function renderRACR() {
         ${r.status!=='Fechado'?`<button class="btn btn-g btn-sm" onclick="encerrarRACR('${r.id}')">✅ Encerrar</button>`:''}
       </td>
     </tr>`).join('')
-    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RACR aberto</p></td></tr>`;
+    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC aberto</p></td></tr>`;
  
   tbFechados.innerHTML = fechados.length ? fechados.map(r => `
     <tr>
@@ -4504,7 +4519,7 @@ function renderRACR() {
       <td>${fd(r.dataBaixa)}</td>
       <td><button class="btn btn-edit btn-sm" onclick="verRACR('${r.id}')">👁 Ver</button></td>
     </tr>`).join('')
-    : `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:16px">Nenhum RACR fechado</td></tr>`;
+    : `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:16px">Nenhum RAC fechado</td></tr>`;
 }
  
 // ── Abre modal de visualização de um RACR existente ───────────────
