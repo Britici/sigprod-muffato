@@ -870,20 +870,24 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
       <div class="card-t">1 - Identificação do Problema</div>
       <div class="fg-row">
         <div class="fg">
-          <label>TAG/EQUIPAMENTO</label>
-          <input type="text" id="racr-equip" readonly>
+          <label>SALA</label>
+          <select id="racr-sala" onchange="racrFiltrarMaq()">
+            <option value="">Selecione...</option>
+          </select>
         </div>
         <div class="fg">
-          <label>SALA</label>
-          <input type="text" id="racr-sala" readonly>
+          <label>TAG/EQUIPAMENTO</label>
+          <select id="racr-equip">
+            <option value="">Selecione a sala</option>
+          </select>
         </div>
         <div class="fg">
           <label>DATA</label>
-          <input type="date" id="racr-data" readonly>
+          <input type="date" id="racr-data">
         </div>
         <div class="fg">
           <label>HORA DA PARADA</label>
-          <input type="time" id="racr-hora" readonly>
+          <input type="time" id="racr-hora">
         </div>
       </div>
     </div>
@@ -960,7 +964,7 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
     <!-- BOTÕES -->
     <div class="fa">
       <button class="btn btn-gh" onclick="fecharRACR()">Cancelar</button>
-      <button class="btn btn-p" onclick="salvarRACR()">💾 Salvar RACR</button>
+      <button class="btn btn-p" onclick="salvarRACR()">💾 Salvar RAC</button>
       <button class="btn btn-p" onclick="imprimirRACR()">🖨️ Imprimir</button>
     </div>
   </div>
@@ -2684,42 +2688,82 @@ function renderExec() {
     mnSel.innerHTML = '<option value="">Todos os Manut.</option>' + manuts.map(m=>`<option value="${m}">${m}</option>`).join('');
     if (cur) mnSel.value = cur;
   }
+  const tx  = v('fe-tx').toLowerCase();
+  const tp  = v('fe-tp');
+  const sl  = v('fe-sl');
+  const mn  = v('fe-mn');
+  const dtI = v('fe-dt-ini');
+  const dtF = v('fe-dt-fim');
+  let data = [...db.ordens];
+  if (tx) data = data.filter(o => [o.numero,o.sala,o.maq,o.manut,o.tipo].some(x=>x&&x.toLowerCase().includes(tx)));
+  if (tp) data = data.filter(o => o.tipo === tp);
+  if (sl) data = data.filter(o => o.sala === sl);
+  if (mn) data = data.filter(o => o.manut === mn);
+  if (dtI) data = data.filter(o => o.data >= dtI);
+  if (dtF) data = data.filter(o => o.data <= dtF);
+  // Ordenação
+  const { col, dir } = execSort;
+  const prioMap = { 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
+  data.sort((a, b) => {
+    let va = a[col] || '', vb = b[col] || '';
+    if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
+    const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
+    return dir === 'asc' ? cmp : -cmp;
+  });
+  // Atualiza ícones dos cabeçalhos
+  ['numero','data','sala','maq','tipo','prioridade','manut'].forEach(c => {
+    const el = document.getElementById('sh-' + c);
+    if (!el) return;
+    el.classList.remove('asc','desc');
+    if (c === col) el.classList.add(dir);
+  });
+  const tb = document.getElementById('tb-exec');
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
+  tb.innerHTML = data.map(o => `<tr>
+    <td>
+      <span class="osn">${o.numero}</span>
+      ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório — parada acima do limite p/ criticidade ${getCriticidadeMaq(o.maq)}" onclick="abrirRAC('${o.numero}')"></span>`:''}
+    </td>
+    <td style="font-size:12px">${fd(o.data)}</td>
+    <td>${o.sala}</td><td>${o.maq}</td>
+    <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
+    <td style="font-size:12px">${o.manut}</td>
+    <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>
+      <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
+    </div></td>
+  </tr>`).join('');
+}
 
-  function abrirRAC(osNumero) {
+function abrirRAC(osNumero) {
+  if (!osNumero && _curDet && _curDet.tipo === 'os') {
+    osNumero = _curDet.item.numero;
+  }
   const o = db.ordens.find(x => x.numero === osNumero);
-  if (!o) return;
-  const crit   = getCriticidadeMaq(o.maq);
-  const limite = limiteRAC(crit);
-  const parada = o.paradaMin || o.durMin || 0;
-  const rac    = (db.racs||[]).find(r => r.osNumero === osNumero);
-  lAlert(`
-    <div style="font-weight:700;font-size:15px;color:var(--red);margin-bottom:10px">🔴 RAC — Relatório de Análise Crítica</div>
-    <div style="font-size:12px;color:var(--txt3);margin-bottom:12px">
-      OS <b style="color:var(--txt)">${o.numero}</b> · 
-      <b style="color:var(--txt)">${o.maq}</b> · 
-      Criticidade <b style="color:var(--txt)">${crit}</b> · 
-      Parada <b style="color:var(--red)">${parada}min</b> (limite ${limite}min)
-    </div>
-    ${rac?`<div style="background:rgba(196,18,48,.08);border:1px solid rgba(196,18,48,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:10px">
-      Status atual: <b>${rac.status}</b> · Aberto em ${fd(rac.dataAbertura)}
-      ${rac.status==='Concluído'?` · Concluído em ${fd(rac.dataBaixa)}`:''}
-    </div>`:''}
-    <div class="fg"><label>Causa Raiz *</label>
-      <textarea id="rac-causa" rows="2" placeholder="Por que a falha ocorreu?">${rac?.causaRaiz||''}</textarea></div>
-    <div class="fg"><label>Ação Imediata (já executada)</label>
-      <input id="rac-imediata" value="${rac?.acaoImediata||o.acao||''}" placeholder="O que foi feito na hora"></div>
-    <div class="fg"><label>Ação Corretiva (evitar reincidência)</label>
-      <input id="rac-corretiva" value="${rac?.acaoCorretiva||''}" placeholder="O que será feito para não repetir"></div>
-    <div class="fg"><label>Responsável</label>
-      <input id="rac-resp" value="${rac?.responsavel||o.manut||''}"></div>
-    <div class="fg"><label>Prazo</label>
-      <input type="date" id="rac-prazo" value="${rac?.prazo||''}"></div>
-    <div class="fa">
-      <button class="btn btn-gh" onclick="document.getElementById('lal').style.display='none'">Cancelar</button>
-      ${rac&&rac.status!=='Concluído'?`<button class="btn" style="background:var(--grn);color:#fff" onclick="darBaixaRAC('${osNumero}')">✅ Dar Baixa</button>`:''}
-      <button class="btn btn-p" onclick="salvarRAC('${osNumero}')">${rac?'Atualizar':'Criar'} RAC</button>
-    </div>
-  `,'ok');
+  if (!o) { showToast('OS não encontrada.', 'er'); return; }
+  _racrOsRef = osNumero;
+  const equipEl = document.getElementById('racr-equip');
+  const salaEl  = document.getElementById('racr-sala');
+  const dtEl    = document.getElementById('racr-data');
+  const hrEl    = document.getElementById('racr-hora');
+  if (equipEl) { equipEl.value = o.maq || ''; equipEl.setAttribute('readonly',''); }
+  if (salaEl)  { salaEl.value  = o.sala || ''; salaEl.setAttribute('readonly',''); }
+  if (dtEl)    { dtEl.value    = o.data || today(); dtEl.setAttribute('readonly',''); }
+  if (hrEl)    { hrEl.value    = o.ini  || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly',''); }
+  const falhaEl = document.getElementById('racr-falha');
+  if (falhaEl) falhaEl.value = o.prob || '';
+  const imediataEl = document.getElementById('racr-imediata');
+  if (imediataEl) imediataEl.value = o.acao || '';
+  const respManuEl = document.getElementById('racr-resp-manu');
+  if (respManuEl) respManuEl.value = o.manut || '';
+  ['racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
+   'racr-preventiva','racr-resp-prod','racr-exec'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  closeM('m-det');
+  openM('mb-racr');
 }
 
 function salvarRAC(osNumero) {
@@ -2774,55 +2818,13 @@ function darBaixaRAC(osNumero) {
     Status:'Concluído',Data_Baixa:db.racs[idx].dataBaixa,Fechado_Por:db.racs[idx].fechadoPor});
 }
   
-  const tx  = v('fe-tx').toLowerCase();
-  const tp  = v('fe-tp');
-  const sl  = v('fe-sl');
-  const mn  = v('fe-mn');
-  const dtI = v('fe-dt-ini');
-  const dtF = v('fe-dt-fim');
-  let data = [...db.ordens];
-  if (tx) data = data.filter(o => [o.numero,o.sala,o.maq,o.manut,o.tipo].some(x=>x&&x.toLowerCase().includes(tx)));
-  if (tp) data = data.filter(o => o.tipo === tp);
-  if (sl) data = data.filter(o => o.sala === sl);
-  if (mn) data = data.filter(o => o.manut === mn);
-  if (dtI) data = data.filter(o => o.data >= dtI);
-  if (dtF) data = data.filter(o => o.data <= dtF);
-
-  // Ordenação
-  const { col, dir } = execSort;
-  const prioMap = { 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
-  data.sort((a, b) => {
-    let va = a[col] || '', vb = b[col] || '';
-    if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
-    const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
-    return dir === 'asc' ? cmp : -cmp;
-  });
-
-  // Atualiza ícones dos cabeçalhos
-  ['numero','data','sala','maq','tipo','prioridade','manut'].forEach(c => {
-    const el = document.getElementById('sh-' + c);
-    if (!el) return;
-    el.classList.remove('asc','desc');
-    if (c === col) el.classList.add(dir);
-  });
-
-  const tb = document.getElementById('tb-exec');
-  if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
-  tb.innerHTML = data.map(o => `<tr>
-    <td>
-      <span class="osn">${o.numero}</span>
-      ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório — parada acima do limite p/ criticidade ${getCriticidadeMaq(o.maq)}" onclick="abrirRAC('${o.numero}')"></span>`:''}
-    </td>
-    <td style="font-size:12px">${fd(o.data)}</td>
-    <td>${o.sala}</td><td>${o.maq}</td>
-    <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
-    <td style="font-size:12px">${o.manut}</td>
-    <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
-    <td><div style="display:flex;gap:4px">
-      <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>
-      <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
-    </div></td>
-  </tr>`).join('');
+function racrFiltrarMaq() {
+  const sala = document.getElementById('racr-sala')?.value;
+  const maqSel = document.getElementById('racr-equip');
+  if (!maqSel) return;
+  const maquinas = db.maquinas.filter(m => !sala || m.sala === sala);
+  maqSel.innerHTML = '<option value="">Selecione...</option>' +
+    maquinas.map(m => `<option value="${m.nome}">${m.nome}</option>`).join('');
 }
 
 function delOS(id) {
@@ -4254,72 +4256,33 @@ async function init() {
   document.getElementById('login-screen').style.display='flex';
 }
 
-
 // ═══════════════════════════════════════════════════════════════════
 // RACR — Funções completas (inserir antes de init() no index.html)
 // ═══════════════════════════════════════════════════════════════════
- 
+  
 // ── Abre modal RACR em branco (botão "+ Novo RACR" na página) ──────
 function abrirNovoRACR() {
   _racrOsRef = null;
-  // Limpa todos os campos do modal
-  const campos = ['racr-equip','racr-sala','racr-falha','racr-causa',
-    'racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
-    'racr-imediata','racr-preventiva','racr-resp-prod','racr-resp-manu','racr-exec'];
-  campos.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
+  // Popula select de salas
+  const salaSel = document.getElementById('racr-sala');
+  if (salaSel) {
+    salaSel.innerHTML = '<option value="">Selecione...</option>' +
+      db.salas.map(s => `<option value="${s}">${s}</option>`).join('');
+    salaSel.removeAttribute('disabled');
+  }
+  // Popula select de equipamentos (todos)
+  racrFiltrarMaq();
+  const equipSel = document.getElementById('racr-equip');
+  if (equipSel) equipSel.removeAttribute('disabled');
+  // Limpa campos de texto
+  ['racr-falha','racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
+   'racr-imediata','racr-preventiva','racr-resp-prod','racr-resp-manu','racr-exec']
+  .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   // Data e hora atuais
   const dtEl = document.getElementById('racr-data');
   const hrEl = document.getElementById('racr-hora');
   if (dtEl) { dtEl.value = today(); dtEl.removeAttribute('readonly'); }
   if (hrEl) { hrEl.value = new Date().toTimeString().slice(0,5); hrEl.removeAttribute('readonly'); }
-  openM('mb-racr');
-}
- 
-// ── Abre modal RACR pré-preenchido a partir de uma OS (botão GERAR RCA) ──
-function abrirRAC(osNumero) {
-  // Se chamado sem argumento, usa _curDet (modal de detalhe da OS)
-  if (!osNumero && _curDet && _curDet.tipo === 'os') {
-    osNumero = _curDet.item.numero;
-  }
-  const o = db.ordens.find(x => x.numero === osNumero);
-  if (!o) { showToast('OS não encontrada.', 'er'); return; }
- 
-  _racrOsRef = osNumero;
- 
-  // Preenche campos de identificação (readonly — vêm da OS)
-  const equip = document.getElementById('racr-equip');
-  const sala  = document.getElementById('racr-sala');
-  const dtEl  = document.getElementById('racr-data');
-  const hrEl  = document.getElementById('racr-hora');
-  if (equip) { equip.value = o.maq || ''; equip.setAttribute('readonly',''); }
-  if (sala)  { sala.value  = o.sala || ''; }
-  if (dtEl)  { dtEl.value  = o.data || today(); dtEl.setAttribute('readonly',''); }
-  if (hrEl)  { hrEl.value  = o.ini  || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly',''); }
- 
-  // Preenche falha com o problema da OS
-  const falhaEl = document.getElementById('racr-falha');
-  if (falhaEl) falhaEl.value = o.prob || '';
- 
-  // Preenche ação imediata com a ação executada na OS
-  const imediataEl = document.getElementById('racr-imediata');
-  if (imediataEl) imediataEl.value = o.acao || '';
- 
-  // Preenche responsável manutenção com o manutentor da OS
-  const respManuEl = document.getElementById('racr-resp-manu');
-  if (respManuEl) respManuEl.value = o.manut || '';
- 
-  // Limpa campos de análise para preenchimento manual
-  ['racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
-   'racr-preventiva','racr-resp-prod','racr-exec'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
- 
-  // Fecha o modal de detalhe e abre o RACR
-  closeM('m-det');
   openM('mb-racr');
 }
  
@@ -4451,7 +4414,7 @@ function imprimirRACR() {
   </head><body>
   <div class="logo-row">
     <div>
-      <h1>🔴 RACR — Relatório de Análise de Causa Raiz</h1>
+      <h1>🔴 RAC — Análise de Causa Raiz</h1>
       <div class="sub">Muffato Foods · PCM · ${data} ${hora ? '· ' + hora : ''}</div>
     </div>
     <img src="https://muffatofoods.com.br/assets/images/foods_logo.png" style="height:40px">
@@ -4533,7 +4496,7 @@ function renderRACR() {
         ${r.status!=='Fechado'?`<button class="btn btn-g btn-sm" onclick="encerrarRACR('${r.id}')">✅ Encerrar</button>`:''}
       </td>
     </tr>`).join('')
-    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RACR aberto</p></td></tr>`;
+    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC aberto</p></td></tr>`;
  
   tbFechados.innerHTML = fechados.length ? fechados.map(r => `
     <tr>
@@ -4543,7 +4506,7 @@ function renderRACR() {
       <td>${fd(r.dataBaixa)}</td>
       <td><button class="btn btn-edit btn-sm" onclick="verRACR('${r.id}')">👁 Ver</button></td>
     </tr>`).join('')
-    : `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:16px">Nenhum RACR fechado</td></tr>`;
+    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC fechado</p></td></tr>`;
 }
  
 // ── Abre modal de visualização de um RACR existente ───────────────
