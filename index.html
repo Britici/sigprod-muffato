@@ -363,6 +363,12 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
   @keyframes spin { to { transform: rotate(360deg); } }
 
 /* RACR customizado */
+#racr-sala[disabled], #racr-equip[disabled] {
+  pointer-events: none;
+  opacity: 1;
+  background: var(--bg2);
+  color: var(--txt);
+}
 #mb-racr .card-t {
   background: rgba(196,18,48,.1);
   border-left: 4px solid var(--red);
@@ -2743,20 +2749,31 @@ function abrirRAC(osNumero) {
   const o = db.ordens.find(x => x.numero === osNumero);
   if (!o) { showToast('OS não encontrada.', 'er'); return; }
   _racrOsRef = osNumero;
-  const equipEl = document.getElementById('racr-equip');
-  const salaEl  = document.getElementById('racr-sala');
-  const dtEl    = document.getElementById('racr-data');
-  const hrEl    = document.getElementById('racr-hora');
-  if (equipEl) { equipEl.value = o.maq || ''; equipEl.setAttribute('readonly',''); }
-  if (salaEl)  { salaEl.value  = o.sala || ''; salaEl.setAttribute('readonly',''); }
-  if (dtEl)    { dtEl.value    = o.data || today(); dtEl.setAttribute('readonly',''); }
-  if (hrEl)    { hrEl.value    = o.ini  || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly',''); }
-  const falhaEl = document.getElementById('racr-falha');
-  if (falhaEl) falhaEl.value = o.prob || '';
+  // Popula sala com option única (readonly via disabled)
+  const salaSel = document.getElementById('racr-sala');
+  if (salaSel) {
+    salaSel.innerHTML = `<option value="${o.sala}">${o.sala}</option>`;
+    salaSel.setAttribute('disabled', '');
+  }
+  // Popula equip com option única (readonly via disabled)
+  const equipSel = document.getElementById('racr-equip');
+  if (equipSel) {
+    equipSel.innerHTML = `<option value="${o.maq}">${o.maq}</option>`;
+    equipSel.setAttribute('disabled', '');
+  }
+  // Data e hora
+  const dtEl = document.getElementById('racr-data');
+  const hrEl = document.getElementById('racr-hora');
+  if (dtEl) { dtEl.value = o.data || today(); dtEl.setAttribute('readonly', ''); }
+  if (hrEl) { hrEl.value = o.ini  || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly', ''); }
+  // Falha e ação imediata da OS
+  const falhaEl    = document.getElementById('racr-falha');
   const imediataEl = document.getElementById('racr-imediata');
-  if (imediataEl) imediataEl.value = o.acao || '';
   const respManuEl = document.getElementById('racr-resp-manu');
+  if (falhaEl)    falhaEl.value    = o.prob  || '';
+  if (imediataEl) imediataEl.value = o.acao  || '';
   if (respManuEl) respManuEl.value = o.manut || '';
+  // Limpa campos de análise
   ['racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
    'racr-preventiva','racr-resp-prod','racr-exec'].forEach(id => {
     const el = document.getElementById(id);
