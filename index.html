@@ -4513,7 +4513,7 @@ function renderRACR() {
         ${r.status!=='Fechado'?`<button class="btn btn-g btn-sm" onclick="encerrarRACR('${r.id}')">✅ Encerrar</button>`:''}
       </td>
     </tr>`).join('')
-    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC Aberto</p></td></tr>`;
+    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC em Aberto</p></td></tr>`;
  
   tbFechados.innerHTML = fechados.length ? fechados.map(r => `
     <tr>
@@ -4523,7 +4523,7 @@ function renderRACR() {
       <td>${fd(r.dataBaixa)}</td>
       <td><button class="btn btn-edit btn-sm" onclick="verRACR('${r.id}')">👁 Ver</button></td>
     </tr>`).join('')
-    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC Fechado</p></td></tr>`;
+    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC Concluído</p></td></tr>`;
 }
  
 // ── Abre modal de visualização de um RACR existente ───────────────
