@@ -4390,9 +4390,9 @@ function salvarRACRRascunho() {
   const racr  = { ...dados, id, status: 'Rascunho', dataAbertura: agora.slice(0,10), criadoEm: agora };
   if (idx >= 0) db.racs[idx] = racr; else db.racs.push(racr);
   saveDB();
-  renderRACR();
   fecharRACR();
   showToast('Rascunho salvo localmente.', 'ok');
+  renderRACR();
 }
  
 // ── Salva RACR definitivo + envia ao Sheets ───────────────────────
@@ -4551,7 +4551,11 @@ function renderRACR() {
   const tbAbertos   = document.getElementById('tb-racr-abertos');
   const tbFechados  = document.getElementById('tb-racr-fechados');
   if (!tbAbertos || !tbFechados) return;
-  const todos   = db.racs || [];
+  const todosSheets = db.racs || [];
+  const rascunhosLocais = JSON.parse(localStorage.getItem('sigman_v4') || '{}').racs || [];
+  const idsSheets = new Set(todosSheets.map(r => r.id));
+  const extras = rascunhosLocais.filter(r => r.status === 'Rascunho' && !idsSheets.has(r.id));
+  const todos = [...todosSheets, ...extras];
   const abertos = todos.filter(r => r.status !== 'Fechado');
   const fechados = todos.filter(r => r.status === 'Fechado');
  
