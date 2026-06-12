@@ -4264,18 +4264,16 @@ async function init() {
 function abrirNovoRACR() {
   _racrOsRef = null;
   // Popula select de salas
-    const salaSel = document.getElementById('racr-sala');
+  const salaSel = document.getElementById('racr-sala');
   if (salaSel) {
-    salaSel.innerHTML = `<option value="${o.sala}">${o.sala}</option>`;
-    salaSel.setAttribute('disabled','');
+    salaSel.innerHTML = '<option value="">Selecione...</option>' +
+      db.salas.map(s => `<option value="${s}">${s}</option>`).join('');
+    salaSel.removeAttribute('disabled');
   }
   // Popula select de equipamentos (todos)
   racrFiltrarMaq();
   const equipSel = document.getElementById('racr-equip');
-  if (equipSel) {
-    equipSel.innerHTML = `<option value="${o.maq}">${o.maq}</option>`;
-    equipSel.setAttribute('disabled','');
-  }
+  if (equipSel) equipSel.removeAttribute('disabled');
   // Limpa campos de texto
   ['racr-falha','racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
    'racr-imediata','racr-preventiva','racr-resp-prod','racr-resp-manu','racr-exec']
