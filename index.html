@@ -1670,8 +1670,10 @@ function showPage(pid) {
   // Dashboard: ligar/desligar timer 15s
   clearInterval(_dashTimer);
   if (pid === 'dashboard') {
-    renderDash();
-    if (_dashAutoRf) startDashTimer();
+    apiLoadAll(true).then(() => {
+      renderDash();
+      if (_dashAutoRf) startDashTimer();
+    }).catch(() => renderDash());
   }
   if (pid === 'planejadas')  { renderPlan();    apiLoadAll(true).then(renderPlan).catch(()=>showToast('Erro ao sincronizar Planejadas.','er')); }
   if (pid === 'executadas')  { renderExec();    apiLoadAll(true).then(renderExec).catch(()=>showToast('Erro ao sincronizar Executadas.','er')); }
