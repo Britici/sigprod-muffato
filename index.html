@@ -1669,10 +1669,7 @@ function showPage(pid) {
 
   // Dashboard: ligar/desligar timer 15s
   clearInterval(_dashTimer);
-  if (pid === 'dashboard') {
-    renderDash();
-    if (_dashAutoRf) startDashTimer();
-  }
+  if (pid === 'dashboard') { renderDash(); apiLoadAll(true).then(renderDash).catch(()=>{}); if (_dashAutoRf) startDashTimer(); }
   if (pid === 'planejadas')  { renderPlan();    apiLoadAll(true).then(renderPlan).catch(()=>showToast('Erro ao sincronizar Planejadas.','er')); }
   if (pid === 'executadas')  { renderExec();    apiLoadAll(true).then(renderExec).catch(()=>showToast('Erro ao sincronizar Executadas.','er')); }
   if (pid === 'solicitacao') { renderSol();     apiLoadAll(true).then(renderSol).catch(()=>showToast('Erro ao sincronizar Solicitações.','er')); }
