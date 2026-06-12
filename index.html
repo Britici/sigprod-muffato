@@ -2688,7 +2688,6 @@ function renderExec() {
     mnSel.innerHTML = '<option value="">Todos os Manut.</option>' + manuts.map(m=>`<option value="${m}">${m}</option>`).join('');
     if (cur) mnSel.value = cur;
   }
-}
 
 function abrirRAC(osNumero) {
   if (!osNumero && _curDet && _curDet.tipo === 'os') {
@@ -2771,7 +2770,6 @@ function darBaixaRAC(osNumero) {
   apiUpdate('racs',db.racs[idx].id,'ID',{
     Status:'Concluído',Data_Baixa:db.racs[idx].dataBaixa,Fechado_Por:db.racs[idx].fechadoPor});
 }
-  
   const tx  = v('fe-tx').toLowerCase();
   const tp  = v('fe-tp');
   const sl  = v('fe-sl');
@@ -2785,7 +2783,6 @@ function darBaixaRAC(osNumero) {
   if (mn) data = data.filter(o => o.manut === mn);
   if (dtI) data = data.filter(o => o.data >= dtI);
   if (dtF) data = data.filter(o => o.data <= dtF);
-
   // Ordenação
   const { col, dir } = execSort;
   const prioMap = { 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
@@ -2795,7 +2792,6 @@ function darBaixaRAC(osNumero) {
     const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
     return dir === 'asc' ? cmp : -cmp;
   });
-
   // Atualiza ícones dos cabeçalhos
   ['numero','data','sala','maq','tipo','prioridade','manut'].forEach(c => {
     const el = document.getElementById('sh-' + c);
@@ -2803,7 +2799,6 @@ function darBaixaRAC(osNumero) {
     el.classList.remove('asc','desc');
     if (c === col) el.classList.add(dir);
   });
-
   const tb = document.getElementById('tb-exec');
   if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
   tb.innerHTML = data.map(o => `<tr>
@@ -2822,7 +2817,7 @@ function darBaixaRAC(osNumero) {
     </div></td>
   </tr>`).join('');
 }
-
+}
 function racrFiltrarMaq() {
   const sala = document.getElementById('racr-sala')?.value;
   const maqSel = document.getElementById('racr-equip');
