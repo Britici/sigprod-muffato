@@ -2688,7 +2688,8 @@ function renderExec() {
     mnSel.innerHTML = '<option value="">Todos os Manut.</option>' + manuts.map(m=>`<option value="${m}">${m}</option>`).join('');
     if (cur) mnSel.value = cur;
   }
-
+}
+  
 function abrirRAC(osNumero) {
   if (!osNumero && _curDet && _curDet.tipo === 'os') {
     osNumero = _curDet.item.numero;
