@@ -2688,6 +2688,52 @@ function renderExec() {
     mnSel.innerHTML = '<option value="">Todos os Manut.</option>' + manuts.map(m=>`<option value="${m}">${m}</option>`).join('');
     if (cur) mnSel.value = cur;
   }
+  const tx  = v('fe-tx').toLowerCase();
+  const tp  = v('fe-tp');
+  const sl  = v('fe-sl');
+  const mn  = v('fe-mn');
+  const dtI = v('fe-dt-ini');
+  const dtF = v('fe-dt-fim');
+  let data = [...db.ordens];
+  if (tx) data = data.filter(o => [o.numero,o.sala,o.maq,o.manut,o.tipo].some(x=>x&&x.toLowerCase().includes(tx)));
+  if (tp) data = data.filter(o => o.tipo === tp);
+  if (sl) data = data.filter(o => o.sala === sl);
+  if (mn) data = data.filter(o => o.manut === mn);
+  if (dtI) data = data.filter(o => o.data >= dtI);
+  if (dtF) data = data.filter(o => o.data <= dtF);
+  // Ordenação
+  const { col, dir } = execSort;
+  const prioMap = { 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
+  data.sort((a, b) => {
+    let va = a[col] || '', vb = b[col] || '';
+    if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
+    const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
+    return dir === 'asc' ? cmp : -cmp;
+  });
+  // Atualiza ícones dos cabeçalhos
+  ['numero','data','sala','maq','tipo','prioridade','manut'].forEach(c => {
+    const el = document.getElementById('sh-' + c);
+    if (!el) return;
+    el.classList.remove('asc','desc');
+    if (c === col) el.classList.add(dir);
+  });
+  const tb = document.getElementById('tb-exec');
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
+  tb.innerHTML = data.map(o => `<tr>
+    <td>
+      <span class="osn">${o.numero}</span>
+      ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório — parada acima do limite p/ criticidade ${getCriticidadeMaq(o.maq)}" onclick="abrirRAC('${o.numero}')"></span>`:''}
+    </td>
+    <td style="font-size:12px">${fd(o.data)}</td>
+    <td>${o.sala}</td><td>${o.maq}</td>
+    <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
+    <td style="font-size:12px">${o.manut}</td>
+    <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
+    <td><div style="display:flex;gap:4px">
+      <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>
+      <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
+    </div></td>
+  </tr>`).join('');
 }
 
 function abrirRAC(osNumero) {
@@ -2770,53 +2816,6 @@ function darBaixaRAC(osNumero) {
   showToast('RAC concluído.','ok');
   apiUpdate('racs',db.racs[idx].id,'ID',{
     Status:'Concluído',Data_Baixa:db.racs[idx].dataBaixa,Fechado_Por:db.racs[idx].fechadoPor});
-}
-  const tx  = v('fe-tx').toLowerCase();
-  const tp  = v('fe-tp');
-  const sl  = v('fe-sl');
-  const mn  = v('fe-mn');
-  const dtI = v('fe-dt-ini');
-  const dtF = v('fe-dt-fim');
-  let data = [...db.ordens];
-  if (tx) data = data.filter(o => [o.numero,o.sala,o.maq,o.manut,o.tipo].some(x=>x&&x.toLowerCase().includes(tx)));
-  if (tp) data = data.filter(o => o.tipo === tp);
-  if (sl) data = data.filter(o => o.sala === sl);
-  if (mn) data = data.filter(o => o.manut === mn);
-  if (dtI) data = data.filter(o => o.data >= dtI);
-  if (dtF) data = data.filter(o => o.data <= dtF);
-  // Ordenação
-  const { col, dir } = execSort;
-  const prioMap = { 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
-  data.sort((a, b) => {
-    let va = a[col] || '', vb = b[col] || '';
-    if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
-    const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
-    return dir === 'asc' ? cmp : -cmp;
-  });
-  // Atualiza ícones dos cabeçalhos
-  ['numero','data','sala','maq','tipo','prioridade','manut'].forEach(c => {
-    const el = document.getElementById('sh-' + c);
-    if (!el) return;
-    el.classList.remove('asc','desc');
-    if (c === col) el.classList.add(dir);
-  });
-  const tb = document.getElementById('tb-exec');
-  if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
-  tb.innerHTML = data.map(o => `<tr>
-    <td>
-      <span class="osn">${o.numero}</span>
-      ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório — parada acima do limite p/ criticidade ${getCriticidadeMaq(o.maq)}" onclick="abrirRAC('${o.numero}')"></span>`:''}
-    </td>
-    <td style="font-size:12px">${fd(o.data)}</td>
-    <td>${o.sala}</td><td>${o.maq}</td>
-    <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
-    <td style="font-size:12px">${o.manut}</td>
-    <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
-    <td><div style="display:flex;gap:4px">
-      <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>
-      <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
-    </div></td>
-  </tr>`).join('');
 }
   
 function racrFiltrarMaq() {
