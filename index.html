@@ -4260,42 +4260,33 @@ async function init() {
   document.getElementById('login-screen').style.display='flex';
 }
 
-
 // ═══════════════════════════════════════════════════════════════════
 // RACR — Funções completas (inserir antes de init() no index.html)
 // ═══════════════════════════════════════════════════════════════════
- 
+  
 // ── Abre modal RACR em branco (botão "+ Novo RACR" na página) ──────
 function abrirNovoRACR() {
   _racrOsRef = null;
-  // Limpa todos os campos do modal
-  const campos = ['racr-equip','racr-sala','racr-falha','racr-causa',
-    'racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
-    'racr-imediata','racr-preventiva','racr-resp-prod','racr-resp-manu','racr-exec'];
-  campos.forEach(id => {
-    // Popula selects com dados do banco
-    const salaSel = document.getElementById('racr-sala');
-    if (salaSel) {
-      salaSel.innerHTML = `<option value="${o.sala}">${o.sala}</option>`;
-      salaSel.setAttribute('disabled','');
-    }
-    racrFiltrarMaq();
-    const equipSel = document.getElementById('racr-equip');
-    if (equipSel) {
-      equipSel.innerHTML = `<option value="${o.maq}">${o.maq}</option>`;
-      equipSel.setAttribute('disabled','');
-    }
-  });
+  // Popula select de salas
+  const salaSel = document.getElementById('racr-sala');
+  if (salaSel) {
+    salaSel.innerHTML = '<option value="">Selecione...</option>' +
+      db.salas.map(s => `<option value="${s}">${s}</option>`).join('');
+    salaSel.removeAttribute('disabled');
+  }
+  // Popula select de equipamentos (todos)
+  racrFiltrarMaq();
+  const equipSel = document.getElementById('racr-equip');
+  if (equipSel) equipSel.removeAttribute('disabled');
+  // Limpa campos de texto
+  ['racr-falha','racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
+   'racr-imediata','racr-preventiva','racr-resp-prod','racr-resp-manu','racr-exec']
+  .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   // Data e hora atuais
   const dtEl = document.getElementById('racr-data');
   const hrEl = document.getElementById('racr-hora');
   if (dtEl) { dtEl.value = today(); dtEl.removeAttribute('readonly'); }
   if (hrEl) { hrEl.value = new Date().toTimeString().slice(0,5); hrEl.removeAttribute('readonly'); }
-  const equipEl = document.getElementById('racr-equip');
-  const salaEl  = document.getElementById('racr-sala');
-  if (equipEl) { equipEl.value = ''; equipEl.removeAttribute('readonly'); }
-  if (salaEl)  { salaEl.value  = ''; salaEl.removeAttribute('readonly'); }
-  
   openM('mb-racr');
 }
  
