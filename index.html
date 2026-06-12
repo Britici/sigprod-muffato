@@ -4510,7 +4510,7 @@ function renderRACR() {
       <td>${fd(r.dataBaixa)}</td>
       <td><button class="btn btn-edit btn-sm" onclick="verRACR('${r.id}')">👁 Ver</button></td>
     </tr>`).join('')
-    : `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:16px">Nenhum RAC fechado</td></tr>`;
+    : `<tr><td colspan="7" class="empty"><div class="ei">✅</div><p>Nenhum RAC fechado</p></td></tr>`;
 }
  
 // ── Abre modal de visualização de um RACR existente ───────────────
