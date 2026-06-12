@@ -335,7 +335,7 @@ th.sortable.asc::after{content:' ▲';opacity:1;color:var(--red-l)}
 th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}  
 @keyframes pulse-rac{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.5)}}
 @keyframes pulse-color{0%,100%{background:var(--red)}50%{background:var(--red-d)}}
-.rac-dot{width:9px;height:9px;border-radius:50%;background:var(--red);cursor:pointer;
+.rac-dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;flex-shrink:0}
   display:inline-block;animation:pulse-rac 1.1s ease-in-out infinite;
   vertical-align:middle;margin-left:6px;}
 </style>
@@ -2724,8 +2724,10 @@ function renderExec() {
   if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
   tb.innerHTML = data.map(o => `<tr>
     <td>
-      <span class="osn">${o.numero}</span>
-      ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório — parada acima do limite p/ criticidade ${getCriticidadeMaq(o.maq)}" onclick="abrirRAC('${o.numero}')"></span>`:''}
+      <span style="display:flex;align-items:center;gap:4px">
+        <span class="osn">${o.numero}</span>
+        ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;position:static;animation:pulse-color 1.1s ease-in-out infinite"></span>`:''}
+      </span>
     </td>
     <td style="font-size:12px">${fd(o.data)}</td>
     <td>${o.sala}</td><td>${o.maq}</td>
