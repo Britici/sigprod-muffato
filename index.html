@@ -334,6 +334,7 @@ th.sortable::after{content:' ⇅';opacity:.35;font-size:10px}
 th.sortable.asc::after{content:' ▲';opacity:1;color:var(--red-l)}
 th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}  
 @keyframes pulse-rac{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.5)}}
+@keyframes pulse-color{0%,100%{background:var(--red)}50%{background:var(--red-d)}}
 .rac-dot{width:9px;height:9px;border-radius:50%;background:var(--red);cursor:pointer;
   display:inline-block;animation:pulse-rac 1.1s ease-in-out infinite;
   vertical-align:middle;margin-left:6px;}
@@ -873,7 +874,7 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
  <div class="wa-prev" id="md-wa" style="display:none"></div>
  <button class="wa-cp" id="md-wa-btn" onclick="copyWA()" style="display:none">📋 Copiar para WhatsApp</button>
  <button class="wa-cp" id="md-print-btn" onclick="imprimirDetOS()" style="display:none;background:#444;margin-top:6px">🖨️ Imprimir O.S.</button>
- <button class="btn btn-p btn-sm" id="md-rac-btn" onclick="abrirRAC()" style="display:none;animation:pulse-rac 1.1s ease-in-out infinite;">
+ <button class="btn btn-p btn-sm" id="md-rac-btn" onclick="abrirRAC()" style="display:none;animation:pulse-color 1.1s ease-in-out infinite;">
   🔴 GERAR RCA
  </button>
 </div></div>
