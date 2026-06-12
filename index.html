@@ -2465,7 +2465,7 @@ function renderTrend(containerId) {
   const corrData = months.map(m => db.ordens.filter(o => o.data && o.data.startsWith(m) && o.tipo === 'Corretiva').length);
   const prevData = months.map(m => db.ordens.filter(o => o.data && o.data.startsWith(m) && o.tipo === 'Preventiva').length);
   const maxVal = Math.max(...corrData, ...prevData, 1);
-  const chartH = 90, barW = 16, gap = 5, groupGap = 12, startX = 8;
+  const chartH = 90, barW = 16, gap = 5, groupGap = 12, startX = 8, topPad = 14;
   const groupW = barW * 2 + gap;
   const svgW = startX * 2 + months.length * (groupW + groupGap) - groupGap;
   let bars = '';
@@ -2475,12 +2475,12 @@ function renderTrend(containerId) {
     const cH = corrData[i] > 0 ? Math.max(4, Math.round(corrData[i]/maxVal*chartH)) : 0;
     const pH = prevData[i] > 0 ? Math.max(4, Math.round(prevData[i]/maxVal*chartH)) : 0;
     bars += `
-      <rect x="${x}" y="${chartH-cH}" width="${barW}" height="${cH||1}" rx="3" fill="var(--red)" opacity=".85"/>
-      ${corrData[i]?`<text x="${x+barW/2}" y="${chartH-cH-3}" text-anchor="middle" font-size="9" fill="var(--txt2)" font-family="var(--fw)">${corrData[i]}</text>`:''}
-      <rect x="${x+barW+gap}" y="${chartH-pH}" width="${barW}" height="${pH||1}" rx="3" fill="var(--grn)" opacity=".85"/>
-      ${prevData[i]?`<text x="${x+barW+gap+barW/2}" y="${chartH-pH-3}" text-anchor="middle" font-size="9" fill="var(--txt2)" font-family="var(--fw)">${prevData[i]}</text>`:''}
-      <text x="${x+groupW/2}" y="${chartH+12}" text-anchor="middle" font-size="9" fill="var(--txt3)" font-family="var(--fw)">${lbl}</text>`;
-  });
+      <rect x="${x}" y="${chartH-cH+topPad}" width="${barW}" height="${cH||1}" rx="3" fill="var(--red)" opacity=".85"/>
+      ${corrData[i]?`<text x="${x+barW/2}" y="${chartH-cH+topPad-3}" text-anchor="middle" font-size="9" fill="var(--txt2)" font-family="var(--fw)">${corrData[i]}</text>`:''}
+      <rect x="${x+barW+gap}" y="${chartH-pH+topPad}" width="${barW}" height="${pH||1}" rx="3" fill="var(--grn)" opacity=".85"/>
+      ${prevData[i]?`<text x="${x+barW+gap+barW/2}" y="${chartH-pH+topPad-3}" text-anchor="middle" font-size="9" fill="var(--txt2)" font-family="var(--fw)">${prevData[i]}</text>`:''}
+      <text x="${x+groupW/2}" y="${chartH+topPad+12}" text-anchor="middle" font-size="9" fill="var(--txt3)" font-family="var(--fw)">${lbl}</text>`;
+      });
   cont.innerHTML = `
     <div style="display:flex;gap:14px;margin-bottom:10px">
       <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2)"><span style="width:10px;height:10px;background:var(--red);border-radius:2px;opacity:.85;display:inline-block"></span>Corretiva</span>
