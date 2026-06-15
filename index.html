@@ -496,7 +496,7 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
      </select>
     </div>
     <div class="tw"><table><thead><tr>
-      <th class="sortable" id="ph-numero"     onclick="sortExec('numero')" style="width:120px;min-width:120px">OS #</th>
+      <th class="sortable" id="ph-numero"     onclick="sortExec('numero')" style="width:100px;min-width:100px">OS #</th>
       <th class="sortable" id="ph-sala"       onclick="sortPlan('sala')">Sala</th>
       <th class="sortable" id="ph-maq"        onclick="sortPlan('maq')">Máquina</th>
       <th class="sortable" id="ph-tipo"       onclick="sortPlan('tipo')">Tipo</th>
@@ -526,7 +526,7 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
      <input type="date" id="fe-dt-fim" title="Data final" onchange="renderExec()">
     </div>
     <div class="tw"><table><thead><tr>
-    <th class="sortable" id="sh-numero" onclick="sortExec('numero')" style="width:120px;min-width:120px">OS #</th>
+    <th class="sortable" id="sh-numero" onclick="sortExec('numero')" style="width:100px;min-width:100px">OS #</th>
     <th class="sortable" id="sh-data"   onclick="sortExec('data')">Data</th>
     <th class="sortable" id="sh-sala"   onclick="sortExec('sala')">Sala</th>
     <th class="sortable" id="sh-maq"    onclick="sortExec('maq')">Máquina</th>
@@ -2723,12 +2723,12 @@ function renderExec() {
   const tb = document.getElementById('tb-exec');
   if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
   tb.innerHTML = data.map(o => `<tr>
-    <td style="white-space:nowrap">
-      <span style="display:flex;align-items:center;gap:4px">
-        ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;flex-shrink:0"></span>`:''}
-        <span class="osn">${o.numero}</span>
-      </span>
-    </td>
+     <td style="white-space:nowrap;width:110px">
+        <span style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+          ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;flex-shrink:0"></span>`:''}
+          <span class="osn">${o.numero}</span>
+        </span>
+      </td>
     <td style="font-size:12px">${fd(o.data)}</td>
     <td>${o.sala}</td><td>${o.maq}</td>
     <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
