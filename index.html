@@ -2657,7 +2657,7 @@ function getCriticidadeMaq(maqNome) {
   return parseInt(m?.criticidade) || 3;
 }
 function limiteRAC(crit) {
-  return {1:60, 2:90, 3:105, 4:120}[crit] ?? 120;
+  return {1:60, 2:120, 3:10080, 4:120}[crit] ?? 40320;
 }
 function precisaRAC(o) {
   if (o.tipo !== 'Corretiva') return false;
