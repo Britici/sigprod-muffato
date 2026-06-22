@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Detector de Cor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+body{display:flex;flex-direction:column;
+     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#fff}
+
+#camarea{position:relative;flex:1;overflow:hidden;min-height:0}
+
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+#ovr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+#smp{display:none}
+
+/* painel inferior */
+#painel{
+  flex-shrink:0;background:#111;
+  padding:14px 18px 24px;
+  display:flex;align-items:center;gap:14px;
+  border-top:3px solid #1e1e1e;
+}
+#bolinha{
+  width:76px;height:76px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.25);
+  flex-shrink:0;background:#2a2a2a;
+  transition:background-color .1s;
+}
+#col-texto{flex:1;min-width:0}
+#nome-cor{
+  font-size:2.6rem;font-weight:800;line-height:1;
+  letter-spacing:-.5px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+#rgb-val{font-size:.78rem;color:#555;margin-top:6px;font-family:monospace}
+#pausado{font-size:.75rem;font-weight:700;color:#ff6500;margin-top:5px;display:none}
+
+/* indicador de estabilidade */
+#dots{position:absolute;top:12px;right:14px;display:flex;gap:5px;pointer-events:none}
+.dot{width:9px;height:9px;border-radius:50%;background:#2a2a2a;transition:background .15s}
+.dot.on{background:#00e676}
+
+/* tela inicial */
+#inicio{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.9);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:18px;padding:36px 28px;text-align:center;
+  z-index:20;
+}
+#inicio h1{font-size:1.7rem;font-weight:800}
+#inicio p{font-size:.93rem;color:#aaa;line-height:1.55;max-width:280px}
+#inicio .dica{font-size:.8rem;color:#555}
+#inicio .erro{color:#ff5555;font-size:.87rem;line-height:1.4;display:none;max-width:280px}
+
+#btn-iniciar{
+  background:#fff;color:#000;border:none;
+  padding:16px 44px;font-size:1.1rem;font-weight:800;
+  border-radius:50px;cursor:pointer;margin-top:4px;
+}
+#btn-iniciar:disabled{opacity:.45}
+</style>
+</head>
+<body>
+
+<div id="camarea">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="smp"></canvas>
+  <canvas id="ovr"></canvas>
+
+  <div id="dots">
+    <div class="dot" id="d0"></div>
+    <div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+    <div class="dot" id="d4"></div>
+  </div>
+
+  <!-- tela inicial cobre tudo -->
+  <div id="inicio">
+    <h1>Detector de Cor</h1>
+    <p>Aponte a câmera para um LED.<br>A mira identifica a cor em tempo real.</p>
+    <p class="dica">Toque na imagem para pausar</p>
+    <p class="erro" id="msg-erro"></p>
+    <button id="btn-iniciar">Iniciar Câmera</button>
+  </div>
+</div>
+
+<div id="painel">
+  <div id="bolinha"></div>
+  <div id="col-texto">
+    <div id="nome-cor">—</div>
+    <div id="rgb-val">aponte a câmera</div>
+    <div id="pausado">⏸ PAUSADO — toque para retomar</div>
+  </div>
+</div>
+
+<script>
+// ── elementos ────────────────────────────────────────────────
+var video    = document.getElementById('video');
+var smpCv    = document.getElementById('smp');
+var ovrCv    = document.getElementById('ovr');
+var bolinha  = document.getElementById('bolinha');
+var nomeCor  = document.getElementById('nome-cor');
+var rgbVal   = document.getElementById('rgb-val');
+var pausado  = document.getElementById('pausado');
+var camarea  = document.getElementById('camarea');
+var inicio   = document.getElementById('inicio');
+var btnIni   = document.getElementById('btn-iniciar');
+var msgErro  = document.getElementById('msg-erro');
+var dots     = [0,1,2,3,4].map(function(i){return document.getElementById('d'+i);});
+
+var oc = ovrCv.getContext('2d');
+var sc = smpCv.getContext('2d', {willReadFrequently: true});
+
+var frozen  = false;
+var rodando = false;
+var hist    = [];
+var HIST    = 14;
+var SR      = 22;   // raio de amostragem (px no vídeo)
+var tUI     = 0;    // throttle UI
+
+// ── classificação ────────────────────────────────────────────
+function hsl(r, g, b) {
+  r/=255; g/=255; b/=255;
+  var mx=Math.max(r,g,b), mn=Math.min(r,g,b), h=0, s=0, l=(mx+mn)/2;
+  if (mx !== mn) {
+    var d = mx - mn;
+    s = l > .5 ? d/(2-mx-mn) : d/(mx+mn);
+    if      (mx===r) h = ((g-b)/d + (g<b?6:0)) / 6;
+    else if (mx===g) h = ((b-r)/d + 2) / 6;
+    else             h = ((r-g)/d + 4) / 6;
+  }
+  return {h:h*360, s:s*100, l:l*100};
+}
+
+function classificar(r, g, b) {
+  var c=hsl(r,g,b), h=c.h, s=c.s, l=c.l;
+  if (l < 10)  return 'Preto';
+  if (s < 15) {
+    if (l > 87) return 'Branco';
+    if (l > 63) return 'Cinza claro';
+    if (l > 37) return 'Cinza';
+    return 'Cinza escuro';
+  }
+  if (s < 38 && l > 57 && h >= 15 && h <= 65) return 'Bege';
+  if (h < 15  || h >= 345) return 'Vermelho';
+  if (h < 40)  return 'Laranja';
+  if (h < 72)  return 'Amarelo';
+  if (h < 158) return 'Verde';
+  if (h < 200) return 'Azul claro';
+  if (h < 265) return l > 56 ? 'Azul claro' : 'Azul';
+  if (h < 308) return 'Roxo';
+  return 'Rosa';
+}
+
+function toHex(r, g, b) {
+  return '#' + [r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── câmera ───────────────────────────────────────────────────
+btnIni.onclick = function() {
+  btnIni.disabled = true;
+  btnIni.textContent = 'Aguarde…';
+  msgErro.style.display = 'none';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    mostrarErro('getUserMedia não suportado.\nAbra no Chrome via HTTPS.');
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: {ideal: 'environment'},
+      width:  {ideal: 1920},
+      height: {ideal: 1080}
+    },
+    audio: false
+  })
+  .then(function(stream) {
+    video.srcObject = stream;
+
+    function pronto() {
+      if (rodando) return;
+      smpCv.width  = video.videoWidth  || 1280;
+      smpCv.height = video.videoHeight || 720;
+      rodando = true;
+      inicio.style.display = 'none';
+      requestAnimationFrame(loop);
+    }
+
+    video.addEventListener('loadedmetadata', pronto, {once:true});
+    video.addEventListener('loadeddata',     pronto, {once:true});
+    setTimeout(function(){ if (!rodando && video.videoWidth > 0) pronto(); }, 2500);
+  })
+  .catch(function(e) {
+    mostrarErro(e.message || String(e));
+  });
+};
+
+function mostrarErro(msg) {
+  msgErro.textContent = '⚠️ ' + msg;
+  msgErro.style.display = 'block';
+  btnIni.disabled = false;
+  btnIni.textContent = 'Tentar novamente';
+}
+
+// ── pausar/retomar ───────────────────────────────────────────
+camarea.addEventListener('click', function() {
+  if (!rodando) return;
+  frozen = !frozen;
+  pausado.style.display = frozen ? 'block' : 'none';
+});
+
+// ── loop principal ───────────────────────────────────────────
+function loop() {
+  // sincroniza tamanho do canvas com o display
+  var rect = camarea.getBoundingClientRect();
+  var W = Math.floor(rect.width);
+  var H = Math.floor(rect.height);
+  if (ovrCv.width !== W || ovrCv.height !== H) {
+    ovrCv.width  = W;
+    ovrCv.height = H;
+  }
+
+  if (!frozen && video.readyState >= 2 && smpCv.width > 0) {
+    sc.drawImage(video, 0, 0, smpCv.width, smpCv.height);
+
+    var cx = smpCv.width  >> 1;
+    var cy = smpCv.height >> 1;
+    var x  = Math.max(0, cx - SR);
+    var y  = Math.max(0, cy - SR);
+    var w  = Math.min(smpCv.width  - x, SR * 2);
+    var h  = Math.min(smpCv.height - y, SR * 2);
+    var px = sc.getImageData(x, y, w, h).data;
+
+    var rs=0, gs=0, bs=0, n=0;
+    for (var i=0; i<px.length; i+=4) { rs+=px[i]; gs+=px[i+1]; bs+=px[i+2]; n++; }
+    var r=Math.round(rs/n), g=Math.round(gs/n), b=Math.round(bs/n);
+
+    hist.push({r:r, g:g, b:b, nome:classificar(r,g,b), hex:toHex(r,g,b)});
+    if (hist.length > HIST) hist.shift();
+
+    // voto majoritário → leitura estável
+    var votos = {};
+    hist.forEach(function(e){ votos[e.nome] = (votos[e.nome]||0)+1; });
+    var ganhador = Object.entries(votos).sort(function(a,z){return z[1]-a[1];})[0];
+    var estab    = Math.round((ganhador[1] / hist.length) * 5);
+    var ultimo   = hist[hist.length-1];
+
+    // atualiza UI no máximo 10x/s
+    var agora = Date.now();
+    if (agora - tUI > 100) {
+      tUI = agora;
+      nomeCor.textContent = ganhador[0];
+      rgbVal.textContent  = ultimo.hex.toUpperCase() + '   R:'+ultimo.r+' G:'+ultimo.g+' B:'+ultimo.b;
+      bolinha.style.backgroundColor = ultimo.hex;
+      dots.forEach(function(d, i){ d.classList.toggle('on', i < estab); });
+    }
+  }
+
+  desenharMira(oc, W, H);
+  requestAnimationFrame(loop);
+}
+
+// ── mira ─────────────────────────────────────────────────────
+function desenharMira(oc, W, H) {
+  var cx=W/2, cy=H/2, g=28, a=48, ring=22;
+  oc.clearRect(0, 0, W, H);
+
+  // sombra + linha branca
+  [[3.5,'rgba(0,0,0,.6)'],[1.8,'rgba(255,255,255,.93)']].forEach(function(p){
+    oc.strokeStyle = p[1];
+    oc.lineWidth   = p[0];
+    oc.beginPath();
+    oc.moveTo(cx,cy-g);   oc.lineTo(cx,cy-g-a);
+    oc.moveTo(cx,cy+g);   oc.lineTo(cx,cy+g+a);
+    oc.moveTo(cx-g,cy);   oc.lineTo(cx-g-a,cy);
+    oc.moveTo(cx+g,cy);   oc.lineTo(cx+g+a,cy);
+    oc.stroke();
+    oc.beginPath();
+    oc.arc(cx, cy, ring, 0, Math.PI*2);
+    oc.stroke();
+  });
+
+  // ponto central
+  oc.beginPath();
+  oc.arc(cx, cy, 2.8, 0, Math.PI*2);
+  oc.fillStyle = 'white';
+  oc.fill();
+}
+</script>
+</body>
+</html>
