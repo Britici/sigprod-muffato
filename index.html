@@ -2686,6 +2686,20 @@ function editarPlan(id) {
   openM('m-edit');
 }
 
+function epFiltrarMaq() {
+  const sala = document.getElementById('ep-sala')?.value;
+  const sel  = document.getElementById('ep-maq');
+  if (!sel) return;
+  const maqsFiltradas = db.maquinas
+    .filter(m => !sala || m.sala === sala)
+    .sort((a,b) => a.nome.localeCompare(b.nome));
+  sel.innerHTML = '<option value="">Selecione...</option>' +
+    maqsFiltradas.map(m =>
+      `<option value="${m.nome}">${m.nome}${m.tag?' ('+m.tag+')':''}</option>`
+    ).join('') +
+    '<option value="__outros__">Outros</option>';
+}
+  
 function delPlan(id) {
   if (!confirm('Excluir esta O.S. planejada?')) return;
   const pl = db.planejadas.find(p => p.numero === id);
