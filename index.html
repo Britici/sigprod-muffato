@@ -2156,6 +2156,11 @@ function renderDash() {
     </div>
     <div class="sc-card c-r">
       <div class="sc-lbl">Corretivas</div>
+      <div class="sc-val">${prev}</div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(prev/total*100) : 0}% do total</div>
+    </div>
+    <div class="sc-card c-r">
+      <div class="sc-lbl">Corretivas</div>
       <div class="sc-val">${cor}</div>
       <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(cor/total*100) : 0}% do total</div>
     </div>
