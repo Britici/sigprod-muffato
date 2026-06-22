@@ -2025,6 +2025,7 @@ function renderDash() {
   const ordCorr = ordPer.filter(o => o.tipo === 'Corretiva');
   const cor     = ordCorr.length;
   const prev    = ordPer.filter(o => o.tipo === 'Preventiva').length;
+  const melh    = ordPer.filter(o => o.tipo === 'Melhoria').length;
   const total   = ordPer.length;
   const hj      = db.ordens.filter(o => o.data === t).length;
   const plOpen  = db.planejadas.filter(p => p.status !== 'Concluída').length;
@@ -2155,7 +2156,7 @@ function renderDash() {
       <div style="font-size:10px;color:var(--txt3);margin-top:4px">Tempo médio reparo</div>
     </div>
     <div class="sc-card c-r">
-      <div class="sc-lbl">Corretivas</div>
+      <div class="sc-lbl">Preventivas</div>
       <div class="sc-val">${prev}</div>
       <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(prev/total*100) : 0}% do total</div>
     </div>
@@ -2163,6 +2164,11 @@ function renderDash() {
       <div class="sc-lbl">Corretivas</div>
       <div class="sc-val">${cor}</div>
       <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(cor/total*100) : 0}% do total</div>
+    </div>
+    <div class="sc-card c-r">
+      <div class="sc-lbl">Melhoria</div>
+      <div class="sc-val">${melh}</div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(melh/total*100) : 0}% do total</div>
     </div>
 
     <div class="sc-card ${proxAtras > 0 ? 'c-r' : proxCount > 0 ? 'c-go' : 'c-g'}">
