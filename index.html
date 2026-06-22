@@ -2026,6 +2026,7 @@ function renderDash() {
   const cor     = ordCorr.length;
   const prev    = ordPer.filter(o => o.tipo === 'Preventiva').length;
   const melh    = ordPer.filter(o => o.tipo === 'Melhoria').length;
+  const inspe   = ordPer.filter(o => o.tipo === 'Inspeção').length;
   const total   = ordPer.length;
   const hj      = db.ordens.filter(o => o.data === t).length;
   const plOpen  = db.planejadas.filter(p => p.status !== 'Concluída').length;
@@ -2169,6 +2170,11 @@ function renderDash() {
       <div class="sc-lbl">Melhoria</div>
       <div class="sc-val">${melh}</div>
       <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(melh/total*100) : 0}% do total</div>
+    </div>
+    <div class="sc-card c-r">
+      <div class="sc-lbl">Inspeção</div>
+      <div class="sc-val">${inspe}</div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(inspe/total*100) : 0}% do total</div>
     </div>
 
     <div class="sc-card c-o">
