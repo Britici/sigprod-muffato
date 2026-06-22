@@ -417,7 +417,7 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
    <div class="sb-usr">
     <div class="u-av" id="u-av">A</div>
      <div class="u-nm" id="u-nm">Usuário</div>
-     <div class="u-nm" id="u-nm">Usuário</div>
+     <div class="u-rl" id="u-rl">Administração</div>
    </div>
   </div>
  </aside>
@@ -1533,7 +1533,7 @@ function enterApp() {
   const ini = CU.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   document.getElementById('u-av').textContent = ini;
   document.getElementById('u-nm').textContent = CU.nome;
-  document.getElementById('u-rl').textContent = "";
+  document.getElementById('u-rl').textContent = ROLES[CU.tipo]?.label || CU.tipo;
   document.getElementById('tb-stat').style.display = CU.tipo !== 'producao' ? 'flex' : 'none';
 
   buildNav();
