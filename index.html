@@ -2171,11 +2171,6 @@ function renderDash() {
       <div style="font-size:10px;color:var(--txt3);margin-top:4px">${total ? Math.round(melh/total*100) : 0}% do total</div>
     </div>
 
-    <div class="sc-card ${proxAtras > 0 ? 'c-r' : proxCount > 0 ? 'c-go' : 'c-g'}">
-      <div class="sc-lbl">Próx. Preventivas</div>
-      <div class="sc-val">${proxCount}</div>
-      <div style="font-size:10px;color:var(--txt3);margin-top:4px">${proxAtras > 0 ? proxAtras+' atrasada(s)' : 'Pendentes'}</div>
-    </div>
     <div class="sc-card c-o">
       <div class="sc-lbl">Solicitações Pend.</div>
       <div class="sc-val">${solPend}</div>
