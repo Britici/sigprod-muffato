@@ -3765,11 +3765,29 @@ function salvarEdit() {
     apiUpdate('maquinas',old.nome,'Nome',{Sala:nv.sala,Nome:nv.nome,Tag:nv.tag,
       Criticidade:nv.criticidade,Periodicidade_Preventiva:nv.periodicidade});
   } else if(_editType==='plan') {
-    const p=db.planejadas.find(x=>x.numero===_editIdx);if(!p)return;
-    p.status=v('ep-status');p.prazo=v('ep-prazo');p.prioridade=v('ep-prio');p.desc=v('ep-desc');
-    logEdit('Editou Planejada', p.numero, 'Status: ' + p.status + ' · Prazo: ' + p.prazo);
-    saveDB();renderPlan();closeM('m-edit');
-    apiUpdate('planejadas',p.numero,'PL_Numero',{Status:p.status,Prazo_Limite:p.prazo,Prioridade:p.prioridade,Descricao_Planejada:p.desc});
+    const p = db.planejadas.find(x => x.numero === _editIdx);
+    if (!p) return;
+    p.sala       = v('ep-sala')   || p.sala;
+    p.maq        = v('ep-maq')    || p.maq;
+    p.tipo       = v('ep-tipo')   || p.tipo;
+    p.prioridade = v('ep-prio')   || p.prioridade;
+    p.prazo      = v('ep-prazo')  || p.prazo;
+    p.horasTurno = parseInt(v('ep-horas')) || p.horasTurno;
+    p.status     = v('ep-status') || p.status;
+    p.desc       = v('ep-desc');
+    logEdit('Editou Planejada', p.numero,
+      `${p.sala} · ${p.maq} · Status: ${p.status} · Prazo: ${p.prazo}`);
+    saveDB(); renderPlan(); closeM('m-edit');
+    apiUpdate('planejadas', p.numero, 'PL_Numero', {
+      Sala:               p.sala,
+      Maquina:            p.maq,
+      Tipo:               p.tipo,
+      Prioridade:         p.prioridade,
+      Prazo_Limite:       p.prazo,
+      Horas_Turno:        p.horasTurno,
+      Status:             p.status,
+      Descricao_Planejada:p.desc
+    });
   }
 }
 
