@@ -3629,7 +3629,7 @@ function renderCritChart() {
     return;
   }
 
-  const colors = {'1':'#ff2244','2':'#f59e0b','3':'#999999','4':'#1fd988'};
+  const colors = {'1':'#ff2244','2':'#f59e0b','3':'#4096ff','4':'#1fd988'};
   const labels = {'1':'1 – Crítico','2':'2 – Alta','3':'3 – Média','4':'4 – Baixa'};
 
   // ── Donut ──────────────────────────────────────────────────
@@ -3658,7 +3658,7 @@ function renderCritChart() {
 
   // ── Barras verticais ──────────────────────────────────────
   const allBars = [...Object.entries(counts), ['T', total]];
-  const barCols = {'1':'#ff2244','2':'#f59e0b','3':'#999999','4':'#1fd988','T':'#999999'};
+  const barCols = {'1':'#ff2244','2':'#f59e0b','3':'#4096ff','4':'#1fd988','T':'#999999'};
   const barLbls = {'1':'1','2':'2','3':'3','4':'4','T':'Total'};
   const maxVal  = Math.max(...allBars.map(([,n]) => n), 1);
   const chartH  = 90, barW = 26, gap = 10, startX = 10, topPad = 16;
