@@ -444,12 +444,19 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
       <option value="dia">Hoje</option>
       <option value="semana">Últimos 7 dias</option>
       <option value="mes" selected>Mês</option>
-      <option value="3m">Últimos 3 meses</option>
       <option value="ano">Ano</option>
+      <option value="custom">Período Customizado</option>
      </select>
+     <div id="dash-custom-dates" style="display:none;gap:8px;align-items:center">
+      <label style="font-size:12px;color:var(--txt3);font-weight:600">Data Inicial:</label>
+      <input type="date" id="dash-dt-ini" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:12px">
+      <label style="font-size:12px;color:var(--txt3);font-weight:600">Data Final:</label>
+      <input type="date" id="dash-dt-fim" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:12px">
+     </div>
      <div id="dash-rf-bar" style="display:flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);padding:5px 10px;flex-shrink:0">
        <span class="rf-dot off" id="rf-dot"></span>
        <button class="btn btn-sm btn-gh" onclick="renderDash()" style="padding:4px 10px">🔄 Atualizar</button>
+       <button class="btn btn-sm btn-gh" onclick="exportDashPDF()" style="padding:4px 10px">📄 Gerar PDF</button>
        <button class="btn btn-sm" id="rf-btn" onclick="toggleDashRefresh()" style="background:var(--surf3);color:var(--txt2);border:1px solid var(--bord);border-radius:var(--rs);padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--fw);font-weight:700">▶ 15s</button>
        <span id="rf-lbl" style="font-size:11px;color:var(--txt3);white-space:nowrap">Desligada</span>
      </div>
@@ -2005,23 +2012,35 @@ function renderDash() {
   // Filtro de período
   const sel = document.getElementById('dash-periodo');
   const per = sel ? sel.value : 'mes';
+  const customDatesDiv = document.getElementById('dash-custom-dates');
+  
+  // Mostrar/ocultar campos de data customizados
+  if (per === 'custom') {
+    customDatesDiv.style.display = 'flex';
+  } else {
+    customDatesDiv.style.display = 'none';
+  }
+  
   let startDate;
   if (per === 'dia') {
     startDate = t;
   } else if (per === 'semana') {
     const d = new Date(); d.setDate(d.getDate()-7);
     startDate = d.toISOString().slice(0,10);
-  } else if (per === '3m') {
-    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-2);
-    startDate = d.toISOString().slice(0,10);
   } else if (per === 'ano') {
     startDate = t.slice(0,4) + '-01-01';
+  } else if (per === 'custom') {
+    startDate = document.getElementById('dash-dt-ini')?.value || t;
   } else {
     startDate = t.slice(0,7) + '-01';
   }
 
   // Dados filtrados pelo período
-  const ordPer  = db.ordens.filter(o => o.data && o.data >= startDate);
+  let endDate = t;
+  if (per === 'custom') {
+    endDate = document.getElementById('dash-dt-fim')?.value || t;
+  }
+  const ordPer  = db.ordens.filter(o => o.data && o.data >= startDate && o.data <= endDate);
   const ordCorr = ordPer.filter(o => o.tipo === 'Corretiva');
   const cor     = ordCorr.length;
   const prev    = ordPer.filter(o => o.tipo === 'Preventiva').length;
@@ -2310,12 +2329,22 @@ function exportDashPDF() {
   const t = today();
   const sel = document.getElementById('dash-periodo');
   const per = sel ? sel.value : 'mes';
-  const perLbl = per === '3m' ? 'Últimos 3 Meses' : per === 'ano' ? 'Este Ano' : 'Este Mês';
-  let startDate;
-  if (per === '3m') { const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-2);startDate=d.toISOString().slice(0,10); }
-  else if (per === 'ano') { startDate = t.slice(0,4)+'-01-01'; }
-  else { startDate = t.slice(0,7)+'-01'; }
-  const ordP = db.ordens.filter(o => o.data && o.data >= startDate);
+  let perLbl, startDate, endDate;
+  if (per === 'dia') {
+    perLbl = 'Hoje'; startDate = t; endDate = t;
+  } else if (per === 'semana') {
+    const d=new Date(); d.setDate(d.getDate()-7);
+    perLbl = 'Últimos 7 dias'; startDate = d.toISOString().slice(0,10); endDate = t;
+  } else if (per === 'ano') {
+    perLbl = 'Este Ano'; startDate = t.slice(0,4)+'-01-01'; endDate = t;
+  } else if (per === 'custom') {
+    startDate = document.getElementById('dash-dt-ini')?.value || t.slice(0,7)+'-01';
+    endDate = document.getElementById('dash-dt-fim')?.value || t;
+    perLbl = `${startDate} a ${endDate}`;
+  } else {
+    perLbl = 'Este Mês'; startDate = t.slice(0,7)+'-01'; endDate = t;
+  }
+  const ordP = db.ordens.filter(o => o.data && o.data >= startDate && o.data <= endDate);
   const cor2 = ordP.filter(o=>o.tipo==='Corretiva').length;
   const prv  = ordP.filter(o=>o.tipo==='Preventiva').length;
   const tot  = ordP.length;
@@ -2661,10 +2690,10 @@ function editarPlan(id) {
     </div>
     <div class="fg"><label>Prioridade</label>
       <select id="ep-prio">
-        <option value="1"${p.prioridade==='1'?' selected':''}>🔴 1 – Crítico</option>
-        <option value="2"${(p.prioridade==='2'||p.prioridade==='Alta')?' selected':''}>🟠 2 – Alta</option>
-        <option value="3"${(p.prioridade==='3'||p.prioridade==='Média')?' selected':''}>🟡 3 – Média</option>
-        <option value="4"${(p.prioridade==='4'||p.prioridade==='Baixa')?' selected':''}>🟢 4 – Baixa</option>
+        <option value="1"${p.prioridade==='1'?' selected':''}>🔴 Crítico (Parada de Máquina)</option>
+        <option value="2"${(p.prioridade==='2'||p.prioridade==='Alta')?' selected':''}>🟠 Alta (Risco de Parada)</option>
+        <option value="3"${(p.prioridade==='3'||p.prioridade==='Média')?' selected':''}>🟡 Média (Importante - Planejamento)</option>
+        <option value="4"${(p.prioridade==='4'||p.prioridade==='Baixa')?' selected':''}>🟢 Baixo (Melhoria - Planejamento)</option>
       </select>
     </div>
     <div class="fg"><label>Prazo Limite</label>
@@ -2715,6 +2744,12 @@ function delPlan(id) {
 function getCriticidadeMaq(maqNome) {
   const m = db.maquinas.find(x => normStr(x.nome) === normStr(maqNome));
   return parseInt(m?.criticidade) || 3;
+}
+function getCriticidadeBadge(maqNome) {
+  const crit = getCriticidadeMaq(maqNome);
+  const critMap = {'1':'Crítico','2':'Alta','3':'Média','4':'Baixa'};
+  const critColor = {'1':'#ff2244','2':'var(--red)','3':'var(--org)','4':'var(--grn)'}[String(crit)] || 'var(--txt3)';
+  return `<span style="font-size:10px;color:${critColor};font-weight:600">${critMap[String(crit)] || '—'}</span>`;
 }
 function limiteRAC(crit) {
   return {1:60, 2:120, 3:10080, 4:20160}[crit] ?? 120;
@@ -2790,7 +2825,7 @@ function renderExec() {
         </span>
       </td>
     <td style="font-size:12px">${fd(o.data)}</td>
-    <td>${o.sala}</td><td>${o.maq}</td>
+    <td>${o.sala}</td><td><div>${o.maq}</div><div style="font-size:10px;color:var(--txt3)">${getCriticidadeBadge(o.maq)}</div></td>
     <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
     <td style="font-size:12px">${o.manut}</td>
     <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
@@ -3594,7 +3629,7 @@ function renderCritChart() {
     return;
   }
 
-  const colors = {'1':'#ff2244','2':'#f59e0b','3':'#4096ff','4':'#1fd988'};
+  const colors = {'1':'#ff2244','2':'#f59e0b','3':'#999999','4':'#1fd988'};
   const labels = {'1':'1 – Crítico','2':'2 – Alta','3':'3 – Média','4':'4 – Baixa'};
 
   // ── Donut ──────────────────────────────────────────────────
@@ -3623,7 +3658,7 @@ function renderCritChart() {
 
   // ── Barras verticais ──────────────────────────────────────
   const allBars = [...Object.entries(counts), ['T', total]];
-  const barCols = {'1':'#ff2244','2':'#f59e0b','3':'#4096ff','4':'#1fd988','T':'#5aa8ff'};
+  const barCols = {'1':'#ff2244','2':'#f59e0b','3':'#999999','4':'#1fd988','T':'#999999'};
   const barLbls = {'1':'1','2':'2','3':'3','4':'4','T':'Total'};
   const maxVal  = Math.max(...allBars.map(([,n]) => n), 1);
   const chartH  = 90, barW = 26, gap = 10, startX = 10, topPad = 16;
