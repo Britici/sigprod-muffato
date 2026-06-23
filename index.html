@@ -2828,7 +2828,7 @@ function getCriticidadeMaq(maqNome) {
 }
 function getCriticidadeBadge(maqNome) {
   const crit = getCriticidadeMaq(maqNome);
-  const critMap = {'1':'Crítico','2':'Alta','3':'Média','4':'Baixa'};
+  const critMap = {'1':'Criticidade 1','2':'Criticidade 2','3':'Criticidade 3','4':'Criticidade 4'};
   const critColor = {'1':'#ff2244','2':'var(--red)','3':'var(--org)','4':'var(--grn)'}[String(crit)] || 'var(--txt3)';
   return `<span style="font-size:10px;color:${critColor};font-weight:600">${critMap[String(crit)] || '—'}</span>`;
 }
