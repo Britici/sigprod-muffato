@@ -625,6 +625,13 @@
     </div>
   </div>
 </div>
+
+  <!-- COMPRAS — SOLICITAÇÃO -->
+  <div class="pg" id="pg-compras-solicitacao"></div>
+  
+  <!-- COMPRAS — ACOMPANHAMENTO -->
+  <div class="pg" id="pg-compras-acompanhamento"></div>
+  
   <!-- MODAL EDITAR -->
   <div class="mb" id="m-edit"><div class="modal" style="max-width:400px">
    <div class="mhd"><div class="mtit" id="me-t">Editar</div><button class="mcl" onclick="closeM('m-edit')">×</button></div>
@@ -634,7 +641,6 @@
     <button class="btn btn-p" onclick="salvarEdit()">Salvar</button>
      </div>
   </div></div>
-
 
 <script src="js/core.js"></script>
 <script src="js/modulo-compras-solicitacao.js"></script>
@@ -745,6 +751,8 @@ const NAV = [
   { id:'inspecao',     ic:'🔍', lbl:'Inspeção Diária'     },
   { id:'pcm', ic:'📋', lbl:'PCM', sub:[
       { id:'planejamento', ic:'📋', lbl:'Planejamento de O.S.' },
+      { id:'compras-solicitacao',     ic:'🛒', lbl:'Solicitação de Compras',  admin:true },
+      { id:'compras-acompanhamento',  ic:'📦', lbl:'Acompanhamento de Compras', admin:true },
       { id:'analise-causa-raiz', ic:'📊', lbl:'Análise Causa Raiz'},
       { id:'inspecao-tmpl',ic:'📄', lbl:'Inspeção de Rota'   },
       { id:'preventiva',   ic:'🔩', lbl:'Manutenção Preventiva'},      
@@ -761,7 +769,9 @@ const LBLS = {
   'analise-causa-raiz':'PCM — Análise de Causa Raiz',
   solicitacao:'Solicitação de O.S.', inspecao:'Inspeção Diária',
   ativos:'Ativos', usuarios:'Usuários', 'inspecao-tmpl':'PCM — Templates de Inspeção',
-  preventiva:'PCM — Manutenção Preventiva'
+  preventiva:'PCM — Manutenção Preventiva',
+  'compras-solicitacao':'PCM — Solicitação de Compras',
+  'compras-acompanhamento':'PCM — Acompanhamento de Compras'
 };
 
 let _pcmOpen = true; // PCM submenu aberto por padrão
@@ -857,6 +867,21 @@ function showPage(pid) {
     if (CU.tipo !== 'producao') sv('ab-mn', CU.nome);
   }
   if (pid === 'planejamento') { populateSalas('pl'); }
+  if (pid === 'compras-solicitacao') {
+    ComprasSolicitacao.render(
+      document.getElementById('pg-compras-solicitacao'),
+      { cache: { salas: db.salas.map(s=>({Nome:s,Ativo:'sim'})), maquinas: db.maquinas.map(m=>({Nome:m.nome,Sala:m.sala,Tag:m.tag,Ativo:'sim'})) },
+        user: { Nome: CU.nome, Login: CU.login },
+        gsUrl: API_URL }
+    );
+  }
+  if (pid === 'compras-acompanhamento') {
+    ComprasAcompanhamento.render(
+      document.getElementById('pg-compras-acompanhamento'),
+      { cache: {}, user: { Nome: CU.nome, Login: CU.login, Tipo_Acesso: CU.tipo },
+        gsUrl: API_URL }
+    );
+  }
   updateNavDots();
 }
 
