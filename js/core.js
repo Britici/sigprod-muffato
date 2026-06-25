@@ -124,7 +124,7 @@ let db = {
 const ROLES = {
   administracao: {
     label: 'Administração',
-    menus: ['dashboard','planejadas','executadas','abertura','inspecao', 'pcm', 'solicitacao','ativos','usuarios']
+    menus: ['dashboard','planejadas','executadas','abertura','inspecao','pcm','solicitacao','ativos','usuarios','compras-solicitacao','compras-acompanhamento']
   },
   manutencao: {
     label: 'Manutenção',
