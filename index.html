@@ -868,9 +868,6 @@ function showPage(pid) {
   }
   if (pid === 'planejamento') { populateSalas('pl'); }
   if (pid === 'compras-solicitacao') {
-      ComprasSolicitacao.render(
-        document.getElementById('pg-compras-solicitacao'),
-        if (pid === 'compras-solicitacao') {
     const salasFormatted = db.salas.map(s => ({ Nome: s, Ativo: 'sim' }));
     const maquinasFormatted = db.maquinas.map(m => ({ Nome: m.nome, Sala: m.sala, Tag: m.tag, Ativo: 'sim' }));
     ComprasSolicitacao.render(
@@ -885,17 +882,6 @@ function showPage(pid) {
       document.getElementById('pg-compras-acompanhamento'),
       { cache: {},
         user: { Nome: CU.nome, Login: CU.login, Tipo_Acesso: CU.tipo },
-        gsUrl: API_URL }
-    );
-  }
-        user: { Nome: CU.nome, Login: CU.login },
-        gsUrl: API_URL }
-    );
-  }
-  if (pid === 'compras-acompanhamento') {
-    ComprasAcompanhamento.render(
-      document.getElementById('pg-compras-acompanhamento'),
-      { cache: {}, user: { Nome: CU.nome, Login: CU.login, Tipo_Acesso: CU.tipo },
         gsUrl: API_URL }
     );
   }
