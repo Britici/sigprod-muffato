@@ -14,7 +14,7 @@
     s.id = CSS_ID;
     s.textContent = `
 /* SIGMAN Compras – Solicitação */
-.csl-wrap{font-family:inherit}
+.csl-wrap{padding:20px;max-width:960px;margin:0 auto;font-family:inherit}
 .csl-header{display:flex;align-items:center;gap:14px;margin-bottom:24px}
 .csl-header h2{margin:0;font-size:1.25rem;font-weight:700;color:#e2e8f0}
 .csl-header p{margin:4px 0 0;font-size:.8rem;color:#64748b}
@@ -143,8 +143,12 @@
 
     return `
 <div class="csl-wrap">
-  <div class="ph">
-    <div class="pt"><small>PCM · Compras</small>Solicitação de Compras</div>
+  <div class="csl-header">
+    <div class="csl-header-icon">🛒</div>
+    <div>
+      <h2>Solicitação de Compras</h2>
+      <p>Preencha os campos obrigatórios e envie para o fluxo de aprovação</p>
+    </div>
   </div>
 
   <form id="form-csl" novalidate autocomplete="off">
