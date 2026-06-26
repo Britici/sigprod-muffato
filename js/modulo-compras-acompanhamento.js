@@ -235,7 +235,7 @@
   /* ── SKELETON ─────────────────────────────────────────────────────── */
   function _buildSkeleton() {
     return `
-<div class="cac-wrap">
+<div class="ph">
   <div class="cac-header">
     <div class="cac-header-left">
       <div class="cac-header-icon">📦</div>
