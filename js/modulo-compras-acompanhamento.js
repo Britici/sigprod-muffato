@@ -394,7 +394,7 @@
   function _buildCard(ordem) {
     const pri        = Number(ordem.Prioridade) || 2;
     const priLabel   = PRIORIDADE_LABELS[pri] || '';
-    const isAdmin    = (_opts.user || {}).Tipo_Acesso === 'Administração';
+    const isAdmin    = (_opts.user || {}).Tipo_Acesso === 'administracao';
     const isConcluida = ordem.Status === 'concluida' || ordem.Status === 'orcamento_recusado';
     const atrasada   = !isConcluida && _estaAtrasada(ordem);
 
