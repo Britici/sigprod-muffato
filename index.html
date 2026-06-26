@@ -650,7 +650,8 @@
 <script src="js/modais-helpers.js"></script>
 <script src="js/preventiva.js"></script>
 <script src="js/inspecao-template.js"></script>
-    
+<script src="js/usuarios.js"></script>
+  
 <script>
 // ╔══════════════════════════════════════════════════════════════════╗
 // ║  SIGMAN Enterprise — JavaScript v4 (app principal)              ║
@@ -3102,24 +3103,6 @@ function salvarEdit() {
       Descricao_Planejada:p.desc
     });
   }
-}
-
-// ══════════════════════════════════════════════════════════════════════
-// USUÁRIOS (aba dedicada, só admin)
-// ══════════════════════════════════════════════════════════════════════
-function renderUsuarios() {
-  const ul = document.getElementById('pg-ul');
-  if (!ul) return;
-  ul.innerHTML = db.usuarios.length === 0
-    ? '<div class="empty"><div class="ei">👥</div><p>Nenhum usuário.</p></div>'
-    : db.usuarios.map(u => `
-        <div class="edit-row">
-          <div>
-            <div style="font-size:13px;font-weight:500">${u.nome}</div>
-            <div style="font-size:11px;color:var(--txt3)">@${u.login}</div>
-          </div>
-          ${roleBadge(u.tipo)}
-        </div>`).join('');
 }
 
 init();
