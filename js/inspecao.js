@@ -326,5 +326,5 @@ function imprimirInspDiaria() {
     <div><div class="assinatura">Visto do Supervisor</div></div>
   </div>
   <script>window.print();<\/script></body></html>`);
-  win.document.close();  
-   
+  win.document.close();
+} 
