@@ -3,6 +3,7 @@
    Muffato Foods | PCM · Compras
    Integração: ComprasAcompanhamento.render(el, { cache, user, gsUrl })
    ═══════════════════════════════════════════════════════════════════════ */
+
 (function (global) {
   'use strict';
 

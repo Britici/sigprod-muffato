@@ -1,11 +1,8 @@
 /* ══════════════════════════════════════════════════════════════════
-   SIGMAN — Core: Configuração, Estado Global e Camada de API
+   SIGMAN — USUÁRIOS (aba dedicada, só admin)
    Muffato Foods
    ══════════════════════════════════════════════════════════════════ */
 
-// ══════════════════════════════════════════════════════════════════════
-// USUÁRIOS (aba dedicada, só admin)
-// ══════════════════════════════════════════════════════════════════════
 function renderUsuarios() {
   const ul = document.getElementById('pg-ul');
   if (!ul) return;

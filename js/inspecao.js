@@ -327,4 +327,5 @@ function imprimirInspDiaria() {
   </div>
   <script>window.print();<\/script></body></html>`);
   win.document.close();
-} 
+}
+   

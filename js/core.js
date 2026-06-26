@@ -4,8 +4,7 @@
    ORDEM DE CARREGAMENTO: este arquivo deve vir ANTES do script
    principal no index.html.
    ══════════════════════════════════════════════════════════════════ */
-
-                    
+   
 const API_URL    = 'https://script.google.com/macros/s/AKfycbwzcntvx4_QfBYotW2Sz2H8TiwprqkmAyWolYlbIeCfTR2Uhj2VIgVC7Mun1mTaFXohuA/exec';
 const USE_API    = true;   // false = modo offline (só localStorage)
 const POLL_MS    = 180000;  // Atualização automática a cada 3 minutos
@@ -124,7 +123,7 @@ let db = {
 const ROLES = {
   administracao: {
     label: 'Administração',
-    menus: ['dashboard','planejadas','executadas','abertura','inspecao','pcm','solicitacao','ativos','usuarios','compras-solicitacao','compras-acompanhamento']
+    menus: ['dashboard','planejadas','executadas','abertura','inspecao', 'pcm', 'solicitacao','ativos','usuarios']
   },
   manutencao: {
     label: 'Manutenção',
