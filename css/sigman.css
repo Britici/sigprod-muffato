@@ -359,3 +359,15 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
 #mb-racr .fa {
   gap: 8px;
 } 
+
+/* Font variant small-caps — padrão global SIGMAN */
+label,
+.lbl,
+.section-title,
+.csl-section-title,
+.cac-prazos-toggle,
+.cac-modal .mf label,
+[class$="-title"],
+[class$="-label"] {
+  font-variant: small-caps !important;
+}
