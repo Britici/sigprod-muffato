@@ -201,14 +201,6 @@
     return `
 <div class="csl-wrap">
 
-  <!-- HEADER -->
-  <div class="csl-header">
-    <div>
-      <p>PCM</p>
-      <h2>Solicitação de Compras</h2>
-    </div>
-  </div>
-
   <form id="form-csl" novalidate autocomplete="off">
 
     <!-- IDENTIFICAÇÃO -->
