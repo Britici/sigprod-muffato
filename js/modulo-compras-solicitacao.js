@@ -20,7 +20,7 @@
 .csl-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;
   padding-bottom:16px;border-bottom:1px solid var(--bord)}
 .csl-header-icon{font-size:1.8rem;line-height:1}
-.csl-header h2{margin:0;font-size:1.15rem;font-weight:700;color:var(--txt1)}
+.csl-header h2{margin:0;font-size:1.15rem;font-variant:small-caps;font-weight:700;color:var(--txt1)}
 .csl-header p{margin:4px 0 0;font-size:.8rem;color:var(--txt3)}
 
 /* Seções — mesmo padrão de abertura-os */
@@ -33,7 +33,7 @@
 }
 .csl-section-title{
   display:flex;align-items:center;gap:8px;
-  font-size:.72rem;font-weight:700;
+  font-size:.72rem;font-variant:small-caps;font-weight:700;
   letter-spacing:.1em;text-transform:uppercase;
   font-variant:small-caps;
   color:var(--txt2);margin-bottom:16px
@@ -47,7 +47,7 @@
 /* Campos — mesma tipografia e cores do abertura-os */
 .csl-field{display:flex;flex-direction:column;gap:5px;margin-bottom:2px}
 .csl-field label{
-  font-size:.75rem;font-weight:700;
+  font-size:.75rem;font-variant:small-caps;font-weight:700;
   color:var(--txt2);
   font-variant:small-caps;
   text-transform:uppercase;letter-spacing:.07em
