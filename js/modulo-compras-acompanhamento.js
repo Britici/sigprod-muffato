@@ -13,14 +13,14 @@
     const s = document.createElement('style');
     s.id = CSS_ID;
     s.textContent = `
-.cac-wrap{padding:20px;max-width:1100px;margin:0 auto;font-family:inherit}
+.cac-wrap{padding:20px;font-family:inherit}
 
 /* Header */
 .cac-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
   margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--bord)}
 .cac-header-left{display:flex;align-items:center;gap:14px}
 .cac-header-icon{font-size:1.8rem;line-height:1}
-.cac-header h2{margin:0;font-size:1.15rem;font-weight:700;color:var(--txt1)}
+.cac-header h2{margin:0;font-size:1.15rem;font-variant:small-caps;font-weight:700;color:var(--txt1)}
 .cac-header p{margin:4px 0 0;font-size:.8rem;color:var(--txt3)}
 .btn-cac-refresh{padding:8px 16px;border-radius:7px;border:1px solid var(--bord);
   background:transparent;color:var(--txt2);font-size:.82rem;cursor:pointer;transition:background .2s,color .2s}
@@ -33,10 +33,10 @@
 .cac-prazos-toggle{
   display:flex;align-items:center;justify-content:space-between;
   padding:11px 16px;cursor:pointer;user-select:none;
-  font-size:.8rem;font-weight:700;color:var(--txt2);
+  font-size:.8rem;font-weight:700;font-variant:small-caps;color:var(--txt2);
   text-transform:uppercase;letter-spacing:.07em}
 .cac-prazos-toggle:hover{background:rgba(255,255,255,.03)}
-.cac-prazos-toggle span{font-size:.75rem;color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0}
+.cac-prazos-toggle span{font-size:.75rem;font-variant:small-caps;color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0}
 .cac-prazos-body{display:none;overflow-x:auto;padding:0 0 4px}
 .cac-prazos-body.open{display:block}
 .cac-prazos-table{width:100%;border-collapse:collapse;font-size:.75rem}
@@ -204,7 +204,7 @@
   padding:14px 20px;border-top:1px solid var(--bord)}
 
 .cac-modal .mf{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.cac-modal .mf label{font-size:.73rem;font-weight:700;color:var(--txt2);
+.cac-modal .mf label{font-size:.73rem;font-variant:small-caps;font-weight:700;color:var(--txt2);
   text-transform:uppercase;letter-spacing:.07em}
 .cac-modal .mf input,.cac-modal .mf textarea,.cac-modal .mf select{
   background:var(--bg);border:1px solid var(--bord);color:var(--txt1);
