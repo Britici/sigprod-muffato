@@ -14,7 +14,7 @@
     s.id = CSS_ID;
     s.textContent = `
 /* SIGMAN Compras – Solicitação | usa variáveis globais do sigman.css */
-.csl-wrap{padding:20px;max-width:960px;margin:0 auto;font-family:inherit}
+.csl-wrap{padding:20px;font-family:inherit}
 
 /* Header igual ao padrão das outras páginas do SIGMAN */
 .csl-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;
@@ -35,6 +35,7 @@
   display:flex;align-items:center;gap:8px;
   font-size:.72rem;font-weight:700;
   letter-spacing:.1em;text-transform:uppercase;
+  font-variant:small-caps;
   color:var(--txt2);margin-bottom:16px
 }
 .csl-section-dot{width:3px;height:16px;background:#C41230;border-radius:2px;flex-shrink:0}
@@ -48,6 +49,7 @@
 .csl-field label{
   font-size:.75rem;font-weight:700;
   color:var(--txt2);
+  font-variant:small-caps;
   text-transform:uppercase;letter-spacing:.07em
 }
 .csl-field .req{color:#C41230}
