@@ -304,7 +304,6 @@
 <div class="cac-wrap">
   <div class="cac-header">
     <div class="cac-header-left">
-      <div class="cac-header-icon">📦</div>
       <div>
         <h2>Acompanhamento das Ordens de Compra</h2>
         <p>Monitoramento em tempo real do fluxo de aquisições</p>
