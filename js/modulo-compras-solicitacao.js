@@ -203,10 +203,9 @@
 
   <!-- HEADER -->
   <div class="csl-header">
-    <div class="csl-header-icon">🛒</div>
     <div>
+      <p>PCM</p>
       <h2>Solicitação de Compras</h2>
-      <p>Preencha os campos obrigatórios e envie para o fluxo de aprovação</p>
     </div>
   </div>
 
