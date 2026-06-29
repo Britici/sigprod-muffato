@@ -305,8 +305,8 @@
   <div class="cac-header">
     <div class="cac-header-left">
       <div>
+        <p>PCM</p>
         <h2>Acompanhamento das Ordens de Compra</h2>
-        <p>Monitoramento em tempo real do fluxo de aquisições</p>
       </div>
     </div>
     <button class="btn-cac-refresh" id="cac-btn-refresh">⟳ Atualizar</button>
