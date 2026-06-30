@@ -15,17 +15,6 @@
     s.textContent = `
 .cac-wrap{padding:20px;font-family:inherit}
 
-/* Header */
-.cac-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-  margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--bord)}
-.cac-header-left{display:flex;align-items:center;gap:14px}
-.cac-header-icon{font-size:1.8rem;line-height:1}
-.cac-header h2{margin:0;font-size:1.15rem;font-variant:small-caps;font-weight:700;color:var(--txt1)}
-.cac-header p{margin:4px 0 0;font-size:.8rem;color:var(--txt3)}
-.btn-cac-refresh{padding:8px 16px;border-radius:7px;border:1px solid var(--bord);
-  background:transparent;color:var(--txt2);font-size:.82rem;cursor:pointer;transition:background .2s,color .2s}
-.btn-cac-refresh:hover{background:var(--surf2);color:var(--txt1)}
-
 /* ── Card de Prazos ── */
 .cac-prazos-card{
   background:var(--surf2);border:1px solid var(--bord);
@@ -290,28 +279,22 @@
   let _opts     = {};
   let _ordens   = [];
   let _abaAtiva = 'em_andamento';
+  let _lastEl   = null;
 
   /* ── PUBLIC ───────────────────────────────────────────────────────── */
   async function render(el, opts) {
-    _opts = opts;
-    el.innerHTML = _buildSkeleton();
-    await _carregarOrdens(el);
-  }
+     _opts = opts;
+     const body = el.querySelector('#pg-compras-acompanhamento-body') || el;
+     _lastEl = body;
+     body.innerHTML = _buildSkeleton();
+     await _carregarOrdens(body);
+   }
 
   /* ── SKELETON ─────────────────────────────────────────────────────── */
   function _buildSkeleton() {
     return `
 <div class="cac-wrap">
-  <div class="cac-header">
-    <div class="cac-header-left">
-      <div>
-        <p>PCM</p>
-        <h2>Acompanhamento das Ordens de Compra</h2>
-      </div>
-    </div>
-    <button class="btn-cac-refresh" id="cac-btn-refresh">⟳ Atualizar</button>
-  </div>
-
+  
   <!-- Card de Prazos por Prioridade -->
   <div class="cac-prazos-card">
     <div class="cac-prazos-toggle" id="cac-prazos-toggle">
@@ -401,7 +384,6 @@
 
   /* ── EVENTS TOP ───────────────────────────────────────────────────── */
   function _bindTopEvents(el) {
-    el.querySelector('#cac-btn-refresh').addEventListener('click', () => _carregarOrdens(el));
 
     /* Toggle tabela de prazos */
     el.querySelector('#cac-prazos-toggle').addEventListener('click', function () {
@@ -895,6 +877,9 @@
   }
 
   /* ── EXPORT ───────────────────────────────────────────────────────── */
-  global.ComprasAcompanhamento = { render };
+  global.ComprasAcompanhamento = {
+     render,
+     refresh: () => { if (_lastEl) _carregarOrdens(_lastEl); }
+   };
 
 })(window);
