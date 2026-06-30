@@ -175,11 +175,12 @@
 
   /* ── PUBLIC ───────────────────────────────────────────────────────── */
   function render(el, opts) {
-    _fotos = [];
-    const { cache = {}, user = {}, gsUrl } = opts;
-    el.innerHTML = _buildHTML(cache, user);
-    _bindEvents(el, opts);
-  }
+     _fotos = [];
+     const { cache = {}, user = {}, gsUrl } = opts;
+     const body = el.querySelector('#pg-compras-solicitacao-body') || el;
+     body.innerHTML = _buildHTML(cache, user);
+     _bindEvents(body, opts);
+   }
 
   /* ── HTML ─────────────────────────────────────────────────────────── */
   function _buildHTML(cache, user) {
@@ -200,7 +201,6 @@
 
     return `
 <div class="csl-wrap">
-
   <form id="form-csl" novalidate autocomplete="off">
 
     <!-- IDENTIFICAÇÃO -->
