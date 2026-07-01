@@ -255,8 +255,8 @@
      2: [2, 3, 5, 3, 2],
      3: [7,15, 7, 7,10],
      4: [7,30,13,10,30]
-   }
-   PRAZO_NF = 7
+   };
+   const PRAZO_NF = 7;
    
    function _prazoEtapa(pri, idx) {
      const arr = PRAZOS_ETAPAS[pri] || PRAZOS_ETAPAS[2];
