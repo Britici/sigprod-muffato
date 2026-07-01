@@ -257,7 +257,6 @@
      4: [7,30,13,10,30]
    }
    PRAZO_NF = 7
-   TOTAIS = { 1:7, 2:21, 3:53, 4:97 }  // soma(etapas) + 7
    
    function _prazoEtapa(pri, idx) {
      const arr = PRAZOS_ETAPAS[pri] || PRAZOS_ETAPAS[2];
