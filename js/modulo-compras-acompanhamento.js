@@ -156,11 +156,13 @@
 .cac-btn-recusar:hover{background:rgba(239,68,68,.2)}
 
 /* Fotos no card */
-.cac-fotos-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;
-  padding-top:12px;border-top:1px solid var(--bord)}
-.cac-fotos-grid a img{width:64px;height:64px;object-fit:cover;border-radius:6px;
-  border:1px solid var(--bord);transition:transform .15s;display:block}
-.cac-fotos-grid a:hover img{transform:scale(1.06)}
+.cac-photo-thumb{width:64px;height:64px;object-fit:cover;border-radius:6px;
+  border:1px solid var(--bord);cursor:zoom-in;transition:transform .15s;display:block}
+.cac-photo-thumb:hover{transform:scale(1.06)}
+.cac-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;
+  display:none;align-items:center;justify-content:center;cursor:zoom-out}
+.cac-lightbox.open{display:flex}
+.cac-lightbox img{max-width:92vw;max-height:92vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
 .cac-fotos-label{font-size:.68rem;font-weight:700;color:var(--txt3);
   text-transform:uppercase;letter-spacing:.07em;width:100%;margin-top:4px}
 
@@ -300,8 +302,25 @@
   let _abaAtiva = 'em_andamento';
   let _lastEl   = null;
 
-  /* ── PUBLIC ───────────────────────────────────────────────────────── */
+   /* ── LIGHTBOX ─────────────────────────────────────────────────────── */
+  function _initLightbox() {
+    if (document.getElementById('cac-lightbox')) return;
+    document.body.insertAdjacentHTML('beforeend',
+      ``);
+    document.getElementById('cac-lightbox').addEventListener('click', function() {
+      this.classList.remove('open');
+    });
+    document.body.addEventListener('click', e => {
+      const t = e.target.closest('.cac-photo-thumb');
+      if (!t) return;
+      document.getElementById('cac-lightbox-img').src = t.dataset.full;
+      document.getElementById('cac-lightbox').classList.add('open');
+    });
+  }
+   
+   /* ── PUBLIC ───────────────────────────────────────────────────────── */
   async function render(el, opts) {
+     _initLightbox();
      _opts = opts;
      const body = el.querySelector('#pg-compras-acompanhamento-body') || el;
      _lastEl = body;
@@ -337,12 +356,10 @@
         </thead>
         <tbody>
           ${[1,2,3,4].map(p => {
-            const pr = PRAZOS[p];
-            return `<tr>
-              <td><span class="cac-pri-badge p${p}">${p}</span></td>
-              ${pr.map((d,i) => `<td${i===5?' class="prazo-red"':''}>${d===0?'0 dias':'Até '+d+' dia'+(d>1?'s':'')}</td>`).join('')}
-              <td class="prazo-total">${TOTAIS[p]} DIAS</td>
-            </tr>`;
+            const arr5 = PRAZOS_ETAPAS[p];
+            const etapa6 = arr5.reduce((a,b)=>a+b,0);
+            const pr = [...arr5, etapa6, PRAZO_NF];
+            return ``;
           }).join('')}
         </tbody>
       </table>
@@ -516,13 +533,7 @@
 
     /* Fotos iniciais */
     const fotosIniciaisHtml = fotos.length ? `
-      <div class="cac-fotos-grid">
-        <span class="cac-fotos-label">📎 Fotos da Solicitação</span>
-        ${fotos.map(url => `
-          <a href="${_esc(url)}" target="_blank" rel="noopener">
-            <img src="${_esc(url)}" alt="Foto">
-          </a>`).join('')}
-      </div>` : '';
+      ` : '';
 
     /* Fotos e obs por etapa */
     const etapaObsHtml = ETAPAS.filter(e => e.obsCol || e.fotoCol).map(e => {
@@ -530,13 +541,9 @@
       const foto = ordem[e.fotoCol] || '';
       if (!obs && !foto) return '';
       return `
-        <div class="cac-etapa-obs">
-          <b>Etapa ${e.idx+1} — ${e.label}</b>
-          ${obs  ? `<div>${_esc(obs)}</div>` : ''}
-          ${foto ? `<div style="margin-top:6px">
-            <a href="${_esc(foto)}" target="_blank" rel="noopener" style="font-size:.75rem;color:#60a5fa">📷 Ver foto</a>
-          </div>` : ''}
-        </div>`;
+        ` : ''}
+          ${foto ? `` : ''}
+        `;
     }).join('');
 
     const etapa2Ok      = !!ordem.Data_Etapa2;
@@ -627,10 +634,8 @@
     const isAtual = ETAPAS.slice(0,idx).every(e=>!!ordem[e.col]);
     if (!isAtual) return 'pending';
     const pri       = Number(ordem.Prioridade)||2;
-    const prazoDias = (PRAZOS[pri]||PRAZOS[2])[idx];
-    const startDate = idx===0
-      ? new Date(ordem.Data_Solicitacao)
-      : new Date(ordem[ETAPAS[idx-1].col]);
+    const prazoDias = _prazoEtapa(pri, idx);
+    const startDate = _inicioEtapa(ordem, idx);
     if (isNaN(startDate.getTime())) return 'active-ok';
     const diff = (Date.now()-startDate.getTime())/86400000;
     return Math.floor(diff)>prazoDias?'active-late':'active-ok';
@@ -640,19 +645,16 @@
     return ETAPAS.some((_,idx)=>_getStepState(ordem,idx)==='active-late');
   }
 
-  function _prazoLabel(ordem,idx) {
-    const pri       = Number(ordem.Prioridade)||2;
-    const prazoDias = (PRAZOS[pri]||PRAZOS[2])[idx];
-    const startDate = idx===0
-      ? new Date(ordem.Data_Solicitacao)
-      : new Date(ordem[ETAPAS[idx-1].col]);
-    if (isNaN(startDate.getTime())) return '';
-    const diff = Math.floor((Date.now()-startDate.getTime())/86400000);
-    if (prazoDias===0) return diff===0?'Hoje':`+${diff}d`;
-    if (diff>prazoDias) return `+${diff-prazoDias}d atraso`;
-    const rest = prazoDias-diff;
-    return `${rest}d restante${rest===1?'':'s'}`;
-  }
+   function _prazoLabel(ordem,idx) {
+       const pri       = Number(ordem.Prioridade)||2;
+       const prazoDias = _prazoEtapa(pri, idx);
+       const startDate = _inicioEtapa(ordem, idx);
+       if (isNaN(startDate.getTime())) return '';
+       const diff = Math.floor((Date.now()-startDate.getTime())/86400000);
+       if (prazoDias===0) return diff===0?'Hoje':`+${diff}d`;
+       if (diff>prazoDias) return `+${diff-prazoDias}d atraso`;
+       const rest = prazoDias-diff;
+       return `${rest}d restante${rest===1?'':'...
 
   /* ── MODAL DE ETAPA ───────────────────────────────────────────────── */
   function _abrirModal(ordem, etapaIdx, el) {
@@ -688,10 +690,7 @@
     const fotoAtual = etapa.fotoCol ? (ordem[etapa.fotoCol] || '') : '';
 
     const fotoAtualHtml = fotoAtual
-      ? `<div style="margin-bottom:8px">
-           <span style="font-size:.75rem;color:var(--txt3)">Foto atual: </span>
-           <a href="${_esc(fotoAtual)}" target="_blank" style="font-size:.75rem;color:#60a5fa">📷 Ver foto salva</a>
-         </div>` : '';
+      ? `` : '';
 
     const html = `
 <div class="cac-modal-overlay" id="cac-modal-overlay">
