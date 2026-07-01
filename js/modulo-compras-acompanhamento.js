@@ -251,12 +251,13 @@
 
   /* ── CONSTANTS ────────────────────────────────────────────────────── */
   const PRAZOS_ETAPAS = {
-  1: [0,  0,  0,  0,  0],
-     2: [2,  3,  5,  3,  2],
-     3: [7, 15,  7,  7, 10],
-     4: [7, 30, 13, 10, 30]
-   };
-   const PRAZO_NF = 7;
+     1: [0, 0, 0, 0, 0],
+     2: [2, 3, 5, 3, 2],
+     3: [7,15, 7, 7,10],
+     4: [7,30,13,10,30]
+   }
+   PRAZO_NF = 7
+   TOTAIS = { 1:7, 2:21, 3:53, 4:97 }  // soma(etapas) + 7
    
    function _prazoEtapa(pri, idx) {
      const arr = PRAZOS_ETAPAS[pri] || PRAZOS_ETAPAS[2];
@@ -302,16 +303,19 @@
   let _abaAtiva = 'em_andamento';
   let _lastEl   = null;
 
-   /* ── LIGHTBOX ─────────────────────────────────────────────────────── */
+  /* ── LIGHTBOX ─────────────────────────────────────────────────────── */
   function _initLightbox() {
     if (document.getElementById('cac-lightbox')) return;
-    document.body.insertAdjacentHTML('beforeend',
-      ``);
-    document.getElementById('cac-lightbox').addEventListener('click', function() {
+    var div = document.createElement('div');
+    div.id = 'cac-lightbox';
+    div.className = 'cac-lightbox';
+    div.innerHTML = '<img id="cac-lightbox-img" src="" alt="">';
+    document.body.appendChild(div);
+    div.addEventListener('click', function() {
       this.classList.remove('open');
     });
-    document.body.addEventListener('click', e => {
-      const t = e.target.closest('.cac-photo-thumb');
+    document.body.addEventListener('click', function(e) {
+      var t = e.target.closest('.cac-photo-thumb');
       if (!t) return;
       document.getElementById('cac-lightbox-img').src = t.dataset.full;
       document.getElementById('cac-lightbox').classList.add('open');
@@ -356,11 +360,13 @@
         </thead>
         <tbody>
           ${[1,2,3,4].map(p => {
-            const arr5 = PRAZOS_ETAPAS[p];
-            const etapa6 = arr5.reduce((a,b)=>a+b,0);
-            const pr = [...arr5, etapa6, PRAZO_NF];
-            return ``;
-          }).join('')}
+           const arr5 = PRAZOS_ETAPAS[p];
+           const etapa6 = arr5.reduce((a,b)=>a+b,0);
+           const pr = [...arr5, etapa6, PRAZO_NF];
+           return '<tr><td><span class="cac-pri-badge p' + p + '">' + p + '</span></td>' +
+             pr.map((d,i) => '<td' + (i===5?' class="prazo-red"':'') + '>' + (d===0?'0 dias':'Até '+d+' dia'+(d>1?'s':'')) + '</td>').join('') +
+             '<td class="prazo-total">' + TOTAIS[p] + ' DIAS</td></tr>';
+         }).join('')}
         </tbody>
       </table>
     </div>
@@ -532,18 +538,24 @@
     const fotos  = _parseFotos(ordem.Fotos);
 
     /* Fotos iniciais */
-    const fotosIniciaisHtml = fotos.length ? `
-      ` : '';
+    const fotosIniciaisHtml = fotos.length
+      ? '<div class="cac-fotos-grid"><span class="cac-fotos-label">📎 Fotos da Solicitação</span>' +
+        fotos.map(url =>
+          '<img class="cac-photo-thumb" src="' + _esc(url) + '" data-full="' + _esc(url) + '" alt="Foto">'
+        ).join('') +
+        '</div>'
+      : '';
 
     /* Fotos e obs por etapa */
     const etapaObsHtml = ETAPAS.filter(e => e.obsCol || e.fotoCol).map(e => {
       const obs  = ordem[e.obsCol]  || '';
       const foto = ordem[e.fotoCol] || '';
       if (!obs && !foto) return '';
-      return `
-        ` : ''}
-          ${foto ? `` : ''}
-        `;
+      let html = '<div class="cac-etapa-obs"><b>Etapa ' + (e.idx+1) + ' — ' + e.label + '</b>';
+      if (obs)  html += '<div>' + _esc(obs) + '</div>';
+      if (foto) html += '<div style="margin-top:6px"><img class="cac-photo-thumb" src="' + _esc(foto) + '" data-full="' + _esc(foto) + '" alt="Foto etapa"></div>';
+      html += '</div>';
+      return html;
     }).join('');
 
     const etapa2Ok      = !!ordem.Data_Etapa2;
@@ -690,7 +702,11 @@
     const fotoAtual = etapa.fotoCol ? (ordem[etapa.fotoCol] || '') : '';
 
     const fotoAtualHtml = fotoAtual
-      ? `` : '';
+      ? '<div style="margin-bottom:8px">' +
+          '<span style="font-size:.75rem;color:var(--txt3);display:block;margin-bottom:4px">Foto atual:</span>' +
+          '<img class="cac-photo-thumb" src="' + _esc(fotoAtual) + '" data-full="' + _esc(fotoAtual) + '" alt="Foto atual">' +
+        '</div>'
+      : '';
 
     const html = `
 <div class="cac-modal-overlay" id="cac-modal-overlay">
