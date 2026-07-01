@@ -248,13 +248,32 @@
   }
 
   /* ── CONSTANTS ────────────────────────────────────────────────────── */
-  const PRAZOS = {
-    1: [0,  0,  0,  0,  0,  0,  7],
-    2: [2,  3,  5,  3,  2, 15,  7],
-    3: [7, 15,  7,  7, 10, 46,  7],
-    4: [7, 30, 13, 10, 30, 90,  7]
-  };
-  const TOTAIS = { 1: 7, 2: 21, 3: 60, 4: 90 };
+  const PRAZOS_ETAPAS = {
+  1: [0,  0,  0,  0,  0],
+     2: [2,  3,  5,  3,  2],
+     3: [7, 15,  7,  7, 10],
+     4: [7, 30, 13, 10, 30]
+   };
+   const PRAZO_NF = 7;
+   
+   function _prazoEtapa(pri, idx) {
+     const arr = PRAZOS_ETAPAS[pri] || PRAZOS_ETAPAS[2];
+     if (idx <= 4) return arr[idx];
+     if (idx === 5) return arr.reduce((a,b)=>a+b,0);
+     return PRAZO_NF;
+   }
+   
+   function _inicioEtapa(ordem, idx) {
+     if (idx === 0 || idx === 5) return new Date(ordem.Data_Solicitacao);
+     return new Date(ordem[ETAPAS[idx-1].col]);
+   }
+   
+   const TOTAIS = {
+     1: PRAZOS_ETAPAS[1].reduce((a,b)=>a+b,0) + PRAZO_NF,
+     2: PRAZOS_ETAPAS[2].reduce((a,b)=>a+b,0) + PRAZO_NF,
+     3: PRAZOS_ETAPAS[3].reduce((a,b)=>a+b,0) + PRAZO_NF,
+     4: PRAZOS_ETAPAS[4].reduce((a,b)=>a+b,0) + PRAZO_NF
+   };
   const PRIORIDADE_LABELS = { 1:'Emergencial', 2:'Urgente', 3:'Médio', 4:'Baixo' };
 
   /* ETAPAS — obsCol e fotoCol mapeiam para colunas individuais no Sheets */
