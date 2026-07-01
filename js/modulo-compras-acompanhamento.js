@@ -666,7 +666,8 @@
        if (prazoDias===0) return diff===0?'Hoje':`+${diff}d`;
        if (diff>prazoDias) return `+${diff-prazoDias}d atraso`;
        const rest = prazoDias-diff;
-       return `${rest}d restante${rest===1?'':'...
+       return `${rest}d restante${rest===1?'':'s'}`;
+   }
 
   /* ── MODAL DE ETAPA ───────────────────────────────────────────────── */
   function _abrirModal(ordem, etapaIdx, el) {
