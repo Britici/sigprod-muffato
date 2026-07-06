@@ -53,7 +53,7 @@ function renderExec() {
     if (c === col) el.classList.add(dir);
   });
   const tb = document.getElementById('tb-exec');
-  if (!data.length) { tb.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="10"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
   tb.innerHTML = data.map(o => `<tr>
      <td style="white-space:nowrap;width:110px">
         <span style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
@@ -66,6 +66,16 @@ function renderExec() {
     <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
     <td style="font-size:12px">${o.manut}</td>
     <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
+        <td style="width:52px;text-align:center">
+      ${o.fotoUrl
+        ? `<a href="${driveThumb(o.fotoUrl)}" target="_blank">
+             <img src="${driveThumb(o.fotoUrl)}"
+               style="width:44px;height:44px;object-fit:cover;border-radius:6px;
+                      border:1px solid var(--bord);cursor:zoom-in;display:block"
+               alt="Foto" onerror="this.style.display='none'">
+           </a>`
+        : `<span style="font-size:11px;color:var(--txt3)">—</span>`}
+    </td>
     <td><div style="display:flex;gap:4px">
       <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>
       <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
