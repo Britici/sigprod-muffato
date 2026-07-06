@@ -221,6 +221,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle;color:var(--txt)}
 .photo-zone{border:2px dashed var(--bord2);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:border-color .2s}
 .photo-zone:hover,.photo-zone.drag{border-color:var(--red)}
 .photo-thumb{max-width:120px;max-height:120px;border-radius:var(--rs);object-fit:cover;border:2px solid var(--bord)}
+.cac-fotos-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
   
 /* Dashboard refresh bar */
 .dash-rf{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);margin-bottom:10px;font-size:12px;color:var(--txt3)}
