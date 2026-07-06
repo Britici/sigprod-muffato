@@ -76,6 +76,16 @@ function renderExec() {
            </a>`
         : `<span style="font-size:11px;color:var(--txt3)">—</span>`}
     </td>
+        <td style="width:52px;text-align:center">
+      ${o.fotoUrl
+        ? `<a href="${driveThumb(o.fotoUrl)}" target="_blank">
+             <img src="${driveThumb(o.fotoUrl)}"
+               style="width:44px;height:44px;object-fit:cover;border-radius:6px;
+                      border:1px solid var(--bord);cursor:zoom-in;display:block"
+               alt="Foto" onerror="this.style.display='none'">
+           </a>`
+        : `<span style="font-size:11px;color:var(--txt3)">—</span>`}
+    </td>
     <td><div style="display:flex;gap:4px">
       <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>
       <button class="btn btn-d" onclick="delOS('${o.numero}')">✕</button>
