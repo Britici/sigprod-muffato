@@ -52,7 +52,7 @@ function renderExec() {
     el.classList.remove('asc','desc');
     if (c === col) el.classList.add(dir);
   });
-  const tb = document.getElementById('tb-exec');
+const tb = document.getElementById('tb-exec');
   if (!data.length) { tb.innerHTML = `<tr><td colspan="10"><div class="empty"><div class="ei">📋</div><p>Nenhuma ordem encontrada.</p></div></td></tr>`; return; }
   tb.innerHTML = data.map(o => `<tr>
      <td style="white-space:nowrap;width:110px">
@@ -62,21 +62,13 @@ function renderExec() {
         </span>
       </td>
     <td style="font-size:12px">${fd(o.data)}</td>
-    <td>${o.sala}</td><td><div>${o.maq}</div><div style="font-size:10px;color:var(--txt3)">${getCriticidadeBadge(o.maq)}</div></td>
-    <td>${tipoBadge(o.tipo)}</td><td>${prio(o.prioridade)}</td>
+    <td>${o.sala}</td>
+    <td><div>${o.maq}</div><div style="font-size:10px;color:var(--txt3)">${getCriticidadeBadge(o.maq)}</div></td>
+    <td>${tipoBadge(o.tipo)}</td>
+    <td>${prio(o.prioridade)}</td>
     <td style="font-size:12px">${o.manut}</td>
     <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
-        <td style="width:52px;text-align:center">
-      ${o.fotoUrl
-        ? `<a href="${driveThumb(o.fotoUrl)}" target="_blank">
-             <img src="${driveThumb(o.fotoUrl)}"
-               style="width:44px;height:44px;object-fit:cover;border-radius:6px;
-                      border:1px solid var(--bord);cursor:zoom-in;display:block"
-               alt="Foto" onerror="this.style.display='none'">
-           </a>`
-        : `<span style="font-size:11px;color:var(--txt3)">—</span>`}
-    </td>
-        <td style="width:52px;text-align:center">
+    <td style="width:52px;text-align:center">
       ${o.fotoUrl
         ? `<a href="${driveThumb(o.fotoUrl)}" target="_blank">
              <img src="${driveThumb(o.fotoUrl)}"
