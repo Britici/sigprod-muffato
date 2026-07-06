@@ -280,6 +280,13 @@ function normTime(v) {
   return '';
 }
 
+function driveThumb(url) {
+  if (!url) return url;
+  var m = url.match(/\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
+  if (!m) return url;
+  return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1000';
+}
+
 function normStr(v) { return v === null || v === undefined ? '' : String(v); }
 
 // ── Carrega todos os dados do Sheets ────────────────────────────────────
