@@ -949,23 +949,55 @@ let _photoBase64 = null;
 function previewPhoto(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Foto maior que 5MB. Redimensione.');
-    input.value = '';
-    return;
-  }
-  _photoFile = file;
+
   const reader = new FileReader();
   reader.onload = (e) => {
-    _photoBase64 = e.target.result.split(',')[1];
-    const prev = document.getElementById('ab-photo-preview');
-    prev.innerHTML = `
-      <img src="${e.target.result}" class="photo-thumb" alt="Foto OS">
-      <div style="font-size:12px;color:var(--txt2)">
-        <strong>${file.name}</strong><br>
-        <span style="color:var(--txt3)">${(file.size/1024).toFixed(0)} KB</span><br>
-        <button class="btn btn-sm" onclick="removePhoto(event)" style="margin-top:6px;background:rgba(196,18,48,.12);color:#ff4d65;border:1px solid rgba(196,18,48,.3);padding:3px 8px">🗑 Remover</button>
-      </div>`;
+    const img = new Image();
+    img.onload = () => {
+      // Dimensão máxima: 1920×1080, compressão até ~1 MB
+      const MAX_W = 1920, MAX_H = 1080, MAX_BYTES = 1 * 1024 * 1024;
+      let w = img.width, h = img.height;
+
+      // Redimensiona mantendo proporção se necessário
+      if (w > MAX_W || h > MAX_H) {
+        const ratio = Math.min(MAX_W / w, MAX_H / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+      // Comprime em JPEG reduzindo qualidade até caber em 1 MB
+      let quality = 0.92;
+      let dataUrl = canvas.toDataURL('image/jpeg', quality);
+      while (dataUrl.length * 0.75 > MAX_BYTES && quality > 0.4) {
+        quality -= 0.06;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      _photoBase64 = dataUrl.split(',')[1];
+      // Cria um File redimensionado para exibir o tamanho real ao usuário
+      const byteSize = Math.round(_photoBase64.length * 0.75 / 1024);
+
+      const prev = document.getElementById('ab-photo-preview');
+      prev.innerHTML = `
+        <img src="${dataUrl}" class="photo-thumb" alt="Foto OS">
+        <div style="font-size:12px;color:var(--txt2)">
+          <strong>${file.name}</strong><br>
+          <span style="color:var(--txt3)">${byteSize} KB (redimensionado)</span><br>
+          <button class="btn btn-sm" onclick="removePhoto(event)"
+            style="margin-top:6px;background:rgba(196,18,48,.12);color:#ff4d65;
+                   border:1px solid rgba(196,18,48,.3);padding:3px 8px">
+            🗑 Remover
+          </button>
+        </div>`;
+
+      // _photoFile continua sendo o original (só usado para o nome/extensão)
+      _photoFile = file;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
