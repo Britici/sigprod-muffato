@@ -98,15 +98,36 @@ function previewSolPhoto(input) {
   if (!file) return;
   _solPhotoFile = file;
   const reader = new FileReader();
-  reader.onload = (e) => {
-    _solPhotoBase64 = e.target.result.split(',')[1];
-    document.getElementById('sol-photo-preview').innerHTML = `
-      <img src="${e.target.result}" style="max-height:80px;max-width:120px;border-radius:4px;object-fit:cover" alt="Foto">
-      <div style="font-size:11px;color:var(--txt2);margin-top:4px">
-        <strong>${file.name}</strong><br>
-        <span style="color:var(--txt3)">${(file.size/1024).toFixed(0)} KB</span><br>
-        <button class="btn btn-sm" onclick="removeSolPhoto(event)" style="margin-top:5px;background:rgba(196,18,48,.12);color:#ff4d65;border:1px solid rgba(196,18,48,.3);padding:3px 8px">🗑 Remover</button>
-      </div>`;
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX_W = 1920, MAX_H = 1080, MAX_BYTES = 1 * 1024 * 1024;
+      let w = img.width, h = img.height;
+      if (w > MAX_W || h > MAX_H) {
+        const ratio = Math.min(MAX_W / w, MAX_H / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      let quality = 0.92;
+      let dataUrl = canvas.toDataURL('image/jpeg', quality);
+      while (dataUrl.length * 0.75 > MAX_BYTES && quality > 0.4) {
+        quality -= 0.06;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+      _solPhotoBase64 = dataUrl.split(',')[1];
+      const byteSize = Math.round(_solPhotoBase64.length * 0.75 / 1024);
+      document.getElementById('sol-photo-preview').innerHTML = `
+        <img src="${dataUrl}" style="max-height:80px;max-width:120px;border-radius:4px;object-fit:cover" alt="Foto">
+        <div style="font-size:11px;color:var(--txt2);margin-top:4px">
+          <strong>${file.name}</strong><br>
+          <span style="color:var(--txt3)">${byteSize} KB (redimensionado)</span><br>
+          <button class="btn btn-sm" onclick="removeSolPhoto(event)" style="margin-top:5px;background:rgba(196,18,48,.12);color:#ff4d65;border:1px solid rgba(196,18,48,.3);padding:3px 8px">🗑 Remover</button>
+        </div>`;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -212,8 +233,8 @@ function abrirConcluir(id, tipo) {
       ${item.desc?`<div style="font-size:12px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--bord)">${item.desc}</div>`:''}
       ${item.fotoUrl?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bord)">
         <div style="font-size:11px;font-weight:700;color:var(--txt3);font-variant:small-caps;margin-bottom:6px">📷 Foto da Solicitação</div>
-        <a href="${item.fotoUrl}" target="_blank">
-          <img src="${item.fotoUrl}" style="max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:contain;border:1px solid var(--bord);cursor:zoom-in" alt="Foto">
+        <a href="${driveThumb(item.fotoUrl)}" target="_blank">
+           <img src="${driveThumb(item.fotoUrl)}" style="max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:contain;border:1px solid var(--bord);cursor:zoom-in" alt="Foto">
         </a>
       </div>`:''}
     </div>`;
