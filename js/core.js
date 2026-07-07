@@ -148,16 +148,27 @@ let _dashAutoRf = false; // auto-refresh dashboard ativo?
 // ══════════════════════════════════════════════════════════════════════
 // API — comunicação com Google Sheets
 // ══════════════════════════════════════════════════════════════════════
-async function apiGet(params) {
+async function apiGet(params, _tentativa = 1) {
   if (!USE_API) return null;
+  const MAX_TENTATIVAS = 3;
+  const TIMEOUT_MS     = 35000; // 35s cobre o cold start do Apps Script
   try {
     const q   = Object.entries(params).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
-    const res = await fetch(API_URL + '?' + q, { signal: AbortSignal.timeout(15000) });
+    const res = await fetch(API_URL + '?' + q, { signal: AbortSignal.timeout(TIMEOUT_MS) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     return await res.json();
   } catch(e) {
-    if (e.name === 'TimeoutError') console.warn('[API GET] Timeout — Sheets demorou >15s');
-    else console.warn('[API GET]', e.message);
+    const isTimeout = e.name === 'TimeoutError' || e.name === 'AbortError';
+    console.warn(`[API GET] ${isTimeout ? 'Timeout' : 'Erro'} (tentativa ${_tentativa}/${MAX_TENTATIVAS}) — ${e.message}`);
+
+    if (_tentativa < MAX_TENTATIVAS) {
+      // Espera 3s antes de tentar novamente (deixa o Apps Script acordar)
+      await new Promise(r => setTimeout(r, 3000));
+      return apiGet(params, _tentativa + 1);
+    }
+
+    // Todas as tentativas falharam — avisa visualmente
+    showApiStatus('offline');
     return null;
   }
 }
@@ -169,7 +180,7 @@ async function apiPost(body) {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20000)
+      signal: AbortSignal.timeout(40000)
     });
     const json = await res.json();
     if (!json.ok) {
@@ -217,7 +228,7 @@ async function apiFlushQueue() {
 setInterval(async () => {
   const fila = JSON.parse(localStorage.getItem('sigman_fila') || '[]');
   if (fila.length > 0) await apiFlushQueue();
-}, 30000);
+}, 45000);
   
 function showApiStatus(status) {
   let el = document.getElementById('api-status-bar');
