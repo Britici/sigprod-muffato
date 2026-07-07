@@ -333,12 +333,9 @@ th.sortable.desc::after{content:' ▼';opacity:1;color:var(--red-l)}
 @keyframes pulse-rac{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.5)}}
 @keyframes pulse-color{0%,100%{background:var(--red)}50%{background:var(--red-d)}}
 .rac-dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;flex-shrink:0;animation:pulse-color 1.1s ease-in-out infinite}
-  display:inline-block;animation:pulse-rac 1.1s ease-in-out infinite;
-  vertical-align:middle;margin-left:6px;}
-</style>
 
-/* ── Loading screen + RACR customizado ── */
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── Loading screen ── */
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* RACR customizado */
 #racr-sala[disabled], #racr-equip[disabled] {
