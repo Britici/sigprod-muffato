@@ -16,6 +16,7 @@ function sortPlan(col) {
 }
 
 function renderPlan() {
+  populateSalaFilter('fp-sl');
   const t = today();
   let changed = false;
   db.planejadas.forEach(p => {
@@ -25,9 +26,21 @@ function renderPlan() {
     }
   });
   if (changed) saveDB();
-  const st = v('fp-st');
+
+  const tx  = (v('fp-tx') || '').toLowerCase();
+  const tp  = v('fp-tp');
+  const sl  = v('fp-sl');
+  const st  = v('fp-st');
+  const dtI = v('fp-dt-ini');
+  const dtF = v('fp-dt-fim');
+
   let data = [...db.planejadas];
-  if (st) data = data.filter(p => p.status === st);
+  if (tx)  data = data.filter(p => [p.numero, p.sala, p.maq, p.tipo].some(x => x && x.toLowerCase().includes(tx)));
+  if (tp)  data = data.filter(p => p.tipo === tp);
+  if (sl)  data = data.filter(p => p.sala === sl);
+  if (st)  data = data.filter(p => p.status === st);
+  if (dtI) data = data.filter(p => p.prazo >= dtI);
+  if (dtF) data = data.filter(p => p.prazo <= dtF);
 
   const { col, dir } = planSort;
   const prioMap = { 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
@@ -62,6 +75,39 @@ function renderPlan() {
       <button class="btn btn-d" onclick="delPlan('${p.numero}')">✕</button>
     </div></td>
   </tr>`).join('');
+}
+
+// Debounce para o campo de busca
+let _planSearchTimer = null;
+function renderPlanDebounced() {
+  clearTimeout(_planSearchTimer);
+  _planSearchTimer = setTimeout(renderPlan, 280);
+}
+
+function exportPlanCSV() {
+  const tp  = v('fp-tp');
+  const sl  = v('fp-sl');
+  const st  = v('fp-st');
+  const dtI = v('fp-dt-ini');
+  const dtF = v('fp-dt-fim');
+  let data = [...db.planejadas];
+  if (tp)  data = data.filter(p => p.tipo === tp);
+  if (sl)  data = data.filter(p => p.sala === sl);
+  if (st)  data = data.filter(p => p.status === st);
+  if (dtI) data = data.filter(p => p.prazo >= dtI);
+  if (dtF) data = data.filter(p => p.prazo <= dtF);
+  if (!data.length) { showToast('Sem dados para exportar com os filtros selecionados.', 'war'); return; }
+  const h = ['PL_Numero','Sala','Maquina','Tipo','Prioridade','Prazo','Horas_Turno','Status','Descricao'];
+  const rows = data.map(p => [
+    p.numero, p.sala, p.maq, p.tipo, p.prioridade||'',
+    p.prazo||'', p.horasTurno||'', p.status||'',
+    (p.desc||'').replace(/,/g,'|')
+  ]);
+  const csv = [h, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `SIGMAN_Planejadas_${today()}${tp?'_'+tp:''}${sl?'_'+sl:''}${st?'_'+st:''}.csv`;
+  a.click();
 }
 
 function editarPlan(id) {
