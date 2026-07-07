@@ -136,16 +136,27 @@
   </div>
     
    <!-- OS PLANEJADAS -->
-   <div class="pg" id="pg-planejadas">
-    <div class="ph"><div class="pt"><small>Gestão</small>O.S. Planejadas</div></div>
+      <div class="pg" id="pg-planejadas">
+    <div class="ph">
+     <div class="pt"><small>Gestão</small>O.S. Planejadas</div>
+     <button class="btn btn-gh btn-sm" onclick="exportPlanCSV()">⬇ Exportar com Filtros</button>
+    </div>
     <div class="fr">
+     <input type="text" id="fp-tx" placeholder="🔍 Buscar..." oninput="renderPlanDebounced()">
+     <select id="fp-tp" onchange="renderPlan()">
+      <option value="">Todos os Tipos</option>
+      <option>Corretiva</option><option>Inspeção</option><option>Melhoria</option><option>Preditiva</option><option>Preventiva</option>
+     </select>
+     <select id="fp-sl" onchange="renderPlan()"><option value="">Todas as Salas</option></select>
      <select id="fp-st" onchange="renderPlan()">
       <option value="">Todos os Status</option>
       <option>Pendente</option><option>Concluída</option><option>Atrasada</option>
      </select>
+     <input type="date" id="fp-dt-ini" title="Prazo inicial" onchange="renderPlan()">
+     <input type="date" id="fp-dt-fim" title="Prazo final" onchange="renderPlan()">
     </div>
     <div class="tw"><table><thead><tr>
-      <th class="sortable" id="ph-numero"     onclick="sortExec('numero')" style="width:100px;min-width:100px">OS #</th>
+      <th class="sortable" id="ph-numero"     onclick="sortPlan('numero')" style="width:100px;min-width:100px">OS #</th>
       <th class="sortable" id="ph-sala"       onclick="sortPlan('sala')">Sala</th>
       <th class="sortable" id="ph-maq"        onclick="sortPlan('maq')">Máquina</th>
       <th class="sortable" id="ph-tipo"       onclick="sortPlan('tipo')">Tipo</th>
