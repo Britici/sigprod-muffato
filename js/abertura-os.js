@@ -39,10 +39,13 @@ async function salvarOS() {
   showAlert('al-ab', `Registrando ${numero}...`, 'ok');
   // Upload da foto (async, não bloqueia)
   const fotoUrl = await uploadFotoOS(numero);
-  apiAppend('ordens',{OS_Numero:numero,Data:data||today(),Sala:item.sala,Maquina:item.maq,Tipo:item.tipo,
-    Prioridade:item.prioridade,Manutentor:manut,Hora_Inicio:ini,Hora_Fim:fim,Duracao_Min:durMin,
-    Tempo_Parada_Min:paradaMin,Problema:item.desc||'',Acao_Executada:desc,Origem:_ctp,
-    OS_Origem_Ref:item.numero,Foto_URL:item.fotoUrl||'',Criado_Em:agora});
+    apiAppend('ordens', {
+    OS_Numero:numero, Data:data, Sala:sala, Maquina:maq, Tipo:tipo, Prioridade:pr,
+    Manutentor:manut, Hora_Inicio:ini, Hora_Fim:fim, Duracao_Min:durMin,
+    Tempo_Parada_Min:paradaMin, Problema:prob, Acao_Executada:acao,
+    Acao_Preventiva:acaoPrev, Foto_URL:fotoUrl||'',
+    Tag_Maquina:db.maquinas.find(m => m.nome === maq && m.sala === sala)?.tag || '',
+    Origem:'direta', OS_Origem_Ref:'', Criado_Em:agora
   });
   showAlert('al-ab', `Ordem ${numero} registrada!${fotoUrl?' 📷 Foto enviada.':''}`, 'ok');
   clearAb();
