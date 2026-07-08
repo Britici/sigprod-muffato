@@ -85,12 +85,14 @@ function renderPlanDebounced() {
 }
 
 function exportPlanCSV() {
+  const tx  = (v('fp-tx') || '').toLowerCase();
   const tp  = v('fp-tp');
   const sl  = v('fp-sl');
   const st  = v('fp-st');
   const dtI = v('fp-dt-ini');
   const dtF = v('fp-dt-fim');
   let data = [...db.planejadas];
+  if (tx)  data = data.filter(p => [p.numero, p.sala, p.maq, p.tipo].some(x => x && x.toLowerCase().includes(tx)));
   if (tp)  data = data.filter(p => p.tipo === tp);
   if (sl)  data = data.filter(p => p.sala === sl);
   if (st)  data = data.filter(p => p.status === st);
