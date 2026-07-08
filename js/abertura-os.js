@@ -230,8 +230,8 @@ function abrirConcluir(id, tipo) {
       ${item.desc?`<div style="font-size:12px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--bord)">${item.desc}</div>`:''}
       ${item.fotoUrl?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bord)">
         <div style="font-size:11px;font-weight:700;color:var(--txt3);font-variant:small-caps;margin-bottom:6px">📷 Foto da Solicitação</div>
-        <a href="${driveThumb(item.fotoUrl)}" target="_blank">
-           <img src="${driveThumb(item.fotoUrl)}" style="max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:contain;border:1px solid var(--bord);cursor:zoom-in" alt="Foto">
+         <a href="${item.fotoUrl}" target="_blank">
+           <img src="${driveThumb(item.fotoUrl)}"px solid var(--bord);cursor:zoom-in" alt="Foto">
         </a>
       </div>`:''}
     </div>`;
