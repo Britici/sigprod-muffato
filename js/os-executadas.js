@@ -197,13 +197,17 @@ function delOS(id) {
 }
 
 function exportCSV() {
+  const tx  = v('fe-tx').toLowerCase();
   const tp  = v('fe-tp');
   const sl  = v('fe-sl');
+  const mn  = v('fe-mn');
   const dtI = v('fe-dt-ini');
   const dtF = v('fe-dt-fim');
   let data = [...db.ordens];
-  if (tp) data = data.filter(o => o.tipo === tp);
-  if (sl) data = data.filter(o => o.sala === sl);
+  if (tx)  data = data.filter(o => [o.numero,o.sala,o.maq,o.manut,o.tipo].some(x=>x&&x.toLowerCase().includes(tx)));
+  if (tp)  data = data.filter(o => o.tipo === tp);
+  if (sl)  data = data.filter(o => o.sala === sl);
+  if (mn)  data = data.filter(o => o.manut === mn);
   if (dtI) data = data.filter(o => o.data >= dtI);
   if (dtF) data = data.filter(o => o.data <= dtF);
   if (!data.length) { showToast('Sem dados para exportar com os filtros selecionados.'); return; }
