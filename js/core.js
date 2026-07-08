@@ -489,12 +489,13 @@ async function apiLoadAll(silent = false) {
 // ── localStorage ───────────────────────────────────────────────────────
 function saveDB() {
   try {
-    localStorage.setItem('sigman_v4', JSON.stringify({
+   localStorage.setItem('sigman_v4', JSON.stringify({
       salas: db.salas, maquinas: db.maquinas,
       ordens: db.ordens, planejadas: db.planejadas,
       solicitacoes: db.solicitacoes, inspecoes: db.inspecoes,
       osC: db.osC, plC: db.plC, solC: db.solC, inspC: db.inspC,
       historico: db.historico,
+      configuracoes: db.configuracoes,
       racs: db.racs
     }));
   } catch(e) {}
