@@ -22,7 +22,9 @@ async function salvarOS() {
   let durMin = 0, paradaMin = parseInt(parada)||0;
   if (ini && fim) {
     const [h1,m1]=ini.split(':').map(Number), [h2,m2]=fim.split(':').map(Number);
-    durMin = Math.max(0, (h2*60+m2)-(h1*60+m1));
+        durMin = (h2*60+m2)-(h1*60+m1);
+    if (durMin < 0) durMin += 1440; // turno que passa da meia-noite
+    durMin = Math.max(0, durMin);
     if (!paradaMin) paradaMin = durMin;
   }
   const numero = genOS(), agora = new Date().toISOString();
@@ -251,7 +253,7 @@ async function concluir() {
   if (!item) { showToast('Item não encontrado. Recarregue a página e tente novamente.','er'); return; }
   const agora=new Date().toISOString();
   let durMin=0,paradaMin=parada;
-  if(ini&&fim){const[h1,m1]=ini.split(':').map(Number),[h2,m2]=fim.split(':').map(Number);durMin=Math.max(0,(h2*60+m2)-(h1*60+m1));if(!paradaMin)paradaMin=durMin;}
+    if(ini&&fim){const[h1,m1]=ini.split(':').map(Number),[h2,m2]=fim.split(':').map(Number);durMin=(h2*60+m2)-(h1*60+m1);if(durMin<0)durMin+=1440;durMin=Math.max(0,durMin);if(!paradaMin)paradaMin=durMin;}
   Object.assign(item,{status:'Concluída',concluidoEm:agora,manut,ini,fim,dtExec:data,desc2:desc,durMin});
   const numero=genOS();
   const os={id:crypto.randomUUID(),numero,sala:item.sala,maq:item.maq,tipo:item.tipo,prioridade:item.prioridade,
