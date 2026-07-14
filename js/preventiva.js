@@ -21,7 +21,7 @@ async function initPreventiva() {
   if (selModelo) {
     selModelo.innerHTML = '<option value="">Carregando modelos...</option>';
     try {
-      if (!PREV_MODELOS_CACHE) PREV_MODELOS_CACHE = await apiGet('planos_list');
+      if (!PREV_MODELOS_CACHE) PREV_MODELOS_CACHE = await apiGet({ action: 'planos_list' });
       selModelo.innerHTML = '<option value="">Selecione o modelo...</option>' +
         PREV_MODELOS_CACHE.map(nome => `<option value="${nome}">${nome}</option>`).join('');
     } catch (e) {
@@ -54,7 +54,7 @@ async function carregarTarefasPreventiva() {
 
   let plano;
   try {
-    plano = await apiGet('planos_get', { modelo: nomeModelo });
+    plano = await apiGet({ action: 'planos_get', modelo: nomeModelo });
   } catch (e) {
     body.innerHTML = `<div class="card" style="padding:16px;color:#c0392b">Erro ao carregar modelo: ${e.message||e}</div>`;
     PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
