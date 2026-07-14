@@ -3,86 +3,85 @@
    Muffato Foods
    ══════════════════════════════════════════════════════════════════ */
 
-// cache do plano carregado pra máquina atual: [{area, ordem, tarefa}, ...]
-let PREV_PLANO_ATUAL = [];
+// plano carregado do modelo escolhido: { mecanico: [texto,...], eletrico: [texto,...] }
+let PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
 
-function initPreventiva() {
+let PREV_MODELOS_CACHE = null; // lista de nomes de modelos, carregada 1x por sessão
+let PREV_MODELO_ATUAL = '';
+
+async function initPreventiva() {
   const sel = document.getElementById('prev-maq');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione...</option>';
   [...db.maquinas].sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(m=>{
-    sel.innerHTML += `<option value="${m.sala}|${m.nome}|${m.tag}|${m.periodicidade||'Mensal'}|${m.id_plano||''}">${m.nome} (${m.sala})${m.tag?' – '+m.tag:''}</option>`;
+    sel.innerHTML += `<option value="${m.sala}|${m.nome}|${m.tag}|${m.periodicidade||'Mensal'}">${m.nome} (${m.sala})${m.tag?' – '+m.tag:''}</option>`;
   });
+
+  const selModelo = document.getElementById('prev-modelo');
+  if (selModelo) {
+    selModelo.innerHTML = '<option value="">Carregando modelos...</option>';
+    try {
+      if (!PREV_MODELOS_CACHE) PREV_MODELOS_CACHE = await apiGet('planos_list');
+      selModelo.innerHTML = '<option value="">Selecione o modelo...</option>' +
+        PREV_MODELOS_CACHE.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+    } catch (e) {
+      selModelo.innerHTML = '<option value="">Erro ao carregar modelos</option>';
+    }
+  }
+
   // data/hora ficam em branco por padrão — não preenche mais com today()
   sv('prev-dt','');
   sv('prev-hi','');
   sv('prev-hf','');
   if (CU.tipo !== 'producao') sv('prev-mn', CU.nome);
-  carregarTarefasPreventiva();
+  document.getElementById('prev-body').innerHTML = '';
+  PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
+  PREV_MODELO_ATUAL = '';
 }
 
 async function carregarTarefasPreventiva() {
-  const maqVal = v('prev-maq').split('|');
-  const per = maqVal[3] || v('prev-periodo') || 'Mensal';
-  const idPlano = maqVal[4] || '';
-  if (maqVal[3]) sv('prev-periodo', per);
-
+  const nomeModelo = v('prev-modelo');
   const body = document.getElementById('prev-body');
 
-  if (!maqVal[1]) {
+  if (!nomeModelo) {
     body.innerHTML = '';
-    PREV_PLANO_ATUAL = [];
+    PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
+    PREV_MODELO_ATUAL = '';
     return;
   }
 
-  if (!idPlano) {
-    body.innerHTML = `<div class="card" style="padding:16px;text-align:center;color:var(--txt-muted,#999)">
-      Máquina sem plano de manutenção cadastrado. Cadastre o <b>id_plano</b> dessa máquina na aba de máquinas
-      e as tarefas correspondentes em <b>planos_preventiva</b>.
-    </div>`;
-    PREV_PLANO_ATUAL = [];
-    return;
-  }
+  body.innerHTML = `<div class="card" style="padding:16px;text-align:center">Carregando modelo...</div>`;
 
-  body.innerHTML = `<div class="card" style="padding:16px;text-align:center">Carregando plano...</div>`;
-
-  let itens;
+  let plano;
   try {
-    itens = await apiGet('planos_preventiva', { id_plano: idPlano });
+    plano = await apiGet('planos_get', { modelo: nomeModelo });
   } catch (e) {
-    body.innerHTML = `<div class="card" style="padding:16px;color:#c0392b">Erro ao carregar plano: ${e.message||e}</div>`;
-    PREV_PLANO_ATUAL = [];
+    body.innerHTML = `<div class="card" style="padding:16px;color:#c0392b">Erro ao carregar modelo: ${e.message||e}</div>`;
+    PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
     return;
   }
 
-  if (!itens || !itens.length) {
+  if (!plano || (!plano.mecanico?.length && !plano.eletrico?.length)) {
     body.innerHTML = `<div class="card" style="padding:16px;text-align:center;color:var(--txt-muted,#999)">
-      Plano <b>${idPlano}</b> não tem tarefas cadastradas em <b>planos_preventiva</b>.
+      Modelo <b>${nomeModelo}</b> não tem tarefas cadastradas.
     </div>`;
-    PREV_PLANO_ATUAL = [];
+    PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
     return;
   }
 
-  // ordena por area (Mecânico antes de Elétrico) e depois por ordem
-  const AREA_ORDEM = { 'Mecânico': 0, 'Elétrico': 1 };
-  itens.sort((a,b) => (AREA_ORDEM[a.area]??9) - (AREA_ORDEM[b.area]??9) || (a.ordem-b.ordem));
-  PREV_PLANO_ATUAL = itens;
+  PREV_PLANO_ATUAL = plano;
+  PREV_MODELO_ATUAL = nomeModelo;
 
-  // agrupa por area mantendo só Mecânico / Elétrico
-  const grupos = {};
-  itens.forEach(it => {
-    const area = it.area === 'Elétrico' ? 'Elétrico' : 'Mecânico';
-    (grupos[area] = grupos[area] || []).push(it);
-  });
+  const grupos = { 'Mecânico': plano.mecanico || [], 'Elétrico': plano.eletrico || [] };
 
-  body.innerHTML = Object.entries(grupos).map(([grp, tarefas]) => `
+  body.innerHTML = Object.entries(grupos).filter(([,t])=>t.length).map(([grp, tarefas]) => `
     <div class="card" style="margin-bottom:10px">
       <div class="card-t">${grp}</div>
-      ${tarefas.map((it, ti) => {
+      ${tarefas.map((tarefaTexto, ti) => {
         const key = `${grp}-${ti}`;
         return `
         <div class="prev-row" data-key="${key}" style="display:grid;grid-template-columns:1fr auto 1.5fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--bord)">
-          <div style="font-size:13px">${it.tarefa}</div>
+          <div style="font-size:13px">${tarefaTexto}</div>
           <div style="display:flex;gap:5px">
             <button class="iok" onclick="setPrevStatus('${key}','ok',this)">OK</button>
             <button class="inok" onclick="setPrevStatus('${key}','nok',this)">NOK</button>
@@ -108,14 +107,13 @@ async function salvarPreventiva() {
   const horaIni = v('prev-hi'), horaFim = v('prev-hf');
 
   if (!maqVal[1] || !data || !manut) { showToast('Selecione máquina, data e manutentor.'); return; }
-  if (!PREV_PLANO_ATUAL.length) { showToast('Plano de manutenção não carregado ou vazio.'); return; }
+  if (!PREV_MODELO_ATUAL) { showToast('Selecione um modelo de manutenção.'); return; }
+  if (!PREV_PLANO_ATUAL.mecanico?.length && !PREV_PLANO_ATUAL.eletrico?.length) {
+    showToast('Modelo carregado está vazio.'); return;
+  }
 
   const agora = new Date().toISOString();
-  const grupos = {};
-  PREV_PLANO_ATUAL.forEach(it => {
-    const area = it.area === 'Elétrico' ? 'Elétrico' : 'Mecânico';
-    (grupos[area] = grupos[area] || []).push(it);
-  });
+  const grupos = { 'Mecânico': PREV_PLANO_ATUAL.mecanico || [], 'Elétrico': PREV_PLANO_ATUAL.eletrico || [] };
 
   let algumPreenchido = false;
 
@@ -126,9 +124,9 @@ async function salvarPreventiva() {
       if (!st) continue;
       algumPreenchido = true;
       await apiAppend('preventiva', {
-        ID: agora + '-' + key, Data_Execucao: data, Maquina: maqVal[1], Tag: maqVal[2],
-        Manutentor: manut, Periodicidade: per, Area: grp, Tarefa: tarefas[ti].tarefa,
-        Status: st, Hora_Inicio: horaIni, Hora_Fim: horaFim,
+        ID: agora + '-' + key, Modelo: PREV_MODELO_ATUAL, Data_Execucao: data,
+        Maquina: maqVal[1], Tag: maqVal[2], Manutentor: manut, Periodicidade: per,
+        Area: grp, Tarefa: tarefas[ti], Status: st, Hora_Inicio: horaIni, Hora_Fim: horaFim,
         Materiais: v('pvobs-'+key), Observacoes: '', Criado_Em: agora
       });
     }
@@ -143,13 +141,11 @@ function imprimirPreventiva() {
   const data = v('prev-dt') || '___/___/____', manut = v('prev-mn') || '_______________', per = v('prev-periodo') || 'Mensal';
   const horaIni = v('prev-hi') || '___:___', horaFim = v('prev-hf') || '___:___';
 
-  if (!PREV_PLANO_ATUAL.length) { showToast('Carregue um plano antes de imprimir.'); return; }
+  if (!PREV_PLANO_ATUAL.mecanico?.length && !PREV_PLANO_ATUAL.eletrico?.length) {
+    showToast('Carregue um modelo antes de imprimir.'); return;
+  }
 
-  const grupos = {};
-  PREV_PLANO_ATUAL.forEach(it => {
-    const area = it.area === 'Elétrico' ? 'Elétrico' : 'Mecânico';
-    (grupos[area] = grupos[area] || []).push(it);
-  });
+  const grupos = { 'Mecânico': PREV_PLANO_ATUAL.mecanico || [], 'Elétrico': PREV_PLANO_ATUAL.eletrico || [] };
 
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
@@ -191,8 +187,8 @@ ${Object.entries(grupos).map(([grp,tarefas])=>`
 <h2>${grp}</h2>
 <table>
 <tr><th style="width:60%">Tarefa</th><th style="width:8%">OK</th><th style="width:8%">NOK</th><th style="width:8%">NA</th><th>Materiais / Observações</th></tr>
-${tarefas.map(it=>`<tr>
-  <td>${it.tarefa}</td>
+${tarefas.map(tarefaTexto=>`<tr>
+  <td>${tarefaTexto}</td>
   <td style="text-align:center"><span class="cb"></span></td>
   <td style="text-align:center"><span class="cb"></span></td>
   <td style="text-align:center"><span class="cb"></span></td>
