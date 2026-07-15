@@ -10,12 +10,11 @@ let PREV_MODELOS_CACHE = null; // lista de nomes de modelos, carregada 1x por se
 let PREV_MODELO_ATUAL = '';
 
 async function initPreventiva() {
-  const sel = document.getElementById('prev-maq');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione...</option>';
-  [...db.maquinas].sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(m=>{
-    sel.innerHTML += `<option value="${m.sala}|${m.nome}|${m.tag}|${m.periodicidade||'Mensal'}">${m.nome} (${m.sala})${m.tag?' – '+m.tag:''}</option>`;
-  });
+  const selSala = document.getElementById('prev-sala');
+  if (!selSala) return;
+  selSala.innerHTML = '<option value="">Todas as Salas</option>' +
+    [...db.salas].sort().map(s=>`<option value="${s}">${s}</option>`).join('');
+  filtrarPrevMaq();
 
   const selModelo = document.getElementById('prev-modelo');
   if (selModelo) {
@@ -37,6 +36,34 @@ async function initPreventiva() {
   document.getElementById('prev-body').innerHTML = '';
   PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
   PREV_MODELO_ATUAL = '';
+}
+
+function filtrarPrevMaq() {
+  const salaFiltro = v('prev-sala');
+  const sel = document.getElementById('prev-maq');
+  sel.innerHTML = '<option value="">Selecione...</option>';
+  [...db.maquinas]
+    .filter(m => !salaFiltro || m.sala === salaFiltro)
+    .sort((a,b)=>a.nome.localeCompare(b.nome))
+    .forEach(m=>{
+      sel.innerHTML += `<option value="${m.sala}|${m.nome}|${m.tag}|${m.periodicidade||'Mensal'}|${m.modeloPadrao||''}">${m.nome} (${m.sala})${m.tag?' – '+m.tag:''}</option>`;
+    });
+  document.getElementById('prev-body').innerHTML = '';
+  sv('prev-modelo','');
+  PREV_PLANO_ATUAL = { mecanico: [], eletrico: [] };
+  PREV_MODELO_ATUAL = '';
+}
+
+function selecionarPrevMaquina() {
+  const maqVal = v('prev-maq').split('|');
+  const modeloPadrao = maqVal[4] || '';
+  const selModelo = document.getElementById('prev-modelo');
+  if (modeloPadrao && selModelo && [...selModelo.options].some(o=>o.value===modeloPadrao)) {
+    selModelo.value = modeloPadrao;
+  } else {
+    sv('prev-modelo','');
+  }
+  carregarTarefasPreventiva();
 }
 
 async function carregarTarefasPreventiva() {
