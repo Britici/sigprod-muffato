@@ -365,6 +365,9 @@
          <option>Semestral</option><option>Anual</option>
         </select>
        </div>
+       <div class="fg"><label>Modelo de Manutenção Padrão</label>
+        <select id="at-mmp"><option value="">Nenhum (seleciona manual na OS)</option></select>
+       </div>
        <button class="btn btn-p btn-sm" onclick="addMaq()">+ Adicionar</button>
       </div>
       <div class="card">
@@ -440,8 +443,11 @@
     <div class="card">
      <div class="card-t">Dados da Preventiva</div>
      <div class="fg-row">
+      <div class="fg"><label>Sala / Local</label>
+       <select id="prev-sala" onchange="filtrarPrevMaq()"><option value="">Todas as Salas</option></select>
+      </div>
       <div class="fg"><label>Máquina / Ativo</label>
-       <select id="prev-maq"><option value="">Selecione...</option></select>
+       <select id="prev-maq" onchange="selecionarPrevMaquina()"><option value="">Selecione...</option></select>
       </div>
       <div class="fg"><label>Modelo de Manutenção</label>
        <select id="prev-modelo" onchange="carregarTarefasPreventiva()"><option value="">Selecione...</option></select>
