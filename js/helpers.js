@@ -2,12 +2,11 @@
    SIGMAN — UTILITÁRIOS
    Muffato Foods
    ══════════════════════════════════════════════════════════════════ */
-
-const v   = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-const sv  = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
 const today = () => new Date().toISOString().slice(0,10);
-  
-  function debounce(fn, ms=300){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+
+function debounce(fn, ms=300){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
 var renderExecDebounced = debounce(()=>renderExec());
 
 function fd(d) {
@@ -48,35 +47,40 @@ function prio(p) {
   const lbl = {'1':'1 – Crítico','2':'2 – Alta','3':'3 – Média','4':'4 – Baixa'};
   return `<span class="badge ${c[p]||''}"><span class="pdot ${d[p]||''}"></span>${lbl[p]||p}</span>`;
 }
+
 function tipoBadge(t) {
   if (!t) return '';
   const c = {Corretiva:'b-cor',Preventiva:'b-pre',Preditiva:'b-prd',Melhoria:'b-mel','Inspeção':'b-pre'};
   return `<span class="badge ${c[t]||''}">${t}</span>`;
 }
+
 function stBadge(s) {
   const c = {Pendente:'b-pen',Concluída:'b-con',Atrasada:'b-atr',Executada:'b-exe','Não Executada':'b-nexe'};
   return `<span class="badge ${c[s]||''}">${s}</span>`;
 }
+
 function roleBadge(t) {
   const c = {administracao:'b-adm',manutencao:'b-man',producao:'b-pro'};
   const l = {administracao:'Administração',manutencao:'Manutenção',producao:'Produção'};
   return `<span class="badge ${c[t]||''}">${l[t]||t}</span>`;
 }
+
 function showAlert(id, msg, type='ok') {
   const el = document.getElementById(id);
   if (!el) return;
   el.textContent = msg; el.className = 'alert '+type+' on';
   setTimeout(()=>el.classList.remove('on'), 4000);
 }
+
 function logEdit(acao, numero, detalhe) {
   if (!CU) return;
   const agora = new Date().toISOString();
   const entry = {
-    ts:      agora,
-    user:    CU.nome,
-    login:   CU.login,
+    ts: agora,
+    user: CU.nome,
+    login: CU.login,
     acao,
-    numero:  numero || '',
+    numero: numero || '',
     detalhe: detalhe || ''
   };
   db.historico.unshift(entry);
@@ -84,13 +88,13 @@ function logEdit(acao, numero, detalhe) {
   saveDB();
   // Envia para o Sheets
   apiAppend('historico', {
-    ID:         agora,
-    Data_Hora:  agora,
-    Usuario:    CU.nome,
-    Login:      CU.login,
-    Acao:       acao,
+    ID: agora,
+    Data_Hora: agora,
+    Usuario: CU.nome,
+    Login: CU.login,
+    Acao: acao,
     Numero_Ref: numero || '',
-    Detalhe:    detalhe || ''
+    Detalhe: detalhe || ''
   });
 }
 
@@ -100,8 +104,8 @@ function calcDisponibilidadePorSala(ordPer, horasTurno1, horasTurno2, horasTurno
     const maqsSala = db.maquinas.filter(m => m.sala === sala);
     if (maqsSala.length === 0) return { sala, disp: 100, minParada: 0 };
     const minParada = ordPer
-      .filter(o => 
-        o.sala === sala && 
+      .filter(o =>
+        o.sala === sala &&
         o.tipo === 'Corretiva' &&
         maqsSala.some(m => m.nome === o.maq)
       )
@@ -112,7 +116,7 @@ function calcDisponibilidadePorSala(ordPer, horasTurno1, horasTurno2, horasTurno
     return { sala, disp: isNaN(disp) ? 0 : disp, minParada };
   }).filter(s => s !== null);
 }
-  
+
 function renderSalasStatus(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPer) {
   const dispPorSala = calcDisponibilidadePorSala(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPer);
   const html = dispPorSala.map(s => {
@@ -122,10 +126,36 @@ function renderSalasStatus(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPe
         <div class="sc-lbl">${s.sala}</div>
         <div class="sc-val">${s.disp}%</div>
         <div style="font-size:10px;color:var(--txt3);margin-top:4px">Parada: ${s.minParada}min</div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:${cor};opacity:.5\"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:${cor};opacity:.5"></div>
       </div>
     `;
   }).join('');
-  
   document.getElementById('salas-grid').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FOTO: abrir em janela dedicada pra imprimir / salvar como PDF
+// Reaproveita driveThumb() (core.js) — já converte link do Drive pra
+// uma URL de imagem direta (w1000), então serve tanto pra thumbnail
+// quanto pra essa janela de impressão.
+// ══════════════════════════════════════════════════════════════════════
+function abrirFotoImprimir(fotoUrl) {
+  if (!fotoUrl) { showToast('Sem foto para exibir.'); return; }
+  const imgSrc = driveThumb(fotoUrl);
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Foto — SIGMAN</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f4f4f4;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:14mm}
+img{max-width:100%;max-height:85vh;object-fit:contain;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.bar{display:flex;gap:10px;margin-top:16px}
+.bar button{font-family:Arial,sans-serif;font-size:13px;padding:9px 18px;border-radius:5px;border:none;cursor:pointer;background:#C41230;color:#fff}
+.bar button:hover{background:#a30f28}
+@media print{.bar{display:none}body{padding:0;background:#fff}img{max-height:100vh}}
+</style></head><body>
+<img src="${imgSrc}" alt="Foto">
+<div class="bar"><button onclick="window.print()">🖨️ Imprimir / Salvar como PDF</button></div>
+</body></html>`);
+  win.document.close();
 }
