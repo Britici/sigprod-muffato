@@ -80,7 +80,7 @@ function renderExec() {
              <img src="${driveThumb(o.fotoUrl)}"
                style="width:44px;height:44px;object-fit:cover;border-radius:6px;
                border:1px solid var(--bord);cursor:zoom-in;display:block"
-               alt="Foto" onclick="abrirFotoImprimir('${o.fotoUrl}')" onerror="this.style.display='none'">
+               alt="Foto" onclick="abrirFotoLightbox('${o.fotoUrl}')" onerror="this.style.display='none'">
            </div>`
         : `<span style="font-size:11px;color:var(--txt3)">—</span>`}
     </td>

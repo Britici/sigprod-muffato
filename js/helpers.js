@@ -139,6 +139,49 @@ function renderSalasStatus(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPe
 // uma URL de imagem direta (w1000), então serve tanto pra thumbnail
 // quanto pra essa janela de impressão.
 // ══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// FOTO: lightbox (pop-up) reutilizável — mesmo padrão do módulo de
+// Compras/Acompanhamento (reusa a classe CSS .cac-lightbox). Fecha no
+// clique fora ou tecla ESC. Botão de imprimir reaproveita abrirFotoImprimir().
+// ══════════════════════════════════════════════════════════════════════
+function _initFotoLightboxGlobal() {
+  if (document.getElementById('foto-lightbox-g')) return;
+  const div = document.createElement('div');
+  div.id = 'foto-lightbox-g';
+  div.className = 'cac-lightbox';
+  div.innerHTML = '<img id="foto-lightbox-g-img" src="" alt="">'
+    + '<button class="cac-lightbox-print" id="foto-lightbox-g-print">🖨️ Imprimir / Salvar como PDF</button>';
+  document.body.appendChild(div);
+  div.addEventListener('click', function(e) {
+    if (e.target.id === 'foto-lightbox-g-print') return;
+    this.classList.remove('open');
+  });
+  document.getElementById('foto-lightbox-g-print').addEventListener('click', function(e) {
+    e.stopPropagation();
+    const src = document.getElementById('foto-lightbox-g-img').dataset.original;
+    if (src) abrirFotoImprimir(src);
+  });
+}
+// ESC fecha qualquer lightbox de foto aberto (.cac-lightbox é a classe
+// compartilhada por este lightbox e pelo de Compras/Acompanhamento).
+// Registrado no carregamento do script, não no init lazy, pra funcionar
+// mesmo que o usuário abra o lightbox de Compras primeiro.
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.cac-lightbox.open').forEach(function(l) {
+      l.classList.remove('open');
+    });
+  }
+});
+function abrirFotoLightbox(fotoUrl) {
+  if (!fotoUrl) { showToast('Sem foto para exibir.'); return; }
+  _initFotoLightboxGlobal();
+  const img = document.getElementById('foto-lightbox-g-img');
+  img.src = driveThumb(fotoUrl);
+  img.dataset.original = fotoUrl;
+  document.getElementById('foto-lightbox-g').classList.add('open');
+}
+
 function abrirFotoImprimir(fotoUrl) {
   if (!fotoUrl) { showToast('Sem foto para exibir.'); return; }
   const imgSrc = driveThumb(fotoUrl);
