@@ -164,6 +164,24 @@ async function salvarPreventiva() {
 }
 
 function imprimirPreventiva() {
+  _imprimirPreventivaBase({
+    titulo: 'ORDEM DE MANUTENÇÃO PREVENTIVA',
+    doc: 'SIGMAN-PREV',
+    colunas: ['OK','NOK','NA'],
+    colMateriais: true
+  });
+}
+
+function imprimirInspecaoEquipamento() {
+  _imprimirPreventivaBase({
+    titulo: 'ORDEM DE INSPEÇÃO DE EQUIPAMENTO',
+    doc: 'SIGMAN-INSP-EQ',
+    colunas: ['C','NC','NSA'],
+    colMateriais: false
+  });
+}
+
+function _imprimirPreventivaBase({ titulo, doc, colunas, colMateriais }) {
   const maqVal = v('prev-maq').split('|');
   const data = v('prev-dt') || '___/___/____', manut = v('prev-mn') || '_______________', per = v('prev-periodo') || 'Mensal';
   const horaIni = v('prev-hi') || '___:___', horaFim = v('prev-hf') || '___:___';
@@ -173,10 +191,11 @@ function imprimirPreventiva() {
   }
 
   const grupos = { 'Mecânico': PREV_PLANO_ATUAL.mecanico || [], 'Elétrico': PREV_PLANO_ATUAL.eletrico || [] };
+  const [c1,c2,c3] = colunas;
 
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-<title>ORDEM DE MANUTENÇÃO PREVENTIVA</title>
+<title>${titulo}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;color:#000;padding:15mm}
 h1{font-size:15px;text-align:center;color:#C41230;margin-bottom:4px}
@@ -198,8 +217,8 @@ td{padding:5px 7px;border:1px solid #ddd}
     <img src="https://muffatofoods.com.br/assets/images/foods_logo.png" style="height:44px;object-fit:contain" alt="Muffato">
     <div><b>MUFFATO FOODS</b><br>Gestão de Manutenção — PCM</div>
   </div>
-  <div><h1>ORDEM DE MANUTENÇÃO PREVENTIVA</h1></div>
-  <div style="text-align:right;font-size:10px">Doc: SIGMAN-PREV<br>Rev: 02</div>
+  <div><h1>${titulo}</h1></div>
+  <div style="text-align:right;font-size:10px">Doc: ${doc}<br>Rev: 02</div>
 </div>
 <div class="info-grid">
   <div class="info-box"><div class="info-label">Máquina</div><div class="info-val">${maqVal[1]||'___'}</div></div>
@@ -213,13 +232,13 @@ td{padding:5px 7px;border:1px solid #ddd}
 ${Object.entries(grupos).map(([grp,tarefas])=>`
 <h2>${grp}</h2>
 <table>
-<tr><th style="width:60%">Tarefa</th><th style="width:8%">OK</th><th style="width:8%">NOK</th><th style="width:8%">NA</th><th>Materiais / Observações</th></tr>
+<tr><th style="width:${colMateriais?60:76}%">Tarefa</th><th style="width:8%">${c1}</th><th style="width:8%">${c2}</th><th style="width:8%">${c3}</th>${colMateriais?'<th>Materiais / Observações</th>':''}</tr>
 ${tarefas.map(tarefaTexto=>`<tr>
   <td>${tarefaTexto}</td>
   <td style="text-align:center"><span class="cb"></span></td>
   <td style="text-align:center"><span class="cb"></span></td>
   <td style="text-align:center"><span class="cb"></span></td>
-  <td></td>
+  ${colMateriais?'<td></td>':''}
 </tr>`).join('')}
 </table>`).join('')}
 <div style="display:flex;justify-content:space-between;margin-top:15px">
@@ -230,3 +249,4 @@ ${tarefas.map(tarefaTexto=>`<tr>
 <script>window.print();<\/script></body></html>`);
   win.document.close();
 }
+

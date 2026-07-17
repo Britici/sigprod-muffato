@@ -66,6 +66,7 @@ function renderExec() {
         ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;flex-shrink:0"></span>`:''}
         <span class="osn">${o.numero}</span>
       </span>
+      ${o.origem==='plan'&&o.origemNum?`<div style="text-align:right;font-size:9px;color:var(--txt3);margin-top:1px">(${o.origemNum})</div>`:''}
     </td>
     <td style="font-size:12px">${fd(o.data)}</td>
     <td>${o.sala}</td>

@@ -34,6 +34,15 @@ function _brToISO(br) {
   if (!m) return '';
   return `${m[3]}-${m[2]}-${m[1]}`;
 }
+function abrirDatePicker(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.showPicker) { try { el.showPicker(); return; } catch (e) { /* fallback abaixo */ } }
+  el.style.pointerEvents = 'auto';
+  el.focus();
+  el.click();
+  setTimeout(() => { el.style.pointerEvents = 'none'; }, 300);
+}
 function dateMaskInput(el) {
   let d = el.value.replace(/\D/g, '').slice(0, 8);
   if (d.length >= 5) d = d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
