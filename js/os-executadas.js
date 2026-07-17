@@ -113,8 +113,10 @@ function abrirRAC(osNumero) {
   }
   // Data e hora
   const dtEl = document.getElementById('racr-data');
+  const dtDispEl = document.getElementById('racr-data_disp');
   const hrEl = document.getElementById('racr-hora');
   if (dtEl) { dtEl.value = o.data || today(); dtEl.setAttribute('readonly', ''); }
+  if (dtDispEl) { dtDispEl.value = fd(o.data || today()); dtDispEl.setAttribute('readonly', ''); }
   if (hrEl) { hrEl.value = o.ini || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly', ''); }
   // Falha e ação imediata da OS
   const falhaEl = document.getElementById('racr-falha');

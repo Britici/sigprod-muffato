@@ -23,8 +23,10 @@ function abrirNovoRACR() {
   .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   // Data e hora atuais
   const dtEl = document.getElementById('racr-data');
+  const dtDispEl = document.getElementById('racr-data_disp');
   const hrEl = document.getElementById('racr-hora');
   if (dtEl) { dtEl.value = today(); dtEl.removeAttribute('readonly'); }
+  if (dtDispEl) { dtDispEl.value = fd(today()); dtDispEl.removeAttribute('readonly'); }
   if (hrEl) { hrEl.value = new Date().toTimeString().slice(0,5); hrEl.removeAttribute('readonly'); }
   openM('mb-racr');
 }
@@ -262,6 +264,7 @@ function verRACR(id) {
   setVal('racr-equip',    r.maquina);
   setVal('racr-sala',     r.sala);
   setVal('racr-data',     r.dataAbertura);
+  setVal('racr-data_disp', fd(r.dataAbertura) === '—' ? '' : fd(r.dataAbertura));
   setVal('racr-hora',     '');
   setVal('racr-falha',    r.falha);
   setVal('racr-causa',    r.causaRaiz);

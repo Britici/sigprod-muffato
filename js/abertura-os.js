@@ -196,8 +196,8 @@ function renderSol() {
     return dir === 'asc' ? cmp : -cmp;
   });
   const c = document.getElementById('sol-lista');
-  if (!list.length) { c.innerHTML = '<div class="empty"><div class="ei">📣</div><p>Nenhuma solicitação.</p></div>'; return; }
-  c.innerHTML = list.map(s => `
+  const cC = document.getElementById('sol-lista-concluidas');
+  const rowHtml = s => `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bord);gap:10px">
       <div>
         <span class="osn">${s.numero}</span>
@@ -210,7 +210,17 @@ function renderSol() {
         ${CU&&CU.tipo!=='producao'&&s.status==='Não Executada'
           ?`<button class="btn btn-sm btn-g" onclick="abrirConcluir('${s.numero}','sol')">✓ Executar</button>`:''}
       </div>
-    </div>`).join('');
+    </div>`;
+
+  const naoConcl = list.filter(s => s.status !== 'Concluída');
+  const concl    = list.filter(s => s.status === 'Concluída');
+
+  c.innerHTML = naoConcl.length ? naoConcl.map(rowHtml).join('')
+    : '<div class="empty"><div class="ei">✅</div><p>Nenhuma solicitação não concluída.</p></div>';
+  if (cC) {
+    cC.innerHTML = concl.length ? concl.map(rowHtml).join('')
+      : '<div class="empty"><div class="ei">✅</div><p>Nenhuma solicitação concluída.</p></div>';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════

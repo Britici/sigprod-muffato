@@ -3,7 +3,12 @@
    Muffato Foods
    ══════════════════════════════════════════════════════════════════ */
 const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+const sv = (id, val) => {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+  const disp = document.getElementById(id + '_disp');
+  if (disp) disp.value = fd(val) === '—' ? '' : fd(val);
+};
 const today = () => new Date().toISOString().slice(0,10);
 
 function debounce(fn, ms=300){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
@@ -14,6 +19,29 @@ function fd(d) {
   const s = String(d).slice(0,10);
   const p = s.split('-');
   return p.length === 3 && p[0].length === 4 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// MÁSCARA DE DATA (dd/mm/aaaa visível, ISO por trás)
+// Todo campo de data agora é um par: <input type="hidden" id="X"> guarda
+// o valor real (ISO, AAAA-MM-DD) — é nele que v()/sv() e toda a lógica
+// existente (filtros, comparações de prazo, etc.) continuam operando sem
+// nenhuma mudança. <input type="text" id="X_disp" class="date-mask"> é o
+// que o usuário vê e digita, sempre em dd/mm/aaaa.
+// ══════════════════════════════════════════════════════════════════════
+function _brToISO(br) {
+  const m = String(br).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return '';
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+function dateMaskInput(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 8);
+  if (d.length >= 5) d = d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
+  else if (d.length >= 3) d = d.slice(0, 2) + '/' + d.slice(2);
+  el.value = d;
+  const hid = document.getElementById(el.id.replace(/_disp$/, ''));
+  if (!hid) return;
+  hid.value = d.length === 10 ? _brToISO(d) : '';
 }
 
 function genOS() {

@@ -727,8 +727,9 @@ function _abrirModal(ordem, etapaIdx, el) {
         </p>
         ${noteHtml}
         <div class="mf">
-          <label for="m-data">Data de Conclusão <span style="color:#C41230">*</span></label>
-          <input type="date" id="m-data" value="${isDone?(ordem[etapa.col]||hoje):hoje}" required>
+          <label for="m-data_disp">Data de Conclusão <span style="color:#C41230">*</span></label>
+          <input type="hidden" id="m-data" value="${isDone?(ordem[etapa.col]||hoje):hoje}">
+          <input type="text" id="m-data_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" value="${fd(isDone?(ordem[etapa.col]||hoje):hoje)}" required>
         </div>
         ${extraHtml}
         <!-- Observações desta etapa -->

@@ -362,3 +362,7 @@ label,
 .foto-print-btn{position:absolute;top:6px;right:6px;background:rgba(17,19,24,.85);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:var(--rs);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .15s}
 .foto-print-btn:hover{background:var(--red);border-color:var(--red)}
 .foto-wrap{position:relative;display:inline-block}
+
+/* ── Campo de data mascarado (dd/mm/aaaa) ── */
+.date-mask{font-family:var(--fm);letter-spacing:.5px;text-align:left}
+.date-mask::placeholder{font-family:var(--fb);letter-spacing:normal;color:var(--txt3)}

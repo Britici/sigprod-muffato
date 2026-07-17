@@ -61,8 +61,8 @@ function renderPlan() {
   });
 
   const tb = document.getElementById('tb-plan');
-  if (!data.length) { tb.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ei">📅</div><p>Nenhuma O.S. planejada.</p></div></td></tr>`; return; }
-  tb.innerHTML = data.map(p => `<tr>
+  const tbC = document.getElementById('tb-plan-concluidas');
+  const rowHtml = p => `<tr>
     <td><span class="osn">${p.numero}</span></td>
     <td>${p.sala}</td><td>${p.maq}</td>
     <td>${tipoBadge(p.tipo)}</td><td>${prio(p.prioridade)}</td>
@@ -74,7 +74,17 @@ function renderPlan() {
       <button class="btn btn-sm btn-gh" onclick="verDet('${p.numero}','pl')">Ver</button>
       <button class="btn btn-d" onclick="delPlan('${p.numero}')">✕</button>
     </div></td>
-  </tr>`).join('');
+  </tr>`;
+
+  const naoConcl = data.filter(p => p.status !== 'Concluída');
+  const concl    = data.filter(p => p.status === 'Concluída');
+
+  tb.innerHTML = naoConcl.length ? naoConcl.map(rowHtml).join('')
+    : `<tr><td colspan="8" class="empty"><div class="ei">✅</div><p>Nenhuma O.S. não concluída.</p></td></tr>`;
+  if (tbC) {
+    tbC.innerHTML = concl.length ? concl.map(rowHtml).join('')
+      : `<tr><td colspan="8" class="empty"><div class="ei">✅</div><p>Nenhuma O.S. concluída.</p></td></tr>`;
+  }
 }
 
 // Debounce para o campo de busca
@@ -158,7 +168,8 @@ function editarPlan(id) {
       </select>
     </div>
     <div class="fg"><label>Prazo Limite</label>
-      <input type="date" id="ep-prazo" value="${p.prazo||''}">
+      <input type="hidden" id="ep-prazo" value="${p.prazo||''}">
+      <input type="text" id="ep-prazo_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" value="${p.prazo?fd(p.prazo):''}">
     </div>
     <div class="fg"><label>Horas por Turno</label>
       <input type="number" id="ep-horas" value="${p.horasTurno||10}" min="1" max="24">
