@@ -424,19 +424,12 @@
     <div class="ph">
      <div class="pt"><small>PCM · Qualidade</small>Templates de Inspeção</div>
      <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-sm btn-gh" id="btn-insp-rota-print" onclick="imprimirInspecao('rota')">🖨️ Imprimir Rota</button>
-      <button class="btn btn-sm btn-gh" id="btn-insp-maq-print" onclick="imprimirInspecao('maquina')">🖨️ Imprimir Mecânica/Elétrica</button>
+      <button class="btn btn-sm btn-gh" id="btn-insp-maq-print" onclick="imprimirInspecao()">🖨️ Imprimir Mecânica/Elétrica</button>
      </div>
     </div>
     <div class="card">
      <div class="card-t">Selecionar Template</div>
      <div class="fg-row">
-      <div class="fg"><label>Tipo de Inspeção</label>
-       <select id="insp-tmpl-tipo" onchange="renderInspTmpl()">
-        <option value="rota">Inspeção de Rota</option>
-        <option value="maquina">Inspeção Mecânica / Elétrica</option>
-       </select>
-      </div>
       <div class="fg"><label>Sala (filtro)</label>
        <select id="insp-tmpl-sala" onchange="renderInspTmpl()">
         <option value="">Todas as Salas</option>
@@ -456,7 +449,8 @@
    <div class="pg" id="pg-preventiva">
     <div class="ph">
      <div class="pt"><small>PCM · Manutenção</small>Ordem de Manutenção Preventiva</div>
-     <button class="btn btn-sm btn-gh" onclick="imprimirPreventiva()">🖨️ Imprimir Ordem</button>
+     <button class="btn btn-sm btn-gh" onclick="imprimirPreventiva()">🖨️ Imprimir Ordem de Manutenção Preventiva</button>
+     <button class="btn btn-sm btn-gh" onclick="imprimirInspecaoEquipamento()">🖨️ Imprimir Ordem de Inspeção de Equipamento</button>
     </div>
     <div class="card">
      <div class="card-t">Dados da Preventiva</div>
@@ -470,7 +464,13 @@
       <div class="fg"><label>Modelo de Manutenção</label>
        <select id="prev-modelo" onchange="carregarTarefasPreventiva()"><option value="">Selecione...</option></select>
       </div>
-      <div class="fg"><label>Data Execução</label><input type="hidden" id="prev-dt"><input type="text" id="prev-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)"></div>
+      <div class="fg" style="position:relative"><label>Data Execução</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="prev-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" style="flex:1">
+          <button type="button" class="btn btn-sm btn-gh" onclick="abrirDatePicker('prev-dt')" title="Escolher data" style="padding:9px 10px;flex-shrink:0">📅</button>
+        </div>
+        <input type="date" id="prev-dt" onchange="sv('prev-dt',this.value)" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
+      </div>
       <div class="fg"><label>Manutentor</label><input type="text" id="prev-mn" placeholder="Nome"></div>
      </div>
      <div class="fg-row fg-3">
@@ -810,7 +810,7 @@ const NAV = [
       { id:'compras-acompanhamento', ic:'📦', lbl:'Acompanhamento de Compras'},
       { id:'planejamento',           ic:'📋', lbl:'Planejamento de O.S.' },
       { id:'analise-causa-raiz',     ic:'📊', lbl:'Análise Causa Raiz'},
-      { id:'inspecao-tmpl',          ic:'📄', lbl:'Inspeção de Rota'   },
+      { id:'inspecao-tmpl',          ic:'📄', lbl:'Insp. Mecânica/Elétrica'   },
       { id:'preventiva',             ic:'🔩', lbl:'Manutenção Preventiva'},      
     ]
   },
