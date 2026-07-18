@@ -118,7 +118,7 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.65
 .tb-stat{font-family:var(--fm);font-size:11px;color:var(--txt3);background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);padding:4px 10px;display:flex;align-items:center;gap:5px}
 .tb-stat span{color:var(--red);font-weight:600}
 /* CONTENT */
-.cont{flex:1;padding:18px 16px;max-width:1200px;width:100%;margin:0 auto}
+.cont{flex:1;padding:18px 24px;width:100%}
 @media(min-width:1024px){.cont{padding:22px 28px}}
 /* ── PAGES ── */
 .pg{display:none}
