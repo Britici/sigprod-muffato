@@ -67,10 +67,10 @@ function renderPlan() {
       ? (db.ordens.find(o => o.origem==='plan' && o.origemNum===p.numero)||{}).numero
       : null;
     return `<tr>
-    <td><span class="osn">${p.numero}</span>${osGerada?`<div style="text-align:left;font-size:10px;color:var(--txt2);margin-top:1px">(${osGerada})</div>`:''}</td>
+    <td><span class="osn">${p.numero}</span>${osGerada?`<div style="text-align:left;font-size:11px;color:var(--txt2);margin-top:1px">(${osGerada})</div>`:''}</td>
     <td>${p.sala}</td><td>${p.maq}</td>
     <td>${tipoBadge(p.tipo)}</td><td>${prio(p.prioridade)}</td>
-    <td style="font-family:var(--fm);font-size:11px;color:${p.prazo<t&&p.status!=='Concluída'?'var(--red)':'var(--txt)'}">${fd(p.prazo)}</td>
+    <td style="font-family:var(--fm);font-size:13px;color:${p.prazo<t&&p.status!=='Concluída'?'var(--red)':'var(--txt)'}">${fd(p.prazo)}</td>
     <td>${stBadge(p.status)}</td>
     <td><div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center">
       ${p.status!=='Concluída'?`<button class="btn btn-sm btn-g" onclick="abrirConcluir('${p.numero}','plan')">Concluir</button>`:''}
@@ -226,7 +226,7 @@ function getCriticidadeBadge(maqNome) {
   const crit = getCriticidadeMaq(maqNome);
   const critMap = {'1':'Criticidade 1','2':'Criticidade 2','3':'Criticidade 3','4':'Criticidade 4'};
   const critColor = {'1':'#ff2244','2':'var(--red)','3':'var(--org)','4':'var(--grn)'}[String(crit)] || 'var(--txt3)';
-  return `<span style="font-size:10px;color:${critColor};font-weight:600">${critMap[String(crit)] || '—'}</span>`;
+  return `<span style="font-size:11px;color:${critColor};font-weight:600">${critMap[String(crit)] || '—'}</span>`;
 }
 function limiteRAC(crit) {
   return {1:60, 2:120, 3:10080, 4:20160}[crit] ?? 120;

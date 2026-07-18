@@ -60,28 +60,28 @@ function imprimirDetOS() {
 <title>${titulo}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;font-size:11px;color:#000;padding:15mm}
+body{font-family:Arial,sans-serif;font-size:13px;color:#000;padding:15mm}
 .header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #C41230;padding-bottom:8px;margin-bottom:12px}
 .header-left{display:flex;align-items:center;gap:12px}
 .header-left img{height:48px;object-fit:contain}
-h1{font-size:15px;color:#C41230;margin-bottom:2px}
+h1{font-size:17px;color:#C41230;margin-bottom:2px}
 .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .info-box{border:1px solid #ccc;border-radius:3px;padding:6px 10px}
-.info-label{font-size:9px;color:#666;text-transform:uppercase}
-.info-val{font-size:12px;font-weight:bold}
+.info-label{font-size:10px;color:#666;text-transform:uppercase}
+.info-val{font-size:14px;font-weight:bold}
 .section{margin-bottom:10px}
-.section-title{font-size:11px;font-weight:bold;background:#f0f0f0;padding:5px 8px;border-left:3px solid #C41230;margin-bottom:6px}
-.section-content{border:1px solid #ddd;border-radius:3px;padding:8px 10px;font-size:12px;min-height:40px;line-height:1.6}
-.assinatura{border-top:1px solid #000;width:200px;margin-top:40px;padding-top:4px;font-size:9px}
+.section-title{font-size:13px;font-weight:bold;background:#f0f0f0;padding:5px 8px;border-left:3px solid #C41230;margin-bottom:6px}
+.section-content{border:1px solid #ddd;border-radius:3px;padding:8px 10px;font-size:14px;min-height:40px;line-height:1.6}
+.assinatura{border-top:1px solid #000;width:200px;margin-top:40px;padding-top:4px;font-size:10px}
 @media print{body{padding:10mm}}
 </style></head><body>
 <div class="header">
   <div class="header-left">
     <img src="https://muffatofoods.com.br/assets/images/foods_logo.png" alt="Muffato Foods">
-    <div><div style="font-weight:bold;font-size:13px">MUFFATO FOODS</div><div style="font-size:10px;color:#666">Gestão de Manutenção — SIGMAN</div></div>
+    <div><div style="font-weight:bold;font-size:15px">MUFFATO FOODS</div><div style="font-size:11px;color:#666">Gestão de Manutenção — SIGMAN</div></div>
   </div>
-  <div style="text-align:center"><h1>${titulo}</h1><div style="font-size:11px;font-weight:bold;color:#C41230">${item.numero}</div></div>
-  <div style="text-align:right;font-size:9px;color:#666">Doc: SIGMAN<br>Rev: 01</div>
+  <div style="text-align:center"><h1>${titulo}</h1><div style="font-size:13px;font-weight:bold;color:#C41230">${item.numero}</div></div>
+  <div style="text-align:right;font-size:10px;color:#666">Doc: SIGMAN<br>Rev: 01</div>
 </div>
 <div class="info-grid">
   <div class="info-box"><div class="info-label">Sala / Local</div><div class="info-val">${item.sala}</div></div>

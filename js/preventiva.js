@@ -108,13 +108,13 @@ async function carregarTarefasPreventiva() {
         const key = `${grp}-${ti}`;
         return `
         <div class="prev-row" data-key="${key}" style="display:grid;grid-template-columns:1fr auto 1.5fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--bord)">
-          <div style="font-size:13px">${tarefaTexto}</div>
+          <div style="font-size:15px">${tarefaTexto}</div>
           <div style="display:flex;gap:5px">
             <button class="iok" onclick="setPrevStatus('${key}','ok',this)">OK</button>
             <button class="inok" onclick="setPrevStatus('${key}','nok',this)">NOK</button>
             <button class="ina" onclick="setPrevStatus('${key}','na',this)">NA</button>
           </div>
-          <div><input type="text" placeholder="Materiais / Observações" style="background:var(--inp);border:1px solid var(--bord);border-radius:4px;color:var(--txt);font-size:12px;padding:4px 8px;width:100%;outline:none" id="pvobs-${key}"></div>
+          <div><input type="text" placeholder="Materiais / Observações" style="background:var(--inp);border:1px solid var(--bord);border-radius:4px;color:var(--txt);font-size:14px;padding:4px 8px;width:100%;outline:none" id="pvobs-${key}"></div>
           <input type="hidden" value="" id="pvst-${key}">
         </div>`;
       }).join('')}
@@ -197,19 +197,19 @@ function _imprimirPreventivaBase({ titulo, doc, colunas, colMateriais }) {
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
 <title>${titulo}</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;color:#000;padding:15mm}
-h1{font-size:15px;text-align:center;color:#C41230;margin-bottom:4px}
-h2{font-size:12px;margin:10px 0 4px;background:#f0f0f0;padding:4px 8px;border-left:3px solid #C41230}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:13px;color:#000;padding:15mm}
+h1{font-size:17px;text-align:center;color:#C41230;margin-bottom:4px}
+h2{font-size:14px;margin:10px 0 4px;background:#f0f0f0;padding:4px 8px;border-left:3px solid #C41230}
 .header{display:flex;justify-content:space-between;border-bottom:2px solid #C41230;padding-bottom:8px;margin-bottom:10px}
 .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
 .info-box{border:1px solid #ccc;border-radius:3px;padding:5px 8px}
-.info-label{font-size:9px;color:#666;text-transform:uppercase}
-.info-val{font-size:12px;font-weight:bold}
+.info-label{font-size:10px;color:#666;text-transform:uppercase}
+.info-val{font-size:14px;font-weight:bold}
 table{width:100%;border-collapse:collapse;margin-bottom:8px}
-th{background:#C41230;color:#fff;padding:5px 7px;text-align:left;font-size:10px}
+th{background:#C41230;color:#fff;padding:5px 7px;text-align:left;font-size:11px}
 td{padding:5px 7px;border:1px solid #ddd}
 .cb{width:14px;height:14px;border:1px solid #999;border-radius:2px;display:inline-block}
-.assinatura{border-top:1px solid #000;width:180px;margin-top:30px;padding-top:4px;font-size:9px}
+.assinatura{border-top:1px solid #000;width:180px;margin-top:30px;padding-top:4px;font-size:10px}
 @media print{body{padding:10mm}}
 </style></head><body>
 <div class="header">
@@ -218,7 +218,7 @@ td{padding:5px 7px;border:1px solid #ddd}
     <div><b>MUFFATO FOODS</b><br>Gestão de Manutenção — PCM</div>
   </div>
   <div><h1>${titulo}</h1></div>
-  <div style="text-align:right;font-size:10px">Doc: ${doc}<br>Rev: 02</div>
+  <div style="text-align:right;font-size:11px">Doc: ${doc}<br>Rev: 02</div>
 </div>
 <div class="info-grid">
   <div class="info-box"><div class="info-label">Máquina</div><div class="info-val">${maqVal[1]||'___'}</div></div>

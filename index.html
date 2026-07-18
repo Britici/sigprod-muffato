@@ -3,7 +3,7 @@
 <head>
   <link rel="icon" href="https://muffatosupermercados.vteximg.com.br/arquivos/muffatosupermercados-favicon-2.ico">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes">
 <title>SIGMAN · Muffato Foods</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/sigman.css">
@@ -22,7 +22,7 @@
     border-top-color:var(--red);
     animation:spin .8s linear infinite;
   "></div>
-  <div style="font-family:var(--fw);font-size:13px;color:var(--txt3);font-variant:small-caps;letter-spacing:1px;">
+  <div style="font-family:var(--fw);font-size:15px;color:var(--txt3);font-variant:small-caps;letter-spacing:1px;">
     Carregando...
   </div>
 </div>
@@ -83,7 +83,7 @@
    <div class="pg" id="pg-dashboard">
     <div class="ph" style="flex-wrap:wrap;align-items:center;gap:8px">
      <div class="pt"><small>Visão Geral</small>Dashboard</div>
-     <select id="dash-periodo" onchange="renderDash()" style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 10px;font-size:12px;font-family:var(--fw);font-weight:600;cursor:pointer">
+     <select id="dash-periodo" onchange="renderDash()" style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 10px;font-size:14px;font-family:var(--fw);font-weight:600;cursor:pointer">
       <option value="dia">Hoje</option>
       <option value="semana">Últimos 7 dias</option>
       <option value="mes" selected>Mês</option>
@@ -91,18 +91,18 @@
       <option value="custom">Período Customizado</option>
      </select>
      <div id="dash-custom-dates" style="display:none;gap:8px;align-items:center">
-      <label style="font-size:12px;color:var(--txt3);font-weight:600">Data Inicial:</label>
+      <label style="font-size:14px;color:var(--txt3);font-weight:600">Data Inicial:</label>
       <input type="hidden" id="dash-dt-ini">
-      <input type="text" id="dash-dt-ini_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:12px;width:100px">
-      <label style="font-size:12px;color:var(--txt3);font-weight:600">Data Final:</label>
+      <input type="text" id="dash-dt-ini_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:14px;width:100px">
+      <label style="font-size:14px;color:var(--txt3);font-weight:600">Data Final:</label>
       <input type="hidden" id="dash-dt-fim">
-      <input type="text" id="dash-dt-fim_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:12px;width:100px">
+      <input type="text" id="dash-dt-fim_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:14px;width:100px">
      </div>
      <div id="dash-rf-bar" style="display:flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);padding:5px 10px;flex-shrink:0">
        <span class="rf-dot off" id="rf-dot"></span>
        <button class="btn btn-sm btn-gh" onclick="renderDash()" style="padding:4px 10px">🔄 Atualizar</button>
-       <button class="btn btn-sm" id="rf-btn" onclick="toggleDashRefresh()" style="background:var(--surf3);color:var(--txt2);border:1px solid var(--bord);border-radius:var(--rs);padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--fw);font-weight:700">▶ 15s</button>
-       <span id="rf-lbl" style="font-size:11px;color:var(--txt3);white-space:nowrap">Desligada</span>
+       <button class="btn btn-sm" id="rf-btn" onclick="toggleDashRefresh()" style="background:var(--surf3);color:var(--txt2);border:1px solid var(--bord);border-radius:var(--rs);padding:4px 10px;cursor:pointer;font-size:13px;font-family:var(--fw);font-weight:700">▶ 15s</button>
+       <span id="rf-lbl" style="font-size:13px;color:var(--txt3);white-space:nowrap">Desligada</span>
      </div>
      <button class="btn btn-sm btn-gh" onclick="exportDashPDF()" style="margin-left:auto;padding:5px 12px">📄 PDF</button>
     </div>
@@ -251,7 +251,7 @@
       <div class="photo-zone" id="ab-photo-zone" onclick="document.getElementById('ab-photo-input').click()">
        <input type="file" id="ab-photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)">
        <div id="ab-photo-preview" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <span style="color:var(--txt3);font-size:13px">📷 Clique para anexar foto</span>
+        <span style="color:var(--txt3);font-size:15px">📷 Clique para anexar foto</span>
        </div>
       </div>
      </div>
@@ -299,7 +299,7 @@
       <div class="fg fg-full"><label>Foto do Problema (opcional)</label>
         <div id="sol-photo-area" onclick="document.getElementById('sol-photo-input').click()" style="border:2px dashed var(--bord);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;background:var(--surf2);display:flex;align-items:center;gap:14px;justify-content:center" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--bord)'">
           <input type="file" id="sol-photo-input" accept="image/*" style="display:none" onchange="previewSolPhoto(this)">
-          <div id="sol-photo-preview"><span style="color:var(--txt3);font-size:13px">📷 Clique para anexar foto</span></div>
+          <div id="sol-photo-preview"><span style="color:var(--txt3);font-size:15px">📷 Clique para anexar foto</span></div>
         </div>
       </div>
      </div>
@@ -311,7 +311,7 @@
       <div class="card">
       <div class="card-t" style="justify-content:space-between">
         Solicitações Não Concluídas
-        <select id="sol-sort" onchange="renderSol()" style="font-family:var(--fw);font-size:11px;font-weight:700;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt2);padding:3px 8px;cursor:pointer">
+        <select id="sol-sort" onchange="renderSol()" style="font-family:var(--fw);font-size:13px;font-weight:700;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt2);padding:3px 8px;cursor:pointer">
           <option value="numero-desc">OS # ↓ (mais recente)</option>
           <option value="numero-asc">OS # ↑ (mais antiga)</option>
           <option value="prioridade-asc">Prioridade (crítica primeiro)</option>
@@ -398,7 +398,7 @@
       <div class="card">
         <div class="card-t" style="justify-content:space-between">
           <span>Máquinas Cadastradas</span>
-          <select id="at-ml-fil" onchange="renderAtivos()" style="font-size:12px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;max-width:160px">
+          <select id="at-ml-fil" onchange="renderAtivos()" style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;max-width:160px">
             <option value="">Todas as Salas</option>
           </select>
         </div>
@@ -426,32 +426,6 @@
       <div class="stats" id="salas-grid"></div>
     </div>
     
-   <!-- PÁGINA: INSPEÇÃO (templates - admin only) -->
-   <div class="pg" id="pg-inspecao-tmpl">
-    <div class="ph">
-     <div class="pt"><small>PCM · Qualidade</small>Templates de Inspeção</div>
-     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-sm btn-gh" id="btn-insp-maq-print" onclick="imprimirInspecao()">🖨️ Imprimir Mecânica/Elétrica</button>
-     </div>
-    </div>
-    <div class="card">
-     <div class="card-t">Selecionar Template</div>
-     <div class="fg-row">
-      <div class="fg"><label>Sala (filtro)</label>
-       <select id="insp-tmpl-sala" onchange="renderInspTmpl()">
-        <option value="">Todas as Salas</option>
-       </select>
-      </div>
-      <div class="fg"><label>Data</label><input type="hidden" id="insp-tmpl-dt"><input type="text" id="insp-tmpl-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)"></div>
-      <div class="fg"><label>Manutentor</label><input type="text" id="insp-tmpl-mn" placeholder="Nome"></div>
-     </div>
-    </div>
-    <div id="insp-tmpl-body"></div>
-    <div class="fa">
-     <button class="btn btn-p" onclick="salvarInspTmpl()">💾 Salvar Inspeção</button>
-    </div>
-   </div>
-
    <!-- PÁGINA: PREVENTIVA (template - admin only) -->
    <div class="pg" id="pg-preventiva">
     <div class="ph">
@@ -705,7 +679,6 @@
   <script src="js/usuarios.js"></script>
   <script src="js/preventiva.js"></script>
   <script src="js/racr.js"></script>
-  <script src="js/inspecao-template.js"></script>
   <script src="js/modulo-compras-solicitacao.js"></script>
   <script src="js/modulo-compras-acompanhamento.js"></script>
   
@@ -817,7 +790,6 @@ const NAV = [
       { id:'compras-acompanhamento', ic:'📦', lbl:'Acompanhamento de Compras'},
       { id:'planejamento',           ic:'📋', lbl:'Planejamento de O.S.' },
       { id:'analise-causa-raiz',     ic:'📊', lbl:'Análise Causa Raiz'},
-      { id:'inspecao-tmpl',          ic:'📄', lbl:'Insp. Mecânica/Elétrica'   },
       { id:'preventiva',             ic:'🔩', lbl:'Manutenção Preventiva'},      
     ]
   },
@@ -831,7 +803,7 @@ const LBLS = {
   abertura:'Abertura de O.S.', planejamento:'PCM — Planejamento de O.S.',
   'analise-causa-raiz':'PCM — Análise de Causa Raiz',
   solicitacao:'Solicitação de O.S.', inspecao:'Inspeção Diária',
-  ativos:'Ativos', usuarios:'Usuários', 'inspecao-tmpl':'PCM — Templates de Inspeção',
+  ativos:'Ativos', usuarios:'Usuários',
   preventiva:'PCM — Manutenção Preventiva',
   'compras-solicitacao':'PCM — Solicitação de Compras',
   'compras-acompanhamento':'PCM — Acompanhamento de Compras'
@@ -922,7 +894,6 @@ function showPage(pid) {
   if (pid === 'ativos')      { renderAtivos();  apiLoadAll(true).then(renderAtivos).catch(()=>showToast('Erro ao sincronizar Ativos.','er')); }
   if (pid === 'usuarios')      renderUsuarios();
   if (pid === 'inspecao')      buildInsp();
-  if (pid === 'inspecao-tmpl') initInspTmpl();
   if (pid === 'preventiva')    initPreventiva();
   if (pid === 'analise-causa-raiz') { renderRACR(); apiLoadAll(true).then(renderRACR).catch(()=>{}); }
   if (pid === 'abertura') {
@@ -1031,7 +1002,7 @@ function previewPhoto(input) {
       const prev = document.getElementById('ab-photo-preview');
       prev.innerHTML = `
         <img src="${dataUrl}" class="photo-thumb" alt="Foto OS">
-        <div style="font-size:12px;color:var(--txt2)">
+        <div style="font-size:14px;color:var(--txt2)">
           <strong>${file.name}</strong><br>
           <span style="color:var(--txt3)">${byteSize} KB (redimensionado)</span><br>
           <button class="btn btn-sm" onclick="removePhoto(event)"
@@ -1053,7 +1024,7 @@ function removePhoto(e) {
   e.stopPropagation();
   _photoFile = null; _photoBase64 = null;
   document.getElementById('ab-photo-input').value = '';
-  document.getElementById('ab-photo-preview').innerHTML = '<span style="color:var(--txt3);font-size:13px">📷 Clique para anexar foto</span>';
+  document.getElementById('ab-photo-preview').innerHTML = '<span style="color:var(--txt3);font-size:15px">📷 Clique para anexar foto</span>';
 }
 
 async function uploadFotoOS(numero) {

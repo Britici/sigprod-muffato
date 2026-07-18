@@ -162,7 +162,7 @@ function renderSalasStatus(ordPer, horasTurno1, horasTurno2, horasTurno3, diasPe
       <div class="sc-card" style="color:${cor}">
         <div class="sc-lbl">${s.sala}</div>
         <div class="sc-val">${s.disp}%</div>
-        <div style="font-size:10px;color:var(--txt3);margin-top:4px">Parada: ${s.minParada}min</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">Parada: ${s.minParada}min</div>
         <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:${cor};opacity:.5"></div>
       </div>
     `;
@@ -233,7 +233,7 @@ function abrirFotoImprimir(fotoUrl) {
 body{background:#f4f4f4;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:14mm}
 img{max-width:100%;max-height:85vh;object-fit:contain;box-shadow:0 4px 20px rgba(0,0,0,.15)}
 .bar{display:flex;gap:10px;margin-top:16px}
-.bar button{font-family:Arial,sans-serif;font-size:13px;padding:9px 18px;border-radius:5px;border:none;cursor:pointer;background:#C41230;color:#fff}
+.bar button{font-family:Arial,sans-serif;font-size:15px;padding:9px 18px;border-radius:5px;border:none;cursor:pointer;background:#C41230;color:#fff}
 .bar button:hover{background:#a30f28}
 @media print{.bar{display:none}body{padding:0;background:#fff}img{max-height:100vh}}
 </style></head><body>

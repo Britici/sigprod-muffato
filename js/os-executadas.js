@@ -66,15 +66,15 @@ function renderExec() {
         ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;flex-shrink:0"></span>`:''}
         <span class="osn">${o.numero}</span>
       </span>
-      ${o.origem==='plan'&&o.origemNum?`<div style="text-align:left;font-size:10px;color:var(--txt2);margin-top:1px">(${o.origemNum})</div>`:''}
+      ${o.origem==='plan'&&o.origemNum?`<div style="text-align:left;font-size:11px;color:var(--txt2);margin-top:1px">(${o.origemNum})</div>`:''}
     </td>
-    <td style="font-size:12px">${fd(o.data)}</td>
+    <td style="font-size:14px">${fd(o.data)}</td>
     <td>${o.sala}</td>
-    <td><div>${o.maq}</div><div style="font-size:10px;color:var(--txt3)">${getCriticidadeBadge(o.maq)}</div></td>
+    <td><div>${o.maq}</div><div style="font-size:11px;color:var(--txt3)">${getCriticidadeBadge(o.maq)}</div></td>
     <td>${tipoBadge(o.tipo)}</td>
     <td>${prio(o.prioridade)}</td>
-    <td style="font-size:12px">${o.manut}</td>
-    <td style="font-family:var(--fm);font-size:11px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
+    <td style="font-size:14px">${o.manut}</td>
+    <td style="font-family:var(--fm);font-size:13px">${o.ini&&o.fim?o.ini+' – '+o.fim:'—'}${o.durMin?' ('+o.durMin+'min)':''}</td>
     <td style="width:52px;text-align:center">
       ${o.fotoUrl
         ? `<div class="foto-wrap" style="display:inline-block">
@@ -83,7 +83,7 @@ function renderExec() {
                border:1px solid var(--bord);cursor:zoom-in;display:block"
                alt="Foto" onclick="abrirFotoLightbox('${o.fotoUrl}')" onerror="this.style.display='none'">
            </div>`
-        : `<span style="font-size:11px;color:var(--txt3)">—</span>`}
+        : `<span style="font-size:13px;color:var(--txt3)">—</span>`}
     </td>
     <td><div style="display:flex;gap:4px">
       <button class="btn btn-sm btn-gh" onclick="verDet('${o.numero}','os')">Ver</button>

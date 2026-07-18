@@ -13,7 +13,7 @@ function renderAtivos() {
     ? '<div class="empty"><p>Nenhuma sala.</p></div>'
     : [...db.salas].sort().map((s,i)=>`
       <div class="edit-row">
-        <span style="font-size:13px;font-weight:500">${s}</span>
+        <span style="font-size:15px;font-weight:500">${s}</span>
         <div class="edit-acts">
           <button class="btn btn-edit btn-sm" onclick="openEdit('sala',${db.salas.indexOf(s)})">✎</button>
           <button class="btn btn-d" onclick="delSala('${s}')">✕</button>
@@ -39,14 +39,14 @@ function renderAtivos() {
 
   document.getElementById('at-ml').innerHTML = Object.keys(bySala).sort().map(sala=>`
     <div style="margin-bottom:10px">
-      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;padding:6px 0;border-bottom:1px solid var(--bord);margin-bottom:4px">${sala}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;padding:6px 0;border-bottom:1px solid var(--bord);margin-bottom:4px">${sala}</div>
       ${bySala[sala].map((m,_i)=>{
         const gi=db.maquinas.indexOf(m);
         const critColor={'1':'#ff2244','2':'var(--red)','3':'var(--org)','4':'var(--grn)','Alta':'var(--red)','Média':'var(--org)','Baixa':'var(--grn)'}[m.criticidade]||'var(--txt3)';
         return `<div class="edit-row">
           <div>
-            <div style="font-size:13px;font-weight:500">${m.nome}${m.tag?` <span style="font-size:10px;color:var(--txt3)">${m.tag}</span>`:''}</div>
-            <div style="font-size:11px;color:var(--txt3)">
+            <div style="font-size:15px;font-weight:500">${m.nome}${m.tag?` <span style="font-size:11px;color:var(--txt3)">${m.tag}</span>`:''}</div>
+            <div style="font-size:13px;color:var(--txt3)">
               Criticidade: <span style="color:${critColor};font-weight:600">${m.criticidade||'—'}</span> |
               Preventiva: ${m.periodicidade||'—'}${m.modeloPadrao?` | Modelo: <span style="color:var(--txt2)">${m.modeloPadrao}</span>`:''}
             </div>
@@ -85,7 +85,7 @@ function renderCritChart() {
   });
   const total = db.maquinas.length;
   if (!total) {
-    cont.innerHTML = '<div style="text-align:center;color:var(--txt3);padding:20px;font-size:12px">Nenhuma máquina cadastrada</div>';
+    cont.innerHTML = '<div style="text-align:center;color:var(--txt3);padding:20px;font-size:14px">Nenhuma máquina cadastrada</div>';
     return;
   }
   const colors = {'1':'#ff2244','2':'#f59e0b','3':'#4096ff','4':'#1fd988'};
@@ -109,8 +109,8 @@ function renderCritChart() {
   const legendaHtml = entries.map(([k, n]) => `
     <div style="display:flex;align-items:center;gap:6px;white-space:nowrap">
       <span style="width:10px;height:10px;border-radius:2px;background:${colors[k]};flex-shrink:0"></span>
-      <span style="font-size:11px;font-weight:700;color:var(--txt2)">${k}</span>
-      <span style="font-size:11px;color:var(--txt3)">${Math.round(n/total*100)}%</span>
+      <span style="font-size:13px;font-weight:700;color:var(--txt2)">${k}</span>
+      <span style="font-size:13px;color:var(--txt3)">${Math.round(n/total*100)}%</span>
     </div>`).join('');
 
   const allBars = [...Object.entries(counts), ['T', total]];
@@ -137,7 +137,7 @@ function renderCritChart() {
     <div style="display:flex;gap:20px;align-items:center;flex-wrap:nowrap;overflow-x:auto">
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <div style="text-align:center">
-          <div style="font-size:10px;font-weight:700;color:var(--txt3);font-variant:small-caps;letter-spacing:.8px;margin-bottom:4px">Visão Geral</div>
+          <div style="font-size:11px;font-weight:700;color:var(--txt3);font-variant:small-caps;letter-spacing:.8px;margin-bottom:4px">Visão Geral</div>
           <svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">
             <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--surf3)" stroke-width="${sw}"/>
             ${arcs}
@@ -150,7 +150,7 @@ function renderCritChart() {
         </div>
       </div>
       <div style="flex:1;min-width:160px">
-        <div style="font-size:10px;font-weight:700;color:var(--txt3);font-variant:small-caps;letter-spacing:.8px;margin-bottom:6px">Quantidade da Distribuição</div>
+        <div style="font-size:11px;font-weight:700;color:var(--txt3);font-variant:small-caps;letter-spacing:.8px;margin-bottom:6px">Quantidade da Distribuição</div>
         <svg width="100%" height="${chartH + topPad + 18}" viewBox="0 0 ${svgW} ${chartH + topPad + 18}" preserveAspectRatio="xMidYMid meet">
           ${barsSvg}
         </svg>
