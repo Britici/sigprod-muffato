@@ -190,6 +190,7 @@ function editarPlan(id) {
       <textarea id="ep-desc">${p.desc||''}</textarea>
     </div>`;
 
+  initDateIcons(document.getElementById('me-b'));
   _editType = 'plan'; _editIdx = id;
   openM('m-edit');
 }

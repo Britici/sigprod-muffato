@@ -43,6 +43,59 @@ function abrirDatePicker(id) {
   el.click();
   setTimeout(() => { el.style.pointerEvents = 'none'; }, 300);
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// ÍCONE 📅 DENTRO DO CAMPO DE DATA
+// Auto-detecta todo <input class="date-mask"> na página (estático ou
+// gerado dinamicamente) e injeta o ícone de calendário embutido no
+// próprio campo, igual ao input type=time nativo. Não precisa mais
+// montar o botão/picker manualmente no HTML — só colocar a classe
+// "date-mask" no campo de texto que o resto é automático.
+// Reaproveita hidden id=X existente (caso A/C) ou, se o próprio campo
+// base já for type=date (caso do prev-dt), usa ele mesmo como picker.
+// Idempotente: pode chamar de novo a qualquer momento sem duplicar.
+// ══════════════════════════════════════════════════════════════════════
+function wireDateIcon(dispEl) {
+  if (!dispEl || (dispEl.parentElement && dispEl.parentElement.classList.contains('date-wrap'))) return;
+  const base = dispEl.id.replace(/_disp$/, '');
+  const baseEl = document.getElementById(base);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'date-wrap';
+  dispEl.parentNode.insertBefore(wrap, dispEl);
+  wrap.appendChild(dispEl);
+
+  let picker;
+  if (baseEl && baseEl.type === 'date') {
+    picker = baseEl; // caso prev-dt: o próprio campo já é hidden+picker
+  } else {
+    picker = document.getElementById(base + '_picker');
+    if (!picker) {
+      picker = document.createElement('input');
+      picker.type = 'date';
+      picker.id = base + '_picker';
+      picker.onchange = function () { sv(base, this.value); };
+      wrap.appendChild(picker);
+    }
+  }
+  picker.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:1px;height:1px';
+  if (picker.parentNode !== wrap) wrap.appendChild(picker);
+  // força espaço pro ícone mesmo em campos com padding inline (ex: filtros
+  // compactos do dashboard, que já trazem style="padding:5px 8px")
+  dispEl.style.paddingRight = '30px';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'dp-btn';
+  btn.title = 'Escolher data';
+  btn.textContent = '📅';
+  btn.onclick = () => abrirDatePicker(picker.id);
+  wrap.appendChild(btn);
+}
+function initDateIcons(root) {
+  (root || document).querySelectorAll('input.date-mask').forEach(wireDateIcon);
+}
+document.addEventListener('DOMContentLoaded', () => initDateIcons());
 function dateMaskInput(el) {
   let d = el.value.replace(/\D/g, '').slice(0, 8);
   if (d.length >= 5) d = d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);

@@ -54,6 +54,10 @@ input[type=date]::-webkit-calendar-picker-indicator,
 input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.65);cursor:pointer}
 [data-theme=light] input[type=date]::-webkit-calendar-picker-indicator,
 [data-theme=light] input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.15) opacity(.65)}
+.date-wrap{position:relative}
+.date-wrap input.date-mask{padding-right:36px}
+.date-wrap .dp-btn{position:absolute;right:2px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;font-size:15px;padding:8px;line-height:1;color:var(--txt3);opacity:.75;display:flex;align-items:center;justify-content:center;border-radius:var(--rs)}
+.date-wrap .dp-btn:hover{opacity:1;background:var(--surf3)}
 .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fg-3{grid-template-columns:1fr 1fr 1fr}
 .fg-full{grid-column:1/-1}

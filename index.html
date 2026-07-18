@@ -229,13 +229,9 @@
     <div class="card">
      <div class="card-t">Tempo de Intervenção</div>
      <div class="fg-row fg-3">
-      <div class="fg" style="position:relative"><label>Data</label>
+      <div class="fg"><label>Data</label>
         <input type="hidden" id="ab-dt">
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="ab-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" style="flex:1">
-          <button type="button" class="btn btn-sm btn-gh" onclick="abrirDatePicker('ab-dt_picker')" title="Escolher data" style="padding:9px 10px;flex-shrink:0">📅</button>
-        </div>
-        <input type="date" id="ab-dt_picker" onchange="sv('ab-dt',this.value)" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
+        <input type="text" id="ab-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)">
       </div>
       <div class="fg"><label>Hora Início</label><input type="time" id="ab-in"></div>
       <div class="fg"><label>Hora Fim</label><input type="time" id="ab-fm"></div>
@@ -445,12 +441,9 @@
       <div class="fg"><label>Modelo de Manutenção</label>
        <select id="prev-modelo" onchange="carregarTarefasPreventiva()"><option value="">Selecione...</option></select>
       </div>
-      <div class="fg" style="position:relative"><label>Data Execução</label>
-        <div style="display:flex;gap:6px;align-items:center">
-          <input type="text" id="prev-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" style="flex:1">
-          <button type="button" class="btn btn-sm btn-gh" onclick="abrirDatePicker('prev-dt')" title="Escolher data" style="padding:9px 10px;flex-shrink:0">📅</button>
-        </div>
-        <input type="date" id="prev-dt" onchange="sv('prev-dt',this.value)" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px">
+      <div class="fg"><label>Data Execução</label>
+        <input type="text" id="prev-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)">
+        <input type="date" id="prev-dt" onchange="sv('prev-dt',this.value)" style="display:none">
       </div>
       <div class="fg"><label>Manutentor</label><input type="text" id="prev-mn" placeholder="Nome"></div>
      </div>

@@ -760,6 +760,7 @@ function _abrirModal(ordem, etapaIdx, el) {
 
   document.body.insertAdjacentHTML('beforeend', html);
   const overlay = document.getElementById('cac-modal-overlay');
+  initDateIcons(overlay);
 
   /* Toggle — init state */
   overlay.querySelectorAll('.cac-toggle').forEach(tog => {
