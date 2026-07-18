@@ -67,7 +67,7 @@ function renderPlan() {
       ? (db.ordens.find(o => o.origem==='plan' && o.origemNum===p.numero)||{}).numero
       : null;
     return `<tr>
-    <td><span class="osn">${p.numero}</span>${osGerada?`<div style="font-size:9px;color:var(--txt3);margin-top:1px">(${osGerada})</div>`:''}</td>
+    <td><span class="osn">${p.numero}</span>${osGerada?`<div style="text-align:left;font-size:10px;color:var(--txt2);margin-top:1px">(${osGerada})</div>`:''}</td>
     <td>${p.sala}</td><td>${p.maq}</td>
     <td>${tipoBadge(p.tipo)}</td><td>${prio(p.prioridade)}</td>
     <td style="font-family:var(--fm);font-size:11px;color:${p.prazo<t&&p.status!=='Concluída'?'var(--red)':'var(--txt)'}">${fd(p.prazo)}</td>

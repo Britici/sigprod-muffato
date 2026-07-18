@@ -62,7 +62,7 @@ function renderExec() {
 
   tb.innerHTML = data.map(o => `<tr>
     <td style="white-space:nowrap;width:110px">
-      <span style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+      <span style="display:flex;align-items:center;gap:4px;justify-content:flex-start">
         ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;flex-shrink:0"></span>`:''}
         <span class="osn">${o.numero}</span>
       </span>
