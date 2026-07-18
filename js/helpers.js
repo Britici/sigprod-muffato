@@ -199,14 +199,17 @@ function _initFotoLightboxGlobal() {
     if (src) abrirFotoImprimir(src);
   });
 }
-// ESC fecha qualquer lightbox de foto aberto (.cac-lightbox é a classe
-// compartilhada por este lightbox e pelo de Compras/Acompanhamento).
-// Registrado no carregamento do script, não no init lazy, pra funcionar
-// mesmo que o usuário abra o lightbox de Compras primeiro.
+// ESC fecha qualquer popup aberto no sistema — tanto os modais padrão
+// (.mb.on: Ver OS, RACR, editar, etc) quanto os lightboxes de foto
+// (.cac-lightbox.open: este e o de Compras/Acompanhamento).
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.cac-lightbox.open').forEach(function(l) {
       l.classList.remove('open');
+    });
+    document.querySelectorAll('.mb.on').forEach(function(m) {
+      if (m.id === 'mb-racr' && typeof fecharRACR === 'function') { fecharRACR(); return; }
+      m.classList.remove('on');
     });
   }
 });
