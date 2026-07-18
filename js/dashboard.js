@@ -87,8 +87,8 @@ function renderDash() {
     console.warn('[AVISO] Nenhuma sala cadastrada para o período');
   }
   
-  const salaComAlerta = dispPorSala.filter(s => s.disp < 85);
-  const metaDisp   = db.configuracoes.meta_disponibilidade || 85;
+  const metaDisp   = db.configuracoes.meta_disponibilidade || 91;
+  const salaComAlerta = dispPorSala.filter(s => s.disp < metaDisp);
   const ordCorrComTempo = ordCorr.filter(o => o.durMin > 0);
   const mttr = ordCorrComTempo.length ? Math.round(ordCorrComTempo.reduce((s,o)=>s+o.durMin,0)/ordCorrComTempo.length) : 0;
   
