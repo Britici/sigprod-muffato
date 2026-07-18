@@ -176,8 +176,8 @@ function imprimirInspecaoEquipamento() {
   _imprimirPreventivaBase({
     titulo: 'ORDEM DE INSPEÇÃO DE EQUIPAMENTO',
     doc: 'SIGMAN-INSP-EQ',
-    colunas: ['C','NC','NSA'],
-    colMateriais: false
+    colunas: ['OK','NOK','NA'],
+    colMateriais: true
   });
 }
 
@@ -210,6 +210,11 @@ th{background:#C41230;color:#fff;padding:5px 7px;text-align:left;font-size:11px}
 td{padding:5px 7px;border:1px solid #ddd}
 .cb{width:14px;height:14px;border:1px solid #999;border-radius:2px;display:inline-block}
 .assinatura{border-top:1px solid #000;width:180px;margin-top:30px;padding-top:4px;font-size:10px}
+.obs-box{margin-top:14px}
+.obs-box .obs-title{font-size:12px;font-weight:bold;background:#f0f0f0;padding:4px 8px;border-left:3px solid #C41230;margin-bottom:0}
+.obs-box .obs-linhas{border:1px solid #ccc;border-top:none}
+.obs-box .obs-linha{height:22px;border-bottom:1px dotted #999}
+.obs-box .obs-linha:last-child{border-bottom:none}
 @media print{body{padding:10mm}}
 </style></head><body>
 <div class="header">
@@ -241,6 +246,10 @@ ${tarefas.map(tarefaTexto=>`<tr>
   ${colMateriais?'<td></td>':''}
 </tr>`).join('')}
 </table>`).join('')}
+<div class="obs-box">
+  <div class="obs-title">Observações</div>
+  <div class="obs-linhas">${Array(5).fill('<div class="obs-linha"></div>').join('')}</div>
+</div>
 <div style="display:flex;justify-content:space-between;margin-top:15px">
   <div><div class="assinatura">Assinatura do Manutentor</div></div>
   <div><div class="assinatura">Aprovação do Supervisor</div></div>

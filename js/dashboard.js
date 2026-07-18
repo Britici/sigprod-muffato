@@ -50,6 +50,23 @@ function renderDash() {
   const plOpen  = db.planejadas.filter(p => p.status !== 'Concluída').length;
   const plAtras = db.planejadas.filter(p => p.status === 'Atrasada').length;
   const solPend = db.solicitacoes.filter(s => s.status === 'Não Executada').length;
+  // Solicitações "atrasadas" = abertas há mais de 3 dias sem execução
+  const solAtras = db.solicitacoes.filter(s => {
+    if (s.status !== 'Não Executada' || !s.criadoEm) return false;
+    const dias = (new Date(t) - new Date(s.criadoEm.slice(0,10))) / 86400000;
+    return dias > 3;
+  }).length;
+
+  // RACR — corretivas que ultrapassaram o limite de parada por criticidade
+  // e ainda não têm RACR aberta (ver função precisaRAC em os-planejadas.js)
+  const racDevemAbrir = ordCorr.filter(o => {
+    if (o.tipo !== 'Corretiva') return false;
+    const parada = o.paradaMin || o.durMin || 0;
+    if (parada <= 0) return false;
+    const crit = getCriticidadeMaq(o.maq);
+    return parada > limiteRAC(crit);
+  });
+  const racNaoAbertas = racDevemAbrir.filter(o => !(db.racs||[]).find(r => r.osNumero === o.numero));
 
   // Próximas Preventivas — count de planejadas abertas com prazo
   const proxCount = db.planejadas.filter(p => p.status !== 'Concluída' && p.prazo).length;
@@ -155,11 +172,6 @@ function renderDash() {
         <button class=\"btn btn-sm btn-gh\" onclick=\"goToPage('salas-status')\" style=\"margin-top:4px;width:100%\">Ver Detalhes →</button>
         <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:${corColor};opacity:.5\"></div>
       </div>
-      <div class="sc-card ${plAtras > 0 ? 'c-r' : 'c-o'}">
-        <div class="sc-lbl">Backlog OS</div>
-        <div class="sc-val">${plOpen}</div>
-        <div style="font-size:11px;color:var(--txt3);margin-top:4px">${plAtras} atrasadas</div>
-      </div>
       <div class="sc-card c-go">
         <div class="sc-lbl">OS Hoje</div>
         <div class="sc-val">${hj}</div>
@@ -174,6 +186,16 @@ function renderDash() {
       <div class="sc-lbl">MTTR (min)</div>
       <div class="sc-val">${mttr}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">Tempo médio de reparo</div>
+    </div>
+    <div class="sc-card ${solAtras > 0 ? 'c-r' : 'c-o'}">
+      <div class="sc-lbl">Solicitações</div>
+      <div class="sc-val">${solPend}</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:4px">${solAtras} atrasadas</div>
+    </div>
+    <div class="sc-card ${racNaoAbertas.length > 0 ? 'c-r' : 'c-o'}">
+      <div class="sc-lbl">RACR Pendentes</div>
+      <div class="sc-val">${racDevemAbrir.length}</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:4px">${racNaoAbertas.length} não abertas</div>
     </div>
     <div class="sc-card c-r">
       <div class="sc-lbl">Preventivas</div>
@@ -199,6 +221,11 @@ function renderDash() {
       <div class="sc-lbl">Preditiva</div>
       <div class="sc-val">${predi}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${total ? Math.round(predi/total*100) : 0}% do total</div>
+    </div>
+    <div class="sc-card ${plAtras > 0 ? 'c-r' : 'c-o'}">
+      <div class="sc-lbl">Backlog OS</div>
+      <div class="sc-val">${plOpen}</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:4px">${plAtras} atrasadas</div>
     </div>`;
 
   // Gauge + PCM Ring + Trend + Próximas + Top Máquinas
@@ -358,9 +385,24 @@ function exportDashPDF() {
   
   const dispPorSala = calcDisponibilidadePorSala(ordP, horas_turno_1, horas_turno_2, horas_turno_3, Math.max(1, Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1));
   const disponib = dispPorSala.length > 0 ? Math.round(dispPorSala.reduce((s, sala) => s + (sala.disp || 0), 0) / dispPorSala.length) : 100;
-  
+  const metaDisp = db.configuracoes.meta_disponibilidade || 91;
+
   const hj = db.ordens.filter(o => o.data === t).length;
   const plOpen = db.planejadas.filter(p => p.status !== 'Concluída').length;
+  const plAtras = db.planejadas.filter(p => p.status === 'Atrasada').length;
+  const solPend = db.solicitacoes.filter(s => s.status === 'Não Executada').length;
+  const solAtras = db.solicitacoes.filter(s => {
+    if (s.status !== 'Não Executada' || !s.criadoEm) return false;
+    const dias = (new Date(t) - new Date(s.criadoEm.slice(0,10))) / 86400000;
+    return dias > 3;
+  }).length;
+  const racDevemAbrir = ordCorr.filter(o => {
+    if (o.tipo !== 'Corretiva') return false;
+    const parada = o.paradaMin || o.durMin || 0;
+    if (parada <= 0) return false;
+    return parada > limiteRAC(getCriticidadeMaq(o.maq));
+  });
+  const racNaoAbertas = racDevemAbrir.filter(o => !(db.racs||[]).find(r => r.osNumero === o.numero));
   
   const ordTempoExec = ordP.filter(o => o.durMin > 0);
   const mttr = ordTempoExec.length ? Math.round(ordTempoExec.reduce((s, o) => s + o.durMin, 0) / ordTempoExec.length) : 0;
@@ -395,7 +437,7 @@ function exportDashPDF() {
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #C41230; padding-bottom: 8px; margin-bottom: 14px; }
     h1 { font-size:17px; color: #C41230; }
     h2 { font-size:13px; margin: 14px 0 8px; background: #f4f4f4; padding: 4px 8px; border-left: 3px solid #C41230; text-transform: uppercase; letter-spacing: .5px; }
-    .grid-10 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 14px; }
+    .grid-10 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 14px; }
     .card { border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; text-align: center; }
     .card-label { font-size:10px; color: #888; text-transform: uppercase; font-weight: 600; }
     .card-value { font-size:20px; font-weight: bold; color: #C41230; margin-top: 4px; }
@@ -420,15 +462,17 @@ function exportDashPDF() {
   <h2>KPIs do Período — ${perLbl}</h2>
   <div class="grid-10">
     <div class="card"><div class="card-label">Disponibilidade</div><div class="card-value">${disponib}%</div></div>
-    <div class="card"><div class="card-label">Backlog OS</div><div class="card-value">${plOpen}</div></div>
     <div class="card"><div class="card-label">OS Hoje</div><div class="card-value">${hj}</div></div>
     <div class="card"><div class="card-label">MTBF (min)</div><div class="card-value">${mtbf}</div></div>
     <div class="card"><div class="card-label">MTTR (min)</div><div class="card-value">${mttr}</div></div>
+    <div class="card"><div class="card-label">Solicitações</div><div class="card-value">${solPend}</div><div class="card-sub">${solAtras} atrasadas</div></div>
+    <div class="card"><div class="card-label">RACR Pendentes</div><div class="card-value">${racDevemAbrir.length}</div><div class="card-sub">${racNaoAbertas.length} não abertas</div></div>
     <div class="card"><div class="card-label">Preventivas</div><div class="card-value">${ordPrev.length}</div></div>
     <div class="card"><div class="card-label">Corretivas</div><div class="card-value">${ordCorr.length}</div></div>
     <div class="card"><div class="card-label">Melhoria</div><div class="card-value">${ordMelh.length}</div></div>
     <div class="card"><div class="card-label">Inspeção</div><div class="card-value">${ordInsp.length}</div></div>
     <div class="card"><div class="card-label">Preditiva</div><div class="card-value">${ordPred.length}</div></div>
+    <div class="card"><div class="card-label">Backlog OS</div><div class="card-value">${plOpen}</div><div class="card-sub">${plAtras} atrasadas</div></div>
   </div>
 
   <h2>Gráficos do Período</h2>
@@ -439,7 +483,7 @@ function exportDashPDF() {
         <circle cx="50" cy="40" r="25" fill="none" stroke="#e0e0e0" stroke-width="8"></circle>
         <circle cx="50" cy="40" r="25" fill="none" stroke="#C41230" stroke-width="8" stroke-dasharray="${disponib * 1.57} 157" stroke-linecap="round" transform="rotate(-90 50 40)"></circle>
         <text x="50" y="45" text-anchor="middle" font-size="16" font-weight="bold" fill="#C41230">${disponib}%</text>
-        <text x="120" y="20" font-size="10" fill="#666">Meta: 85%</text>
+        <text x="120" y="20" font-size="10" fill="#666">Meta: ${metaDisp}%</text>
         <text x="120" y="35" font-size="10" fill="#666">Salas: ${dispPorSala.length}</text>
       </svg>
     </div>

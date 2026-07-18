@@ -74,7 +74,7 @@ function wireDateIcon(dispEl) {
       picker = document.createElement('input');
       picker.type = 'date';
       picker.id = base + '_picker';
-      picker.onchange = function () { sv(base, this.value); };
+      picker.onchange = function () { sv(base, this.value); dispEl.dispatchEvent(new Event('change', { bubbles: true })); };
       wrap.appendChild(picker);
     }
   }
