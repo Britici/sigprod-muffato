@@ -135,6 +135,13 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.65
 .card{background:var(--surf);border:1px solid var(--bord);border-radius:var(--r);padding:18px;margin-bottom:14px}
 .card-t{font-family:var(--fw);font-size:15px;font-weight:700;color:var(--txt3);font-variant:small-caps;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .card-t::before{content:'';width:3px;height:14px;background:var(--red);border-radius:2px;flex-shrink:0}
+
+/* Card de cadastro colapsável (usado em Ativos) */
+.card-fold .card-t{margin-bottom:0;cursor:pointer;user-select:none;justify-content:space-between}
+.card-fold .card-t-chev{margin-left:auto;font-size:12px;transition:transform .2s;color:var(--txt3)}
+.card-fold.open .card-t-chev{transform:rotate(180deg)}
+.card-fold-body{display:none;margin-top:14px}
+.card-fold.open .card-fold-body{display:block}
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 @media(min-width:540px){.stats{grid-template-columns:repeat(3,1fr)}}

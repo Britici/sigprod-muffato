@@ -442,6 +442,7 @@ async function apiLoadAll(silent = false) {
   }
   if (d.maquinas && d.maquinas.length) {
     db.maquinas = d.maquinas.filter(r => r.Ativo !== 'nao').map(r => ({
+      id: normStr(r.ID_Maquina) || (normStr(r.Sala)+'_'+normStr(r.Nome)).replace(/\s+/g,'_'),
       nome: normStr(r.Nome),
       sala: normStr(r.Sala),
       tag: normStr(r.Tag),

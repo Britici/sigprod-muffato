@@ -355,48 +355,55 @@
   <div class="ph">
     <div class="pt"><small>Cadastro</small>Ativos</div>
   </div>
+    <div class="card"><div class="card-t">Criticidade das Máquinas</div><div id="at-crit-chart"></div></div>
     <div class="two-col">
     <div>
-      <div class="card"><div class="card-t">Criticidade das Máquinas</div><div id="at-crit-chart"></div></div>
-     <div class="card">
-       <div class="card-t">Nova Sala / Local</div>
-       <div class="fg"><label>Nome da Sala</label><input type="text" id="at-sn" placeholder="Ex: Carne Moída"></div>
-       <button class="btn btn-p btn-sm" onclick="addSala()">+ Adicionar</button>
+      <div class="card card-fold" id="at-card-sala">
+       <div class="card-t" onclick="toggleAtFold('at-card-sala')"><span>+ Nova Sala / Local</span><span class="card-t-chev">▾</span></div>
+       <div class="card-fold-body">
+        <div class="fg"><label>Nome da Sala</label><input type="text" id="at-sn" placeholder="Ex: Carne Moída"></div>
+        <button class="btn btn-p btn-sm" onclick="addSala()">+ Adicionar</button>
+       </div>
       </div>
       <div class="card"><div class="card-t">Salas Cadastradas</div><div id="at-sl"></div></div>
         </div>
      <div>
-      <div class="card">
-       <div class="card-t">Nova Máquina / Ativo</div>
-       <div class="fg"><label>Sala</label><select id="at-ms"><option value="">Selecione...</option></select></div>
-       <div class="fg"><label>Nome da Máquina</label><input type="text" id="at-mn" placeholder="Ex: Cubadora"></div>
-       <div class="fg"><label>Tag / Código</label><input type="text" id="at-mt" placeholder="Ex: CUB-001"></div>
-       <div class="fg"><label>Criticidade</label>
-        <select id="at-mc">
-         <option value="1">1 – Crítico</option>
-         <option value="2">2 – Alta</option>
-         <option value="3" selected>3 – Média</option>
-         <option value="4">4 – Baixa</option>
-        </select>
+      <div class="card card-fold" id="at-card-maq">
+       <div class="card-t" onclick="toggleAtFold('at-card-maq')"><span>+ Nova Máquina / Ativo</span><span class="card-t-chev">▾</span></div>
+       <div class="card-fold-body">
+        <div class="fg"><label>Sala</label><select id="at-ms"><option value="">Selecione...</option></select></div>
+        <div class="fg"><label>Nome da Máquina</label><input type="text" id="at-mn" placeholder="Ex: Cubadora"></div>
+        <div class="fg"><label>Tag / Código</label><input type="text" id="at-mt" placeholder="Ex: CUB-001"></div>
+        <div class="fg"><label>Criticidade</label>
+         <select id="at-mc">
+          <option value="1">1 – Crítico</option>
+          <option value="2">2 – Alta</option>
+          <option value="3" selected>3 – Média</option>
+          <option value="4">4 – Baixa</option>
+         </select>
+        </div>
+        <div class="fg"><label>Periodicidade Preventiva</label>
+         <select id="at-mp">
+          <option>Diária</option><option>Semanal</option>
+          <option selected>Mensal</option><option>Trimestral</option>
+          <option>Semestral</option><option>Anual</option>
+         </select>
+        </div>
+        <div class="fg"><label>Modelo de Manutenção Padrão</label>
+         <select id="at-mmp"><option value="">Nenhum (seleciona manual na OS)</option></select>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="addMaq()">+ Adicionar</button>
        </div>
-       <div class="fg"><label>Periodicidade Preventiva</label>
-        <select id="at-mp">
-         <option>Diária</option><option>Semanal</option>
-         <option selected>Mensal</option><option>Trimestral</option>
-         <option>Semestral</option><option>Anual</option>
-        </select>
-       </div>
-       <div class="fg"><label>Modelo de Manutenção Padrão</label>
-        <select id="at-mmp"><option value="">Nenhum (seleciona manual na OS)</option></select>
-       </div>
-       <button class="btn btn-p btn-sm" onclick="addMaq()">+ Adicionar</button>
       </div>
       <div class="card">
-        <div class="card-t" style="justify-content:space-between">
+        <div class="card-t" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
           <span>Máquinas Cadastradas</span>
-          <select id="at-ml-fil" onchange="renderAtivos()" style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;max-width:160px">
-            <option value="">Todas as Salas</option>
-          </select>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="at-ml-busca" oninput="renderAtivos()" placeholder="Buscar nome ou tag..." style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;width:140px">
+            <select id="at-ml-fil" onchange="renderAtivos()" style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;max-width:140px">
+              <option value="">Todas as Salas</option>
+            </select>
+          </div>
         </div>
         <div id="at-ml"></div>
       </div>       
