@@ -193,7 +193,7 @@ function renderDash() {
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${solAtras} atrasadas</div>
     </div>
     <div class="sc-card ${racNaoAbertas.length > 0 ? 'c-r' : 'c-o'}">
-      <div class="sc-lbl">RACR Pendentes</div>
+      <div class="sc-lbl">RAC Pendentes</div>
       <div class="sc-val">${racDevemAbrir.length}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${racNaoAbertas.length} não abertas</div>
     </div>
