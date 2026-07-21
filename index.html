@@ -1129,7 +1129,15 @@ function populateSalaFilter(id) {
 
 function irParaCard(pageId) {
   const ok = ROLES[CU.tipo]?.menus || [];
-  if (!ok.includes(pageId)) return; // sem permissão, clique não faz nada
+  let requiredId = pageId;
+  let subEntry = null;
+  if (!NAV.find(n => n.id === pageId)) {
+    for (const n of NAV) {
+      if (n.sub) { const s = n.sub.find(x => x.id === pageId); if (s) { requiredId = n.id; subEntry = s; break; } }
+    }
+  }
+  if (subEntry && subEntry.admin && CU.tipo !== 'administracao') return;
+  if (!ok.includes(requiredId)) return; // sem permissão, clique não faz nada
   showPage(pageId);
 }
 
