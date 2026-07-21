@@ -211,6 +211,7 @@ function renderSol() {
         ${prio(s.prioridade)}${stBadge(s.status)}
         ${CU&&CU.tipo!=='producao'&&s.status==='Não Executada'
           ?`<button class="btn btn-sm btn-g" onclick="abrirConcluir('${s.numero}','sol')">✓ Executar</button>`:''}
+        ${osGerada?`<button class="btn btn-sm btn-gh" onclick="verDet('${osGerada}','os')">Ver</button>`:''}
       </div>
     </div>`;
   };
