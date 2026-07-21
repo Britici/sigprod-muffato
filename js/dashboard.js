@@ -185,7 +185,7 @@ function renderDash() {
         <button class=\"btn btn-sm btn-gh\" onclick=\"goToPage('salas-status')\" style=\"margin-top:4px;width:100%\">Ver Detalhes →</button>
         <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:${corColor};opacity:.5\"></div>
       </div>
-      <div class="sc-card c-go">
+      <div class="sc-card c-go" onclick="irParaCard('executadas')" style="cursor:pointer">
         <div class="sc-lbl">OS Hoje</div>
         <div class="sc-val">${hj}</div>
         <div style="font-size:11px;color:var(--txt3);margin-top:4px">Período: ${total}</div>
@@ -200,12 +200,12 @@ function renderDash() {
       <div class="sc-val">${mttr}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">Tempo médio de reparo</div>
     </div>
-    <div class="sc-card ${solAtras > 0 ? 'c-r' : 'c-o'}">
+    <div class="sc-card ${solAtras > 0 ? 'c-r' : 'c-o'}" onclick="irParaCard('compras-acompanhamento')" style="cursor:pointer">
       <div class="sc-lbl">Solicitações de Compra</div>
       <div class="sc-val">${solPend}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${solAtras} atrasadas</div>
     </div>
-    <div class="sc-card ${racNaoAbertas.length > 0 ? 'c-r' : 'c-o'}">
+    <div class="sc-card ${racNaoAbertas.length > 0 ? 'c-r' : 'c-o'}" onclick="irParaCard('analise-causa-raiz')" style="cursor:pointer">
       <div class="sc-lbl">RAC</div>
       <div class="sc-val">${racDevemAbrir.length}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${racNaoAbertas.length} não abertas</div>
@@ -235,7 +235,7 @@ function renderDash() {
       <div class="sc-val">${predi}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${total ? Math.round(predi/total*100) : 0}% do total</div>
     </div>
-    <div class="sc-card ${plAtras > 0 ? 'c-r' : 'c-o'}">
+    <div class="sc-card ${plAtras > 0 ? 'c-r' : 'c-o'}" onclick="irParaCard('planejadas')" style="cursor:pointer">
       <div class="sc-lbl">Backlog OS</div>
       <div class="sc-val">${plOpen}</div>
       <div style="font-size:11px;color:var(--txt3);margin-top:4px">${plAtras} atrasadas</div>

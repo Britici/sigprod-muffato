@@ -66,7 +66,7 @@ function renderExec() {
         ${precisaRAC(o)?`<span class="rac-dot" title="RAC obrigatório" style="cursor:default;flex-shrink:0"></span>`:''}
         <span class="osn">${o.numero}</span>
       </span>
-      ${o.origem==='plan'&&o.origemNum?`<div style="text-align:left;font-size:11px;color:var(--txt2);margin-top:1px">(${o.origemNum})</div>`:''}
+      ${(o.origem==='plan'||o.origem==='sol')&&o.origemNum?`<div style="text-align:left;font-size:11px;color:var(--txt2);margin-top:1px">(${o.origemNum})</div>`:''}
     </td>
     <td style="font-size:14px">${fd(o.data)}</td>
     <td>${o.sala}</td>

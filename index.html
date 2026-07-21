@@ -270,7 +270,7 @@
       <div class="fg"><label>Tipo de Serviço</label><select id="pl-tp"><option value="">Selecione...</option><option>Corretiva</option><option>Inspeção</option><option>Melhoria</option><option>Preditiva</option><option>Preventiva</option></select></div>
       <div class="fg"><label>Prioridade</label><select id="pl-pr"><option value="">Selecione...</option><option value="1">🔴 1 – Emergencial (Parada)</option><option value="2">🟡 2 – Urgente (Corretiva Programada)</option><option value="3">🔵 3 – Média (Preventiva)</option><option value="4">🟢 4 – Baixa (Melhoria)</option></select></div>
       <div class="fg"><label>Prazo Limite</label><input type="hidden" id="pl-pz"><input type="text" id="pl-pz_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)"></div>
-      <div class="fg"><label>Horas por Turno</label><input type="number" id="pl-horas" value="10" min="1" max="24"></div>
+      <div class="fg" style="display:none"><label>Horas por Turno</label><input type="number" id="pl-horas" value="10" min="1" max="24"></div>
       <div class="fg fg-full"><label>Descrição do Serviço Planejado</label><textarea id="pl-ds" placeholder="Descreva o serviço..."></textarea></div>
      </div>
      <div class="fa">
@@ -305,9 +305,9 @@
      </div>
     </div>
       <div class="card">
-      <div class="card-t" style="justify-content:space-between">
+      <div class="card-t">
         Solicitações Não Concluídas
-        <select id="sol-sort" onchange="renderSol()" style="font-family:var(--fw);font-size:13px;font-weight:700;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt2);padding:3px 8px;cursor:pointer">
+        <select id="sol-sort" onchange="renderSol()" style="font-family:var(--fw);font-size:13px;font-weight:700;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt2);padding:3px 8px;cursor:pointer;margin-left:auto">
           <option value="numero-desc">OS # ↓ (mais recente)</option>
           <option value="numero-asc">OS # ↑ (mais antiga)</option>
           <option value="prioridade-asc">Prioridade (crítica primeiro)</option>
@@ -339,7 +339,7 @@
      <div class="fg-row">
       <div class="fg"><label>Data</label><input type="hidden" id="insp-dt"><input type="text" id="insp-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)"></div>
       <div class="fg"><label>Turno</label><select id="insp-tn"><option>1º Turno</option><option>2º Turno</option><option>3º Turno</option></select></div>
-      <div class="fg"><label>Horas do Turno</label><input type="number" id="insp-horas" value="10" min="1" max="24"></div>
+      <div class="fg" style="display:none"><label>Horas do Turno</label><input type="number" id="insp-horas" value="10" min="1" max="24"></div>
       <div class="fg"><label>Manutentor</label><input type="text" id="insp-mn" placeholder="Nome"></div>
      </div>
     </div>
@@ -1125,6 +1125,12 @@ function populateSalaFilter(id) {
   sel.innerHTML = '<option value="">Todas as Salas</option>';
   [...db.salas].sort().forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
   if (cur) sel.value = cur;
+}
+
+function irParaCard(pageId) {
+  const ok = ROLES[CU.tipo]?.menus || [];
+  if (!ok.includes(pageId)) return; // sem permissão, clique não faz nada
+  showPage(pageId);
 }
 
 function goToPage(pageId) {
