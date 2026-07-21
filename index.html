@@ -720,6 +720,7 @@ function doLogout() {
   clearInterval(_pollTimer);
   clearInterval(_dashTimer);
   localStorage.removeItem('sigman_sess');
+  localStorage.removeItem('sigman_lastpage');
   CU = null;
   document.getElementById('app').classList.remove('on');
   document.getElementById('loading-screen').style.display = 'none';
@@ -753,7 +754,10 @@ function enterApp() {
   populateAll();
   // Primeiro menu disponível - para PCM vai para planejamento
   const firstMenu = ROLES[CU.tipo].menus[0];
-  showPage(firstMenu === 'pcm' ? 'planejamento' : firstMenu);
+  const defaultPage = firstMenu === 'pcm' ? 'planejamento' : firstMenu;
+  const lastPage = localStorage.getItem('sigman_lastpage');
+  const lastPageValida = lastPage && document.querySelector(`[data-page="${lastPage}"]`);
+  showPage(lastPageValida ? lastPage : defaultPage);
   updStats();
   updateNavDots();
 
@@ -874,6 +878,7 @@ function updateNavDots() {
 }
 
 function showPage(pid) {
+  localStorage.setItem('sigman_lastpage', pid);
   document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.nv-item').forEach(n => n.classList.remove('act'));
   document.querySelectorAll('.nv-sub-item').forEach(n => n.classList.remove('act'));
@@ -932,6 +937,7 @@ function startDashTimer() {
     const pid  = act ? act.getAttribute('data-page') : null;
     if (pid === 'dashboard') {
       await apiLoadAll(true);
+      await _refreshComprasCache();
       renderDash();
       updateNavDots();
       const lbl = document.getElementById('rf-lbl');
