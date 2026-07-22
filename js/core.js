@@ -252,11 +252,11 @@ function showApiStatus(status) {
 }
 
 // Envia nova linha para o Sheets
-function apiAppend(sheet, row) { return apiPost({ action:'append', sheet, row }); }
+function apiAppend(sheet, row) { return apiPost({ action:'append', sheet, row, usuario: (typeof CU!=='undefined'&&CU)?CU.nome:'' }); }
 // Atualiza linha existente
-function apiUpdate(sheet, id, idCol, row) { return apiPost({ action:'update', sheet, id, idCol, row }); }
+function apiUpdate(sheet, id, idCol, row) { return apiPost({ action:'update', sheet, id, idCol, row, usuario: (typeof CU!=='undefined'&&CU)?CU.nome:'' }); }
 // Remove linha
-function apiDelete(sheet, id, idCol) { return apiPost({ action:'delete', sheet, id, idCol }); }
+function apiDelete(sheet, id, idCol) { return apiPost({ action:'delete', sheet, id, idCol, usuario: (typeof CU!=='undefined'&&CU)?CU.nome:'' }); }
 
 // ── Normalização de valores vindos do Sheets ─────────────────────────────
 function normDate(v) {
