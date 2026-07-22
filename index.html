@@ -785,7 +785,7 @@ function enterApp() {
   // Inicia polling de atualização automática (só admin e manut)
   if (CU.tipo !== 'producao') {
     _pollTimer = setInterval(async () => {
-      await apiLoadAll(true);
+      await apiLoadAll(true, true);
       updStats();
       updateNavDots();
     }, POLL_MS);
@@ -910,9 +910,9 @@ function showPage(pid) {
   if (pid === 'solicitacao') { renderSol();     apiLoadAll(true).then(renderSol).catch(()=>showToast('Erro ao sincronizar Solicitações.','er')); }
   if (pid === 'ativos')      { renderAtivos();  apiLoadAll(true).then(renderAtivos).catch(()=>showToast('Erro ao sincronizar Ativos.','er')); }
   if (pid === 'usuarios')      renderUsuarios();
-  if (pid === 'inspecao')      buildInsp();
+  if (pid === 'inspecao')      { buildInsp(); apiLoadInspecoes().then(buildInsp).catch(()=>{}); }
   if (pid === 'preventiva')    initPreventiva();
-  if (pid === 'analise-causa-raiz') { renderRACR(); apiLoadAll(true).then(renderRACR).catch(()=>{}); }
+  if (pid === 'analise-causa-raiz') { renderRACR(); apiLoadRacs().then(renderRACR).catch(()=>{}); }
   if (pid === 'abertura') {
     populateSalas('ab'); sv('ab-dt', today());
     if (CU.tipo !== 'producao') sv('ab-mn', CU.nome);
@@ -948,9 +948,8 @@ function startDashTimer() {
     const act = document.querySelector('.nv-item.act, .nv-sub-item.act');
     const pid  = act ? act.getAttribute('data-page') : null;
     if (pid === 'dashboard') {
-      await apiLoadAll(true);
+      await apiLoadAll(true, true);
       await _refreshComprasCache();
-      renderDash();
       updateNavDots();
       const lbl = document.getElementById('rf-lbl');
       if (lbl) lbl.textContent = 'Última atualização: ' + new Date().toLocaleTimeString('pt-BR');
