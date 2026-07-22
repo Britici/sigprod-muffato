@@ -114,7 +114,7 @@ async function salvarRACR() {
   }).then(res => {
     if (res?.ok) {
       showToast('RACR salvo no Sheets.', 'ok');
-      apiLoadAll(true).then(renderRACR);
+      apiLoadRacs().then(renderRACR);
     } else {
       showToast('Salvo localmente — Sheets indisponível.', 'war');
       renderRACR();
