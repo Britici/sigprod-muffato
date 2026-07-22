@@ -464,21 +464,29 @@ async function apiLoadAll(silent = false) {
     db.racs = d.racs.map(r => ({
       id: normStr(r.ID),
       osNumero: normStr(r.OS_Numero),
-      maquina: normStr(r.Maquina),
+      maquina: normStr(r.Equipamento),
       sala: normStr(r.Sala),
       criticidade: Number(r.Criticidade) || 3,
       tempoParada: Number(r.Tempo_Parada_Min) || 0,
       limiteMin: Number(r.Limite_Min) || 0,
+      falha: normStr(r.Falha),
       causaRaiz: normStr(r.Causa_Raiz),
+      why1: normStr(r.Why1),
+      why2: normStr(r.Why2),
+      why3: normStr(r.Why3),
+      why4: normStr(r.Why4),
+      why5: normStr(r.Why5),
       acaoImediata: normStr(r.Acao_Imediata),
-      acaoCorretiva:normStr(r.Acao_Corretiva),
-      responsavel: normStr(r.Responsavel),
-      prazo: normDate(r.Prazo),
+      acaoPreventiva: normStr(r.Acao_Preventiva),
+      respProd: normStr(r.Resp_Producao),
+      respManu: normStr(r.Resp_Manutencao),
+      executantes: normStr(r.Executantes),
+      fotos: (() => { try { return JSON.parse(r.Fotos || '[]'); } catch { return []; } })(),
       status: normStr(r.Status) || 'Aberto',
       dataAbertura: normDate(r.Data_Abertura),
-      dataBaixa: normDate(r.Data_Baixa),
+      dataBaixa: normDate(r.Data_Fechamento),
       fechadoPor: normStr(r.Fechado_Por),
-      criadoEm: normStr(r.Criado_Em)
+      criadoEm: normStr(r.Data_Criacao)
     }));
   }
 
