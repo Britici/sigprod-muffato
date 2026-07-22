@@ -585,6 +585,18 @@
         <textarea id="racr-falha" placeholder="Descrever falha identificada..."></textarea>
       </div>
     </div>
+    <!-- EVIDÊNCIAS / FOTOS -->
+    <div class="card">
+      <div class="card-t">Evidências da Falha (fotos)</div>
+      <div id="racr-foto-drop" class="racr-foto-drop" onclick="document.getElementById('racr-foto-input').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="event.preventDefault();this.classList.remove('drag-over');racrAddFotos(event.dataTransfer.files)">
+        📷 Clique para anexar fotos ou arraste aqui (máx. 4)
+        <input type="file" id="racr-foto-input" accept="image/*" multiple style="display:none" onchange="racrAddFotos(this.files);this.value=''">
+      </div>
+      <div id="racr-foto-preview" class="racr-foto-grid"></div>
+    </div>
     <!-- SEÇÃO 3: CAUSA -->
     <div class="card">
       <div class="card-t">3 - Causa</div>
