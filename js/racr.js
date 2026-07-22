@@ -125,7 +125,7 @@ function encerrarRACR(id) {
   saveDB();
   renderRACR();
   showToast('RACR encerrado.', 'ok');
-  apiPost({ action: 'encerrarRACR', id });
+  apiPost({ action: 'encerrarRACR', id, usuario: CU?.nome || '' });
 }
  
 // ── Imprime o RACR em nova janela ─────────────────────────────────
