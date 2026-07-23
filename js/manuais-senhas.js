@@ -187,27 +187,14 @@ function _msVerCredenciais(id) {
     body.innerHTML = '<div style="opacity:.6;font-size:13px">Nenhuma credencial cadastrada.</div>';
   } else {
     body.innerHTML = `<div style="font-size:13px;opacity:.75;margin-bottom:8px">${r.maquina} — ${r.sala}</div>` +
-      r.credenciais.map((c, i) => `
+      r.credenciais.map((c) => `
       <div class="edit-row" style="margin-bottom:6px">
         <div>
           <div style="font-size:12px;opacity:.7">${c.tipo || 'Acesso'}</div>
-          <div><b>${c.usuario || '—'}</b></div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span id="ms-modal-senha-${i}" data-senha="${(c.senha || '').replace(/"/g, '&quot;')}">••••••••</span>
-            <button type="button" class="btn btn-gh btn-sm" onclick="_msToggleModalSenha(${i})">👁</button>
-          </div>
+          <div><b>Usuário:</b> ${c.usuario || '—'}</div>
+          <div><b>Senha:</b> ${c.senha || '—'}</div>
         </div>
       </div>`).join('');
   }
   openM('m-ms-cred');
-}
-
-function _msToggleModalSenha(i) {
-  const el = document.getElementById('ms-modal-senha-' + i);
-  if (!el) return;
-  if (el.textContent === '••••••••') {
-    el.textContent = el.dataset.senha || '(vazio)';
-  } else {
-    el.textContent = '••••••••';
-  }
 }
