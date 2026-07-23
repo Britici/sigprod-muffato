@@ -415,7 +415,7 @@
    <div class="pg" id="pg-manuais-senhas">
     <div class="ph"><div class="pt"><small>Manutenção</small>Manuais e Senhas</div></div>
     <div class="two-col">
-     <div>
+     <div id="ms-col-admin">
       <div class="card">
        <div class="card-t">Selecionar Máquina</div>
        <div class="fg"><label>Sala / Local</label>
@@ -442,13 +442,25 @@
       <div class="card">
        <div class="card-t" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span>Máquinas Cadastradas</span>
-        <input type="text" id="ms-busca" oninput="renderMSLista()" placeholder="Buscar máquina..." style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;width:160px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+         <select id="ms-lista-sala" onchange="renderMSLista()" style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none">
+          <option value="">Todas as salas</option>
+         </select>
+         <input type="text" id="ms-busca" oninput="renderMSLista()" placeholder="Buscar máquina..." style="font-size:14px;background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:4px 8px;outline:none;width:160px">
+        </div>
        </div>
        <div id="ms-lista"></div>
       </div>
      </div>
     </div>
    </div>
+
+   <!-- MODAL: CREDENCIAIS (Manuais e Senhas) -->
+   <div class="mb" id="m-ms-cred"><div class="modal" style="max-width:420px">
+    <div class="mhd"><div class="mtit">Credenciais de Acesso</div><button class="mcl" onclick="closeM('m-ms-cred')">×</button></div>
+    <div id="ms-cred-modal-body"></div>
+   </div></div>
+
 
    <!-- PÁGINA: USUÁRIOS (admin only) -->
    <div class="pg" id="pg-usuarios">
