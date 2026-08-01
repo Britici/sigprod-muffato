@@ -1129,7 +1129,7 @@ function showPage(pid) {
   if (pid === 'dashboard') { renderDash(); apiLoadAll(true).then(renderDash).catch(()=>{}); if (_dashAutoRf) startDashTimer(); }
   if (pid === 'planejadas')  { renderPlan();    apiLoadAll(true).then(renderPlan).catch(()=>showToast('Erro ao sincronizar Planejadas.','er')); }
   if (pid === 'executadas')  { renderExec();    apiLoadAll(true).then(renderExec).catch(()=>showToast('Erro ao sincronizar Executadas.','er')); }
-  if (pid === 'solicitacao') { renderSol();     apiLoadAll(true).then(renderSol).catch(()=>showToast('Erro ao sincronizar Solicitações.','er')); }
+  if (pid === 'solicitacao') { renderSol(); renderPhotoGrid('sol'); apiLoadAll(true).then(renderSol).catch(()=>showToast('Erro ao sincronizar Solicitações.','er')); }
   if (pid === 'ativos')      { renderAtivos();  apiLoadAll(true).then(renderAtivos).catch(()=>showToast('Erro ao sincronizar Ativos.','er')); }
   if (pid === 'usuarios')      renderUsuarios();
   if (pid === 'inspecao')      { buildInsp(); apiLoadInspecoes().then(buildInsp).catch(()=>{}); }
@@ -1139,6 +1139,7 @@ function showPage(pid) {
   if (pid === 'abertura') {
     populateSalas('ab'); sv('ab-dt', today());
     if (CU.tipo !== 'producao') sv('ab-mn', CU.nome);
+    renderPhotoGrid('ab');
   }
   if (pid === 'planejamento') { populateSalas('pl'); }
   if (pid === 'compras-solicitacao') {
