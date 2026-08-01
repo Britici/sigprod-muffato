@@ -1247,11 +1247,37 @@ function _compressFile(file) {
 
 // Renderiza o grid de miniaturas + botão "adicionar"
 function renderPhotoGrid(prefix) {
-  const gridId = prefix + '-photo-grid';
+  const gridId  = prefix + '-photo-grid';
   const inputId = prefix + '-photo-input';
   const arr = _getPhotoArr(prefix);
-  const el = document.getElementById(gridId);
+  const el  = document.getElementById(gridId);
   if (!el) return;
+
+  if (!arr.length) {
+    // Área grande clicável (igual Solicitação de Compras)
+    el.innerHTML = `
+      <div onclick="document.getElementById('${inputId}').click()"
+        style="width:100%;min-height:90px;display:flex;flex-direction:column;
+               align-items:center;justify-content:center;gap:6px;cursor:pointer;
+               color:var(--txt3);font-size:13px"
+        onmouseover="this.parentElement.style.borderColor='var(--red)'"
+        onmouseout="this.parentElement.style.borderColor='var(--bord)'">
+        <span style="font-size:28px">🖼️</span>
+        <span>Clique para anexar fotos ou arraste aqui</span>
+      </div>`;
+    el.ondragover  = e => { e.preventDefault(); el.style.borderColor='var(--red)'; };
+    el.ondragleave = () => el.style.borderColor='var(--bord)';
+    el.ondrop      = async e => {
+      e.preventDefault(); el.style.borderColor='var(--bord)';
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      if (!files.length) return;
+      const fakeInput = { files };
+      await addPhotosFromFiles(fakeInput.files, prefix);
+    };
+    return;
+  }
+
+  // Há fotos: miniaturas + botão "+"
   const thumbs = arr.map((p, i) => `
     <div style="position:relative;display:inline-block">
       <img src="${p.dataUrl}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--bord)">
@@ -1261,6 +1287,7 @@ function renderPhotoGrid(prefix) {
                display:flex;align-items:center;justify-content:center;padding:0;line-height:1">×</button>
       <div style="font-size:10px;color:var(--txt3);text-align:center;margin-top:2px">${p.sizeKb}KB</div>
     </div>`).join('');
+
   el.innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">
       ${thumbs}
@@ -1269,17 +1296,22 @@ function renderPhotoGrid(prefix) {
                display:flex;flex-direction:column;align-items:center;justify-content:center;
                cursor:pointer;color:var(--txt3);font-size:22px;background:var(--surf2)"
         onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--bord)'">
-        📷<span style="font-size:10px;margin-top:2px">${arr.length ? 'Mais' : 'Foto'}</span>
+        ➕<span style="font-size:10px;margin-top:2px">Mais</span>
       </div>
     </div>`;
+  el.ondragover = el.ondragleave = el.ondrop = null;
 }
 
 // Processa arquivos selecionados e adiciona ao array do prefixo
 async function addPhotos(input, prefix) {
-  const arr = _getPhotoArr(prefix);
-  const files = Array.from(input.files || []);
+  await addPhotosFromFiles(input.files, prefix);
   input.value = '';
-  for (const file of files) {
+}
+
+async function addPhotosFromFiles(files, prefix) {
+  const arr = _getPhotoArr(prefix);
+  for (const file of Array.from(files || [])) {
+    if (!file.type.startsWith('image/')) continue;
     const r = await _compressFile(file);
     arr.push({ file, b64: r.b64, dataUrl: r.dataUrl, sizeKb: r.sizeKb });
   }
