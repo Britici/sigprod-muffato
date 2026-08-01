@@ -818,6 +818,16 @@
 // ╚══════════════════════════════════════════════════════════════════╝
 
 // ══════════════════════════════════════════════════════════════════════
+// HASH DE SENHA — SHA-256 nativo, salt = login
+// Formato: 'h1:' + hex(SHA-256('sigman:'+login.lower()+':'+senha))
+// ══════════════════════════════════════════════════════════════════════
+async function hashSenha(login, senha) {
+  const msg = 'sigman:' + login.toLowerCase() + ':' + senha;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return 'h1:' + Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // AUTENTICAÇÃO
 // ══════════════════════════════════════════════════════════════════════
 async function doLogin() {
@@ -838,11 +848,34 @@ async function doLogin() {
     return;
   }
 
-  const user = db.usuarios.find(x => x.login === login && x.senha === senha);
+  const user = db.usuarios.find(x => x.login === login);
   if (!user) { lAlert('Usuário ou senha incorretos.'); return; }
+
+  // Comparação com suporte a hash h1: e texto puro (migração lazy)
+  let senhaOk = false;
+  if (user.senha && user.senha.startsWith('h1:')) {
+    // Senha já hasheada — compara hash
+    const hash = await hashSenha(login, senha);
+    senhaOk = (hash === user.senha);
+  } else {
+    // Senha ainda em texto puro — compara direto e migra silenciosamente
+    senhaOk = (user.senha === senha);
+    if (senhaOk && typeof USE_API !== 'undefined' && USE_API) {
+      hashSenha(login, senha).then(h => {
+        apiUpdate('usuarios', login, 'Login', { Senha_Hash: h });
+        user.senha = h;
+        const lu = JSON.parse(localStorage.getItem('sigman_users') || '[]');
+        const idx = lu.findIndex(u => u.login === login);
+        if (idx >= 0) lu[idx].senha = h; else lu.push({ ...user, senha: h });
+        localStorage.setItem('sigman_users', JSON.stringify(lu));
+      });
+    }
+  }
+
+  if (!senhaOk) { lAlert('Usuário ou senha incorretos.'); return; }
   if (user.ativo === false) { lAlert('Usuário desativado. Fale com a Administração.'); return; }
 
-  // Senha ainda é a padrão de reset — obriga a pessoa a definir uma nova antes de entrar.
+  // Sentinela de reset — obriga troca antes de entrar
   if (user.senha === 'mudar123') {
     exigirTrocaSenha(user);
     return;
@@ -881,12 +914,13 @@ async function confirmarTrocaSenha() {
   if (p1 === 'mudar123') { lAlert('Escolha uma senha diferente de "mudar123".'); return; }
 
   const login = _pendingLoginUser.login;
-  const res = await apiUpdate('usuarios', login, 'Login', { Senha_Hash: p1 });
+  const h = await hashSenha(login, p1);
+  const res = await apiUpdate('usuarios', login, 'Login', { Senha_Hash: h });
   if (!res || !res.ok) { lAlert('Não foi possível salvar a nova senha (sem conexão). Tente novamente.'); return; }
 
   const u = db.usuarios.find(x => x.login === login);
-  if (u) u.senha = p1;
-  CU = { ..._pendingLoginUser, senha: p1 };
+  if (u) u.senha = h;
+  CU = { ..._pendingLoginUser, senha: h };
   localStorage.setItem('sigman_sess', JSON.stringify({ login, senha: p1, user: CU }));
   _pendingLoginUser = null;
   document.getElementById('lf-troca-senha').style.display = 'none';
