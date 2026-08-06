@@ -241,8 +241,8 @@
         <input type="hidden" id="ab-dt">
         <input type="text" id="ab-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)">
       </div>
-      <div class="fg"><label>Hora Início</label><input type="time" id="ab-in"></div>
-      <div class="fg"><label>Hora Fim</label><input type="time" id="ab-fm"></div>
+      <div class="fg"><label>Hora Início *</label><input type="time" id="ab-in" required></div>
+      <div class="fg"><label>Hora Fim *</label><input type="time" id="ab-fm" required></div>
       <div class="fg"><label>Tempo de Parada (min)</label><input type="number" id="ab-parada" placeholder="0" min="0"></div>
      </div>
     </div>
@@ -258,7 +258,7 @@
     </div>
     <div class="fa">
      <button class="btn btn-gh" onclick="clearAb()">Limpar</button>
-     <button class="btn btn-p" onclick="salvarOS()">✓ Registrar Ordem</button>
+     <button id="btn-ab-salvar" class="btn btn-p" onclick="salvarOS()">✓ Registrar Ordem</button>
     </div>
    </div>
 
@@ -279,7 +279,7 @@
      </div>
      <div class="fa">
       <button class="btn btn-gh" onclick="clearPl()">Limpar</button>
-      <button class="btn btn-p" onclick="salvarPlan()">+ Criar O.S. Planejada</button>
+      <button id="btn-pl-salvar" class="btn btn-p" onclick="salvarPlan()">+ Criar O.S. Planejada</button>
      </div>
     </div>
    </div>
@@ -303,7 +303,7 @@
      </div>
      <div class="fa">       
       <button class="btn btn-gh" onclick="clearSol()">Limpar</button>
-      <button class="btn btn-p" onclick="salvarSol()">Enviar Solicitação</button>
+      <button id="btn-sol-salvar" class="btn btn-p" onclick="salvarSol()">Enviar Solicitação</button>
      </div>
     </div>
       <div class="card">
@@ -614,7 +614,7 @@
  </div>
  <div class="fa">
   <button class="btn btn-gh" onclick="closeM('m-con')">Cancelar</button>
-  <button class="btn btn-g" onclick="concluir()">✓ Concluir</button>
+  <button id="btn-mc-salvar" class="btn btn-g" onclick="concluir()">✓ Concluir</button>
  </div>
 </div></div>
 
@@ -794,22 +794,22 @@
      </div>
   </div></div>
   
-  <script src="js/core.js"></script>
-  <script src="js/helpers.js"></script>
-  <script src="js/modais-helpers.js"></script>
-  <script src="js/utils-offline.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/os-planejadas.js"></script>
-  <script src="js/os-executadas.js"></script>
-  <script src="js/abertura-os.js"></script>
-  <script src="js/inspecao.js"></script>
-  <script src="js/ativos.js"></script>
-  <script src="js/usuarios.js"></script>
-  <script src="js/preventiva.js"></script>
-  <script src="js/racr.js"></script>
-  <script src="js/modulo-compras-solicitacao.js"></script>
-  <script src="js/modulo-compras-acompanhamento.js"></script>
-  <script src="js/manuais-senhas.js"></script>
+  <script src="js/core.js?v=202608061316"></script>
+  <script src="js/helpers.js?v=202608061316"></script>
+  <script src="js/modais-helpers.js?v=202608061316"></script>
+  <script src="js/utils-offline.js?v=202608061316"></script>
+  <script src="js/dashboard.js?v=202608061316"></script>
+  <script src="js/os-planejadas.js?v=202608061316"></script>
+  <script src="js/os-executadas.js?v=202608061316"></script>
+  <script src="js/abertura-os.js?v=202608061316"></script>
+  <script src="js/inspecao.js?v=202608061316"></script>
+  <script src="js/ativos.js?v=202608061316"></script>
+  <script src="js/usuarios.js?v=202608061316"></script>
+  <script src="js/preventiva.js?v=202608061316"></script>
+  <script src="js/racr.js?v=202608061316"></script>
+  <script src="js/modulo-compras-solicitacao.js?v=202608061316"></script>
+  <script src="js/modulo-compras-acompanhamento.js?v=202608061316"></script>
+  <script src="js/manuais-senhas.js?v=202608061316"></script>
   
 <script>
 // ╔══════════════════════════════════════════════════════════════════╗
