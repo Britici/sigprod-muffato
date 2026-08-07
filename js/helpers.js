@@ -331,6 +331,10 @@ async function salvarSalasIndicador() {
     if (res && res.ok) {
       db.configuracoes.salas_disponibilidade = valor;
       showToast('Seleção de salas salva.');
+      // Recalcula o KPI do dashboard imediatamente — sem isso o card fica com
+      // o valor antigo até o usuário navegar pra fora e voltar pelo menu lateral
+      // (goToPage não re-renderiza, só troca visibilidade das divs).
+      if (typeof renderDash === 'function') renderDash();
     } else {
       showToast('Erro ao salvar: ' + (res?.error || 'falha desconhecida'));
     }
