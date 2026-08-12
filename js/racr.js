@@ -38,29 +38,6 @@ function fecharRACR() {
   _racrOsRef = null;
 }
  
-// ── Salva rascunho localmente (sem enviar ao Sheets) ──────────────
-function salvarRACRRascunho() {
-  const dados = _coletarDadosRACR();
-  if (!dados) return;
-  if (!db.racs) db.racs = [];
-  // Verifica se já existe rascunho para essa OS
-  const idx = _racrOsRef
-    ? db.racs.findIndex(r => r.osNumero === _racrOsRef && r.status === 'Rascunho')
-    : -1;
-  const agora = new Date().toISOString();
-  const id    = idx >= 0 ? db.racs[idx].id : 'RACR-' + agora.replace(/\D/g,'').slice(0,14);
-  if (!dados.maquina && _racrOsRef) {
-  const osRef = db.ordens.find(x => x.numero === _racrOsRef);
-  if (osRef) { dados.maquina = osRef.maq; dados.sala = osRef.sala; }
-  }
-  const racr = { ...dados, id, status: 'Rascunho', dataAbertura: agora.slice(0,10), criadoEm: agora };
-  if (idx >= 0) db.racs[idx] = racr; else db.racs.push(racr);
-  saveDB();
-  fecharRACR();
-  showToast('Rascunho salvo localmente.', 'ok');
-  renderRACR();
-}
- 
 // ── Salva RACR definitivo + envia ao Sheets ───────────────────────
 async function salvarRACR() {
   const dados = _coletarDadosRACR();

@@ -337,13 +337,6 @@ async function apiAppendComRetryNumero(sheet, row, numeroCol, prefixo, counterPr
   }
   return { ok:false, numero:null, error:'Não foi possível gerar número único após ' + maxTentativas + ' tentativas.' };
 }
-// Envia nova linha SEM número — servidor gera o próximo número (OS-/PL-/SOL-)
-// de forma atômica dentro do lock, evitando colisão entre usuários simultâneos.
-// row NÃO deve conter a coluna do número (ex: OS_Numero) — o backend preenche.
-// Retorna { ok:true, numero:'OS-0123', ... } em sucesso, ou null em falha.
-function apiAppendComNumero(sheet, coluna, prefixo, row) {
-  return apiPost({ action:'appendComNumero', sheet, coluna, prefixo, row, usuario: (typeof CU!=='undefined'&&CU)?CU.nome:'' });
-}
 // Atualiza linha existente
 function apiUpdate(sheet, id, idCol, row) { return apiPost({ action:'update', sheet, id, idCol, row, usuario: (typeof CU!=='undefined'&&CU)?CU.nome:'' }); }
 // Remove linha
@@ -615,6 +608,24 @@ async function apiLoadRacs() {
     fechadoPor: normStr(r.Fechado_Por),
     criadoEm: normStr(r.Data_Criacao)
   }));
+  saveDB();
+}
+
+async function apiLoadHistorico() {
+  if (!USE_API) return;
+  const json = await apiGet({ action: 'readHistorico' });
+  if (!json?.ok) return;
+  db.historico = (json.data || [])
+    .map(r => ({
+      ts: normStr(r.Data_Hora),
+      user: normStr(r.Usuario),
+      login: normStr(r.Login),
+      acao: normStr(r.Acao),
+      numero: normStr(r.Numero_Ref),
+      detalhe: normStr(r.Detalhe)
+    }))
+    .sort((a, b) => new Date(b.ts) - new Date(a.ts))
+    .slice(0, 100);
   saveDB();
 }
 
