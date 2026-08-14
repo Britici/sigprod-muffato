@@ -6,12 +6,6 @@
 let _msCredAtual = [];   // credenciais em edição: [{tipo,usuario,senha}]
 let _msRegistroAtual = null; // registro existente (db.manuaisSenhas) da máquina selecionada, ou null
 
-// Escape seguro pra valores usados dentro de onclick="fn('...')" (aspas simples
-// quebram o handler JS; _esc() de helpers.js só cobre & < > " pro contexto HTML).
-function _escAttr(s) {
-  return _esc(String(s == null ? '' : s)).replace(/'/g, '&#39;');
-}
-
 function initManuaisSenhas() {
   const souAdmin = CU.tipo === 'administracao';
 
