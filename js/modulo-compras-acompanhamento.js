@@ -69,15 +69,17 @@ if (!document.getElementById(CSS_ID)) {
   background:var(--surf2);color:var(--txt2);font-size:.82rem;cursor:pointer}
 .cac-empty .cac-btn-retry:hover{border-color:var(--red);color:var(--txt)}
 /* Tabela (cabeçalho + linhas), mesmo padrão visual de .tw/thead/tbody usado em O.S. Executadas */
-:root{--cac-cols:120px minmax(220px,1fr) 130px 140px 150px 190px 28px}
+:root{--cac-cols:130px minmax(240px,1fr) 150px 150px 170px 210px 32px}
 .cac-table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bord)}
 .cac-table-head{display:grid;grid-template-columns:var(--cac-cols);background:var(--surf2);
-  border-bottom:1px solid var(--bord);min-width:900px}
+  border-bottom:1px solid var(--bord);min-width:1000px}
 .cac-table-head span{padding:10px 12px;font-family:var(--fw);font-size:13px;font-weight:700;
-  color:var(--txt3);text-transform:uppercase;letter-spacing:1px;font-variant:small-caps;white-space:nowrap}
+  color:var(--txt3);text-transform:uppercase;letter-spacing:1px;font-variant:small-caps;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--bord)}
+.cac-table-head span:last-child{border-right:none}
 /* Cards */
 .cac-card{background:transparent;border:none;border-bottom:1px solid var(--bord);
-  border-radius:0;margin-bottom:0;overflow:hidden;transition:background .1s;min-width:900px}
+  border-radius:0;margin-bottom:0;overflow:hidden;transition:background .1s;min-width:1000px}
 .cac-card:last-child{border-bottom:none}
 .cac-card:hover{background:var(--surf2)}
 .cac-card.pri-1{border-left:4px solid var(--red-l)}
@@ -86,14 +88,18 @@ if (!document.getElementById(CSS_ID)) {
 .cac-card.pri-4{border-left:4px solid var(--grn)}
 .cac-card.concluida{opacity:.78}
 .cac-card.orcamento_recusado{opacity:.78}
-.cac-card-head{display:grid;grid-template-columns:var(--cac-cols);align-items:center;
-  padding:10px 12px;cursor:pointer;user-select:none;column-gap:8px}
-.cac-card-id{font-size:14px;font-weight:600;color:var(--txt);font-family:var(--fm);white-space:nowrap}
-.cac-card-desc{font-size:16px;color:var(--txt);font-weight:600;
-  white-space:normal;word-break:break-word;overflow-wrap:anywhere;min-width:0}
+.cac-card-head{display:grid;grid-template-columns:var(--cac-cols);align-items:stretch;
+  cursor:pointer;user-select:none}
+.cac-card-head>*{padding:10px 12px;display:flex;align-items:center;min-width:0;overflow:hidden;
+  border-right:1px solid var(--bord)}
+.cac-card-head>*:last-child{border-right:none}
+.cac-card-id{font-size:14px;font-weight:600;color:var(--txt);font-family:var(--fm);
+  white-space:nowrap;text-overflow:ellipsis}
+.cac-card-desc{font-size:16px;color:var(--txt);font-weight:600;white-space:nowrap;text-overflow:ellipsis}
 .cac-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:100px;
   font-family:var(--fw);font-size:13px;font-weight:700;font-variant:small-caps;
-  letter-spacing:.03em;border:1px solid currentColor;white-space:nowrap;width:fit-content}
+  letter-spacing:.03em;border:1px solid currentColor;white-space:nowrap;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .cac-badge.pri-1{color:#ff2244;background:rgba(196,18,48,.22);border-color:rgba(196,18,48,.4)}
 .cac-badge.pri-2{color:var(--org);background:rgba(245,158,11,.13)}
 .cac-badge.pri-3{color:var(--blu);background:rgba(64,150,255,.14)}
@@ -102,17 +108,18 @@ if (!document.getElementById(CSS_ID)) {
 .cac-badge.status-concluida{color:var(--grn);background:rgba(31,217,136,.13);border-color:var(--grn)}
 .cac-badge.status-orcamento_recusado{color:#ff4d65;background:rgba(196,18,48,.15);border-color:var(--red-l)}
 .cac-badge.status-atrasada{color:#ff4d65;background:rgba(196,18,48,.15);border-color:var(--red-l)}
-.cac-badge.tipo{color:var(--txt3);background:var(--surf);border-color:var(--bord);font-weight:700;width:fit-content}
-.cac-card-toggle{color:var(--txt3);font-size:.85rem;transition:transform .25s;justify-self:end}
+.cac-badge.tipo{color:var(--txt3);background:var(--surf);border-color:var(--bord);font-weight:700}
+.cac-card-toggle{color:var(--txt3);font-size:.85rem;transition:transform .25s;justify-content:center!important}
 .cac-card-toggle.open{transform:rotate(180deg)}
-.cac-card-body{padding:0 16px 16px 12px;border-top:1px solid var(--bord);display:none;min-width:900px}
+.cac-card-body{padding:0 16px 16px 12px;border-top:1px solid var(--bord);display:none;min-width:1000px}
 .cac-card-body.open{display:block}
 .cac-card-progress{display:flex;align-items:center;gap:6px;width:100%;min-width:0}
-.cac-card-progress-bar{flex:1;display:flex;gap:4px;min-width:60px}
+.cac-card-progress-bar{flex:1;display:flex;gap:4px;min-width:40px}
 .cac-card-progress-seg{flex:1;height:4px;border-radius:2px;background:var(--bord)}
 .cac-card-progress-seg.done{background:var(--grn)}
 .cac-card-progress-seg.current{background:var(--org)}
-.cac-card-progress-lbl{font-size:13px;color:var(--txt3);white-space:nowrap;font-family:var(--fm)}
+.cac-card-progress-lbl{font-size:13px;color:var(--txt3);white-space:nowrap;font-family:var(--fm);
+  overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
 .cac-card-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 16px;
   padding:12px 0 14px;font-size:14px;color:var(--txt2)}
 .cac-card-info span{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
@@ -621,6 +628,7 @@ function _buildCard(ordem) {
       <span class="cac-card-toggle">▼</span>
     </div>
     <div class="cac-card-body">
+      <div class="cac-info-block" style="margin-top:12px"><b>Descrição</b>${_esc(ordem.Descricao||'—')}</div>
       <div class="cac-card-info">
         <span><b>Sala</b>${_esc(ordem.Sala)}</span>
         <span><b>Máquina</b>${_esc(ordem.Maquina)}</span>
