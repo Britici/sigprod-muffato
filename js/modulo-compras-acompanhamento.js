@@ -72,7 +72,7 @@ if (!document.getElementById(CSS_ID)) {
 :root{--cac-cols:130px minmax(240px,1fr) 130px 130px 150px 200px 32px}
 .cac-table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bord)}
 .cac-table-head{display:grid;grid-template-columns:var(--cac-cols);background:var(--surf2);
-  border-bottom:1px solid var(--bord);min-width:1000px}
+  border-bottom:1px solid var(--bord);min-width:1000px;padding-left:4px}
 .cac-table-head span{padding:10px 12px;font-family:var(--fw);font-size:13px;font-weight:700;
   color:var(--txt3);text-transform:uppercase;letter-spacing:1px;font-variant:small-caps;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--bord)}
