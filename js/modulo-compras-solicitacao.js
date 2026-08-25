@@ -339,14 +339,15 @@
   }
 
   function _addFotos(files, el) {
-    files.forEach(f => {
+    files.forEach(async f => {
       if (!f.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        _fotos.push({ name: f.name, mime: f.type, b64: ev.target.result.split(',')[1] });
-        _renderPreview(el);
-      };
-      reader.readAsDataURL(f);
+      // _compressFile (definida em index.html, mesma usada na abertura de
+      // OS): redimensiona pra no máx 1920x1080 e comprime até ~1MB. Antes
+      // aqui ia a foto crua da câmera (podia passar de 8MB em base64),
+      // o que sozinho já explica boa parte dos timeouts em conexão lenta.
+      const { b64 } = await _compressFile(f);
+      _fotos.push({ name: f.name, mime: 'image/jpeg', b64 });
+      _renderPreview(el);
     });
   }
 

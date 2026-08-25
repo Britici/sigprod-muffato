@@ -825,25 +825,25 @@ function _abrirModal(ordem, etapaIdx, el) {
   const fotoPrevEl = overlay.querySelector('#m-foto-preview');
 
   fotoDropEl.addEventListener('click', () => fotoInpEl.click());
-  fotoInpEl.addEventListener('change', function () {
+  fotoInpEl.addEventListener('change', async function () {
     const file = this.files[0];
     if (!file||!file.type.startsWith('image/')) return;
-    _modalFotoFile = file; _modalFotoMime = file.type;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      _modalFotoB64 = ev.target.result.split(',')[1];
-      fotoPrevEl.innerHTML = `
-        <div class="cac-foto-modal-thumb">
-          <img src="${ev.target.result}" alt="${_esc(file.name)}">
-          <span>${_esc(file.name)} · ${(file.size/1024).toFixed(0)} KB</span>
-          <button type="button" id="m-foto-remover">✕</button>
-        </div>`;
-      overlay.querySelector('#m-foto-remover').addEventListener('click', () => {
-        _modalFotoFile=null;_modalFotoB64=null;_modalFotoMime=null;
-        fotoInpEl.value=''; fotoPrevEl.innerHTML='';
-      });
-    };
-    reader.readAsDataURL(file);
+    _modalFotoFile = file; _modalFotoMime = 'image/jpeg';
+    // _compressFile (index.html, mesma da abertura de OS): redimensiona
+    // pra no máx 1920x1080 e comprime até ~1MB antes de virar base64.
+    // Antes ia a foto crua da câmera, sem limite algum de tamanho.
+    const { dataUrl, sizeKb } = await _compressFile(file);
+    _modalFotoB64 = dataUrl.split(',')[1];
+    fotoPrevEl.innerHTML = `
+      <div class="cac-foto-modal-thumb">
+        <img src="${dataUrl}" alt="${_esc(file.name)}">
+        <span>${_esc(file.name)} · ${sizeKb} KB</span>
+        <button type="button" id="m-foto-remover">✕</button>
+      </div>`;
+    overlay.querySelector('#m-foto-remover').addEventListener('click', () => {
+      _modalFotoFile=null;_modalFotoB64=null;_modalFotoMime=null;
+      fotoInpEl.value=''; fotoPrevEl.innerHTML='';
+    });
   });
 
   /* Fechar */

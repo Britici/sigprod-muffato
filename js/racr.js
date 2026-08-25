@@ -75,11 +75,18 @@ async function salvarRACR() {
   }
   // Upload das fotos novas pro Drive (mantém as já salvas, se houver)
   const urlsFotos = [..._racrFotosSalvas];
+  let fotosFalharam = 0;
   for (const f of _racrFotosNovas) {
     try {
-      const r = await apiPost({ action: 'uploadFoto', numero: id, fileName: f.name, mimeType: f.mime, base64: f.b64 });
-      if (r?.ok && r.fileUrl) urlsFotos.push(r.fileUrl);
-    } catch (e) { console.warn('Foto RACR não enviada:', e); }
+      // noQueueOnFail: evita guardar a foto inteira (base64) na fila
+      // offline do localStorage — cota é ~5-10MB e uma foto de ~1MB
+      // falhando repetidamente pode estourar isso em silêncio.
+      const r = await apiPost({ action: 'uploadFoto', numero: id, fileName: f.name, mimeType: f.mime, base64: f.b64 }, true);
+      if (r?.ok && r.fileUrl) urlsFotos.push(r.fileUrl); else fotosFalharam++;
+    } catch (e) { console.warn('Foto RACR não enviada:', e); fotosFalharam++; }
+  }
+  if (fotosFalharam > 0) {
+    showToast(`⚠️ ${fotosFalharam} foto(s) do RACR não enviada(s) (conexão lenta?). RACR salvo mesmo assim.`, 'war');
   }
   racr.fotos = urlsFotos;
   db.racs.push(racr);
