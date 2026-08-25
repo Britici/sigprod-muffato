@@ -882,6 +882,7 @@ function _abrirModal(ordem, etapaIdx, el) {
 
     try {
       /* Upload foto desta etapa (coluna própria) */
+      let fotoFalhou = false;
       if (_modalFotoB64 && etapa.fotoCol && _opts.gsUrl) {
         try {
           const ext = (_modalFotoFile?.name?.split('.').pop()||'jpg').toLowerCase();
@@ -893,7 +894,8 @@ function _abrirModal(ordem, etapaIdx, el) {
             base64: _modalFotoB64
           });
           if (fr.ok && fr.fileUrl) payload[etapa.fotoCol] = fr.fileUrl;
-        } catch(fotoErr) { console.warn('Foto não enviada:', fotoErr); }
+          else fotoFalhou = true;
+        } catch(fotoErr) { console.warn('Foto não enviada:', fotoErr); fotoFalhou = true; }
       }
 
       const r = await _post(_opts.gsUrl, {
@@ -905,7 +907,10 @@ function _abrirModal(ordem, etapaIdx, el) {
       Object.assign(ordem, payload);
       fechar();
       _renderLista(el);
-      _toast(el, `✅ Etapa ${etapaIdx+1} ${isDone?'atualizada':'registrada'}!`, 'ok');
+      _toast(el, fotoFalhou
+        ? `⚠️ Etapa ${etapaIdx+1} salva, mas a foto não foi enviada (conexão lenta?). Tente anexar de novo.`
+        : `✅ Etapa ${etapaIdx+1} ${isDone?'atualizada':'registrada'}!`,
+        fotoFalhou ? 'warn' : 'ok');
     } catch(err) {
       _toast(el, '❌ '+err.message, 'err');
       this.disabled = false;

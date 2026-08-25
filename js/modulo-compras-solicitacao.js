@@ -1,7 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════════
    SIGMAN — Módulo: Solicitação de Compras
    Muffato Foods | PCM · Compras
-   Integração: ComprasSolicitacao.render(el, { cache, user, gsUrl })
+   Integração: ComprasSolicitacao.render(el, { cache, user })
+   (gsUrl não é mais necessário — usa apiPost/core.js globalmente;
+    manter no chamador não quebra nada, só é ignorado.)
    ═══════════════════════════════════════════════════════════════════════ */
 (function (global) {
   'use strict';
@@ -168,7 +170,7 @@
   /* ── PUBLIC ───────────────────────────────────────────────────────── */
   function render(el, opts) {
      _fotos = [];
-     const { cache = {}, user = {}, gsUrl } = opts;
+     const { cache = {}, user = {} } = opts;
      const body = el.querySelector('#pg-compras-solicitacao-body') || el;
      body.innerHTML = _buildHTML(cache, user);
      _bindEvents(body, opts);
@@ -302,7 +304,7 @@
 
   /* ── EVENTS ───────────────────────────────────────────────────────── */
   function _bindEvents(el, opts) {
-    const { cache = {}, gsUrl } = opts;
+    const { cache = {} } = opts;
     const q = id => el.querySelector(id);
 
     /* Sala → Máquina cascade */
@@ -372,7 +374,7 @@
 
   /* ── SUBMIT ───────────────────────────────────────────────────────── */
   async function _submit(el, opts) {
-    const { user = {}, gsUrl } = opts;
+    const { user = {} } = opts;
     const q   = id => el.querySelector(id);
     const btn = q('#csl-btn-submit');
 
@@ -396,18 +398,31 @@
       const urlsFotos = [];
       const idTemp = 'OC_' + Date.now();
       for (const f of _fotos) {
-        const r = await _post(gsUrl, {
+        // noQueueOnFail: upload solto não faz sentido reenfileirar fora do
+        // fluxo desta solicitação (ver nota completa junto ao passo 2).
+        const r = await apiPost({
           action:   'uploadFoto',
           numero:   idTemp,
           fileName: f.name,
           mimeType: f.mime,
           base64:   f.b64
-        });
-        if (r.ok && r.fileUrl) urlsFotos.push(r.fileUrl);
+        }, true);
+        if (!r || !r.ok || !r.fileUrl) {
+          throw new Error(`Falha ao enviar a foto "${f.name}" (conexão lenta ou instável). Tente novamente.`);
+        }
+        urlsFotos.push(r.fileUrl);
       }
 
-      /* 2 — Criar ordem */
-      const r = await _post(gsUrl, {
+      /* 2 — Criar ordem
+         noQueueOnFail=true: addOrdemCompra não tem detecção de duplicidade
+         no backend (diferente de OS/PL/SOL, que usam apiAppendComRetryNumero
+         + checagem NUMERO_DUPLICADO dentro do lock). Se essa chamada
+         estourar o timeout mas o Apps Script tiver processado mesmo assim
+         (GAS continua executando mesmo com o cliente desistindo da conexão),
+         reenvio automático via fila criaria uma ordem duplicada. Preferimos
+         mostrar erro claro e manter o formulário preenchido — o usuário
+         reenvia manualmente quando a conexão estabilizar. */
+      const r = await apiPost({
         action: 'addOrdemCompra',
         dados: {
           solicitante:    user.Nome || user.Login || '',
@@ -421,9 +436,9 @@
           acaoPreventiva: q('#csl-preventiva').value.trim(),
           fotos:          urlsFotos
         }
-      });
+      }, true);
 
-      if (!r.ok) throw new Error(r.error || 'Erro no servidor');
+      if (!r || !r.ok) throw new Error((r && r.error) || 'Sem resposta do servidor (conexão lenta ou instável). Tente novamente.');
 
       _toast(el, `✅ Solicitação criada com sucesso! ID: ${r.id}`, 'ok');
       setTimeout(() => _limpar(el), 2000);
@@ -437,11 +452,6 @@
   }
 
   /* ── UTILS ────────────────────────────────────────────────────────── */
-  async function _post(url, payload) {
-    const r = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
-    return r.json();
-  }
-
   function _toast(el, msg, type) {
     const t = el.querySelector('#csl-toast');
     if (!t) return;
