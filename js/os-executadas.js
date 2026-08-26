@@ -92,40 +92,13 @@ function abrirRAC(osNumero) {
   }
   const o = db.ordens.find(x => x.numero === osNumero);
   if (!o) { showToast('OS não encontrada.', 'er'); return; }
-  _racrOsRef = osNumero;
+  _racrPreencherDeOS(o);
 
-  // Popula sala com option única (readonly via disabled)
-  const salaSel = document.getElementById('racr-sala');
-  if (salaSel) {
-    salaSel.innerHTML = `<option value="${o.sala}">${o.sala}</option>`;
-    salaSel.setAttribute('disabled', '');
+  const osSel = document.getElementById('racr-os');
+  if (osSel) {
+    osSel.innerHTML = `<option value="${o.numero}">${o.numero} — ${o.sala} / ${o.maq}</option>`;
+    osSel.setAttribute('disabled', '');
   }
-  // Popula equip com option única (readonly via disabled)
-  const equipSel = document.getElementById('racr-equip');
-  if (equipSel) {
-    equipSel.innerHTML = `<option value="${o.maq}">${o.maq}</option>`;
-    equipSel.setAttribute('disabled', '');
-  }
-  // Data e hora
-  const dtEl = document.getElementById('racr-data');
-  const dtDispEl = document.getElementById('racr-data_disp');
-  const hrEl = document.getElementById('racr-hora');
-  if (dtEl) { dtEl.value = o.data || today(); dtEl.setAttribute('readonly', ''); }
-  if (dtDispEl) { dtDispEl.value = fd(o.data || today()); dtDispEl.setAttribute('readonly', ''); }
-  if (hrEl) { hrEl.value = o.ini || new Date().toTimeString().slice(0,5); hrEl.setAttribute('readonly', ''); }
-  // Falha e ação imediata da OS
-  const falhaEl = document.getElementById('racr-falha');
-  const imediataEl = document.getElementById('racr-imediata');
-  const respManuEl = document.getElementById('racr-resp-manu');
-  if (falhaEl) falhaEl.value = o.prob || '';
-  if (imediataEl) imediataEl.value = o.acao || '';
-  if (respManuEl) respManuEl.value = o.manut || '';
-  // Limpa campos de análise
-  ['racr-causa','racr-p1','racr-p2','racr-p3','racr-p4','racr-p5',
-   'racr-preventiva','racr-resp-prod','racr-exec'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
   closeM('m-det');
   openM('mb-racr');
 }
