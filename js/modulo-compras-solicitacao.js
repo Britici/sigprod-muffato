@@ -166,6 +166,9 @@
 
   /* ── STATE ────────────────────────────────────────────────────────── */
   let _fotos = [];
+  let _submitKey = null; // chave de idempotência: mesma nos retries da
+                          // MESMA tentativa de envio, só zera depois de
+                          // sucesso (_limpar) — ver uso em _submit()
 
   /* ── PUBLIC ───────────────────────────────────────────────────────── */
   function render(el, opts) {
@@ -370,6 +373,7 @@
     sel.innerHTML = '<option value="">Selecione a sala</option>';
     sel.disabled = true;
     _fotos = [];
+    _submitKey = null;
     el.querySelector('#csl-preview').innerHTML = '';
   }
 
@@ -391,14 +395,18 @@
       return;
     }
 
+    // Mesma chave em retries desta tentativa (botão clicado de novo após
+    // erro) — só muda depois de um envio bem-sucedido (_limpar). É o que
+    // permite o servidor detectar duplicata se o timeout for ambíguo.
+    if (!_submitKey) _submitKey = 'csl_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
     btn.disabled = true;
     btn.innerHTML = `<span class="csl-spinner"></span>Enviando...`;
 
     try {
-      /* 1 — Upload fotos */
-      const urlsFotos = [];
+      /* 1 — Upload fotos (paralelo — uploadFoto não usa lock no Code.gs) */
       const idTemp = 'OC_' + Date.now();
-      for (const f of _fotos) {
+      const urlsFotos = await Promise.all(_fotos.map(async f => {
         // noQueueOnFail: upload solto não faz sentido reenfileirar fora do
         // fluxo desta solicitação (ver nota completa junto ao passo 2).
         const r = await apiPost({
@@ -411,8 +419,8 @@
         if (!r || !r.ok || !r.fileUrl) {
           throw new Error(`Falha ao enviar a foto "${f.name}" (conexão lenta ou instável). Tente novamente.`);
         }
-        urlsFotos.push(r.fileUrl);
-      }
+        return r.fileUrl;
+      }));
 
       /* 2 — Criar ordem
          noQueueOnFail=true: addOrdemCompra não tem detecção de duplicidade
@@ -435,7 +443,8 @@
           quantidade:     qtd,
           fornecedor:     q('#csl-fornecedor').value.trim(),
           acaoPreventiva: q('#csl-preventiva').value.trim(),
-          fotos:          urlsFotos
+          fotos:          urlsFotos,
+          idempotencyKey: _submitKey
         }
       }, true);
 
