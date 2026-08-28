@@ -591,7 +591,7 @@ function _buildCard(ordem) {
   const fotosIniciaisHtml = fotos.length
     ? '<div class="cac-fotos-grid"><span class="cac-fotos-label">📎 Fotos da Solicitação</span>' +
       fotos.map(url =>
-        '<img class="cac-photo-thumb" src="' + _esc(driveThumb(url)) + '" data-full="' + _esc(driveThumb(url)) + '" alt="Foto">'
+        '<img class="cac-photo-thumb" loading="lazy" decoding="async" src="' + _esc(driveThumb(url)) + '" data-full="' + _esc(driveThumb(url)) + '" alt="Foto">'
       ).join('') +
       '</div>'
     : '';
@@ -603,7 +603,7 @@ function _buildCard(ordem) {
     if (!obs && !foto) return '';
     let html = '<div class="cac-etapa-obs"><b>Etapa ' + (e.idx+1) + ' — ' + e.label + '</b>';
     if (obs) html += '<div>' + _esc(obs) + '</div>';
-    if (foto) html += '<div style="margin-top:6px"><img class="cac-photo-thumb" src="' + _esc(driveThumb(foto)) + '" data-full="' + _esc(driveThumb(foto)) + '" alt="Foto etapa"></div>';
+    if (foto) html += '<div style="margin-top:6px"><img class="cac-photo-thumb" loading="lazy" decoding="async" src="' + _esc(driveThumb(foto)) + '" data-full="' + _esc(driveThumb(foto)) + '" alt="Foto etapa"></div>';
     html += '</div>';
     return html;
   }).join('');
@@ -756,7 +756,7 @@ function _abrirModal(ordem, etapaIdx, el) {
   const fotoAtualHtml = fotoAtual
     ? '<div style="margin-bottom:8px">' +
         '<span style="font-size:.75rem;color:var(--txt3);display:block;margin-bottom:4px">Foto atual:</span>' +
-        '<img class="cac-photo-thumb" src="' + _esc(driveThumb(fotoAtual)) + '" data-full="' + _esc(driveThumb(fotoAtual)) + '" alt="Foto atual">' +
+        '<img class="cac-photo-thumb" loading="lazy" decoding="async" src="' + _esc(driveThumb(fotoAtual)) + '" data-full="' + _esc(driveThumb(fotoAtual)) + '" alt="Foto atual">' +
       '</div>'
     : '';
 
