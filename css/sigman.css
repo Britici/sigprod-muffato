@@ -84,6 +84,9 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.65
 .sb-logo{height:36px;min-width:36px;object-fit:contain;flex-shrink:0}
 .sb-brand{overflow:hidden;white-space:nowrap;transition:opacity .2s}
 .sb.col .sb-brand{opacity:0;pointer-events:none}
+/* Menu reduzido: logo inteira visível, sem cortar a lateral (antes a largura fixa de 36px estourava var(--sw2)) */
+.sb.col .sb-hd{padding:10px 6px;justify-content:center}
+.sb.col .sb-logo{height:auto;width:100%;max-width:calc(var(--sw2) - 12px);min-width:0}
 .sb-sig{font-family:var(--fw);font-size:22px;font-weight:800;color:var(--txt);letter-spacing:1.5px;line-height:1}
 .sb-sig em{color:var(--red);font-style:normal}
 .sb-sub2{font-family:var(--fw);font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
@@ -131,6 +134,13 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.65
 .ph{margin-bottom:16px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .pt{font-family:var(--fw);font-size:27px;font-weight:800;font-variant:small-caps;letter-spacing:.04em}
 .pt small{display:block;font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px}
+/* Marca "TB" discreta, no lugar de ® — ao lado de "Sistema de Gestão de Manutenção" (.pt único, fixo em toda página) */
+.tm{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border:1.2px solid currentColor;border-radius:50%;font-size:6px;font-weight:700;letter-spacing:0;vertical-align:super;margin-left:3px;opacity:.5;line-height:1}
+
+/* Alerta piscante (ícone ao lado do bloco de atualização + rótulo "Backlog OS") */
+@keyframes sgmBlink{0%,100%{opacity:1}50%{opacity:.2}}
+.blink-ico{animation:sgmBlink 1.1s ease-in-out infinite;font-size:17px;cursor:default}
+.blink-txt{animation:sgmBlink 1.1s ease-in-out infinite}
 /* CARD */
 .card{background:var(--surf);border:1px solid var(--bord);border-radius:var(--r);padding:18px;margin-bottom:14px}
 .card-t{font-family:var(--fw);font-size:15px;font-weight:700;color:var(--txt3);font-variant:small-caps;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
