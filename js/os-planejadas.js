@@ -81,10 +81,12 @@ function ensurePlanAbasUI_() {
     '<button id="pab-solicitacoes" class="btn btn-sm" onclick="setPlanAba(\'solicitacoes\')"></button>';
   const panel = document.createElement('div');
   panel.id = 'plan-prev-panel';
-  panel.style.cssText = 'display:none;margin:0 0 14px;padding:12px 14px;border:1px solid var(--brd,#2a3140);border-radius:8px';
+  panel.className = 'card'; // mesmo padding/borda dos outros cards da tela (antes era CSS avulso)
+  panel.style.cssText = 'display:none;margin:0 0 14px';
   const solPanel = document.createElement('div');
   solPanel.id = 'plan-sol-panel';
-  solPanel.style.cssText = 'display:none';
+  solPanel.className = 'card'; // igual ao card de "Solicitações Concluídas" da tela de Solicitação
+  solPanel.style.cssText = 'display:none;margin:0 0 14px';
   tbl.parentNode.insertBefore(panel, tbl);
   tbl.parentNode.insertBefore(bar, panel);
   tbl.parentNode.insertBefore(solPanel, tbl); // fica logo antes da tabela, que é escondida nesta aba
