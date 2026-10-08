@@ -78,7 +78,7 @@
  <div class="main">
   <header class="tb">
    <button class="tb-tog" onclick="toggleSB()">☰</button>
-   <div class="tb-title" id="tb-t" onclick="showPage('dashboard')" style="cursor:pointer" title="Voltar ao Dashboard">Dashboard</div>
+   <div class="tb-title" id="tb-t" onclick="showPage('dashboard')" style="cursor:pointer" title="Voltar ao Dashboard">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
    <div class="tb-r">
     <div class="tb-stat" id="tb-stat" onclick="showPage('abertura');closeSB()"><span id="th-hj">0</span> OS hoje</div>
     <button class="tb-btn" onclick="toggleTheme()" id="th-btn">🌙</button>
@@ -90,7 +90,7 @@
    <!-- DASHBOARD -->
    <div class="pg" id="pg-dashboard">
     <div class="ph" style="flex-wrap:wrap;align-items:center;gap:8px">
-     <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+     <div class="pt"><small>Visão Geral</small>Dashboard</div>
      <select id="dash-periodo" onchange="renderDash()" style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 10px;font-size:14px;font-family:var(--fw);font-weight:600;cursor:pointer">
       <option value="dia">Hoje</option>
       <option value="semana">Últimos 7 dias</option>
@@ -149,7 +149,7 @@
    <!-- OS PLANEJADAS -->
       <div class="pg" id="pg-planejadas">
     <div class="ph">
-     <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+     <div class="pt"><small>Gestão</small>O.S. Planejadas</div>
      <button class="btn btn-gh btn-sm" onclick="exportPlanCSV()">⬇ Exportar com Filtros</button>
     </div>
     <div class="fr">
@@ -192,7 +192,7 @@
    <!-- OS EXECUTADAS -->
    <div class="pg" id="pg-executadas">
     <div class="ph">
-     <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+     <div class="pt"><small>Histórico</small>O.S. Executadas</div>
      <button class="btn btn-gh btn-sm" onclick="exportCSV()">⬇ Exportar com Filtros</button>
     </div>
     <div class="fr">
@@ -223,7 +223,7 @@
 
    <!-- ABERTURA OS -->
    <div class="pg" id="pg-abertura">
-    <div class="ph"><div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div></div>
+    <div class="ph"><div class="pt"><small>Registro</small>Abertura de O.S.</div></div>
     <div class="alert" id="al-ab"></div>
     <div class="card">
      <div class="card-t">Identificação</div>
@@ -266,7 +266,7 @@
 
    <!-- PLANEJAMENTO OS / PCM -->
    <div class="pg" id="pg-planejamento">
-    <div class="ph"><div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div></div>
+    <div class="ph"><div class="pt"><small>PCM</small>Planejamento de O.S.</div></div>
     <div class="alert" id="al-pl"></div>
     <div class="card">
      <div class="card-t">Nova O.S. Planejada</div>
@@ -289,7 +289,7 @@
 
    <!-- SOLICITAÇÃO OS -->
    <div class="pg" id="pg-solicitacao">
-    <div class="ph"><div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div></div>
+    <div class="ph"><div class="pt"><small>Produção</small>Solicitação de O.S.</div></div>
     <div class="alert" id="al-sol"></div>
     <div class="card">
      <div class="card-t">Nova Solicitação</div>
@@ -332,7 +332,7 @@
    <!-- INSPEÇÃO DIÁRIA -->
    <div class="pg" id="pg-inspecao">
     <div class="ph">
-     <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+     <div class="pt"><small>Operação</small>Inspeção Diária</div>
      <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-sm btn-gh" onclick="gerarRel()">📋 Relatório WhatsApp</button>
       <button class="btn btn-sm btn-gh" onclick="imprimirInspDiaria()">🖨️ Imprimir Ordem</button>
@@ -359,7 +359,7 @@
    <!-- ATIVOS -->
    <div class="pg" id="pg-ativos">
   <div class="ph">
-    <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+    <div class="pt"><small>Cadastro</small>Ativos</div>
   </div>
     <div class="card"><div class="card-t">Criticidade das Máquinas</div><div id="at-crit-chart"></div></div>
     <div class="two-col">
@@ -419,7 +419,7 @@
 
    <!-- PÁGINA: MANUAIS E SENHAS -->
    <div class="pg" id="pg-manuais-senhas">
-    <div class="ph"><div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div></div>
+    <div class="ph"><div class="pt"><small>Manutenção</small>Manuais e Senhas</div></div>
     <div class="two-col">
      <div id="ms-col-admin">
       <div class="card">
@@ -471,7 +471,7 @@
    <!-- PÁGINA: USUÁRIOS (admin only) -->
    <div class="pg" id="pg-usuarios">
     <div class="ph">
-     <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+     <div class="pt"><small>Administração</small>Gestão de Usuários</div>
      <button class="btn btn-p btn-sm" onclick="abrirNovoUsuario()">+ Novo Usuário</button>
     </div>
     <div class="alert" id="al-usr"></div>
@@ -513,7 +513,7 @@
     <!-- PÁGINA: STATUS DE SALAS -->
     <div class="pg" id="pg-salas-status">
       <div class="ph">
-        <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+        <div class="pt"><small>Operação</small>Status de Salas</div>
         <button id="btn-salvar-salas-indicador" class="btn btn-sm btn-p" style="display:none" onclick="salvarSalasIndicador()">💾 Salvar seleção</button>
       </div>
       <div style="font-size:12px;color:var(--txt3);margin:-4px 0 12px">Marque as salas que entram no cálculo do indicador de disponibilidade do dashboard. Visível só para administradores.</div>
@@ -523,7 +523,7 @@
    <!-- PÁGINA: PREVENTIVA (template - admin only) -->
    <div class="pg" id="pg-preventiva">
     <div class="ph">
-     <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+     <div class="pt"><small>PCM · Manutenção</small>Ordem de Manutenção Preventiva</div>
      <button class="btn btn-sm btn-gh" onclick="imprimirPreventiva()">🖨️ Imprimir Ordem de Manutenção Preventiva</button>
      <button class="btn btn-sm btn-gh" onclick="imprimirInspecaoEquipamento()">🖨️ Imprimir Ordem de Inspeção de Equipamento</button>
     </div>
@@ -560,7 +560,7 @@
 <!-- PÁGINA: ANÁLISE DE CAUSA RAIZ (admin) -->
 <div class="pg" id="pg-analise-causa-raiz">
  <div class="ph">
-  <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+  <div class="pt"><small>PCM · Qualidade</small>Análise de Causa Raiz</div>
   <button class="btn btn-sm btn-p" onclick="abrirNovoRACR()">+ Novo RAC</button>
  </div>
  <div class="alert" id="al-racr"></div>
@@ -580,14 +580,14 @@
 
 <!-- COMPRAS — SOLICITAÇÃO -->
 <div class="pg" id="pg-compras-solicitacao">
-  <div class="ph"><div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div></div>
+  <div class="ph"><div class="pt"><small>PCM · Compras</small>Solicitação de Compras</div></div>
   <div id="pg-compras-solicitacao-body"></div>
 </div>
 
 <!-- COMPRAS — ACOMPANHAMENTO -->
 <div class="pg" id="pg-compras-acompanhamento">
   <div class="ph">
-    <div class="pt">Sistema de Gestão de Manutenção<span class="tm" title="Marca registrada">TB</span></div>
+    <div class="pt"><small>PCM · Compras</small>Acompanhamento de Compras</div>
     <button class="btn btn-gh btn-sm" onclick="ComprasAcompanhamento.refresh()">⟳ Atualizar</button>
   </div>
   <div id="pg-compras-acompanhamento-body"></div>
@@ -1023,6 +1023,8 @@ const NAV = [
   { id:'manuais-senhas', ic:'🔐', lbl:'Manuais e Senhas'      },
 ];
 
+// Não usado mais para '#tb-t' (título do topo agora é fixo); mantido caso
+// alguma tela volte a precisar do nome de cada página (ex.: título do PDF).
 const LBLS = {
   dashboard:'Dashboard', planejadas:'O.S. Planejadas', executadas:'O.S. Executadas',
   abertura:'Abertura de O.S.', planejamento:'PCM — Planejamento de O.S.',
@@ -1109,7 +1111,6 @@ function showPage(pid) {
   if (ni) ni.classList.add('act');
   const si = document.querySelector(`.nv-sub-item[data-page="${pid}"]`);
   if (si) si.classList.add('act');
-  document.getElementById('tb-t').textContent = LBLS[pid] || '';
 
   // Dashboard: ligar/desligar timer 15s
   clearInterval(_dashTimer);
@@ -1360,7 +1361,15 @@ function toggleSB() {
   if (window.innerWidth <= 768) {
     sb.classList.toggle('mob');
     document.getElementById('sb-ov').style.display = sb.classList.contains('mob') ? 'block' : 'none';
-  } else { sb.classList.toggle('col'); }
+  } else {
+    sb.classList.toggle('col');
+    // Barra reduzida: fecha o submenu do PCM junto, senão os itens dele
+    // ficam soltos na faixa estreita (sem a classe .sb.col escondê-los).
+    if (sb.classList.contains('col')) {
+      document.querySelectorAll('.nv-grp.nv-grp-open').forEach(g => g.classList.remove('nv-grp-open'));
+      _pcmOpen = false;
+    }
+  }
 }
 function closeSB() {
   document.getElementById('sb').classList.remove('mob');
@@ -1456,7 +1465,6 @@ function irParaCard(pageId) {
 function goToPage(pageId) {
   document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
   document.getElementById('pg-' + pageId).classList.add('on');
-  document.getElementById('tb-t').textContent = pageId === 'salas-status' ? 'Status de Salas' : 'Dashboard';
 }
 
 init();
