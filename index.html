@@ -89,8 +89,9 @@
 
    <!-- DASHBOARD -->
    <div class="pg" id="pg-dashboard">
-    <div class="ph" style="flex-wrap:wrap;align-items:center;gap:8px">
+    <div class="ph" style="flex-wrap:wrap;gap:8px">
      <div class="pt"><small>Visão Geral</small>Dashboard</div>
+     <span id="dash-alert-ico" class="blink-ico" style="display:none" title="Há solicitação em aberto ou O.S. planejada atrasada">⚠️</span>
      <select id="dash-periodo" onchange="renderDash()" style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 10px;font-size:14px;font-family:var(--fw);font-weight:600;cursor:pointer">
       <option value="dia">Hoje</option>
       <option value="semana">Últimos 7 dias</option>
@@ -108,7 +109,6 @@
      </div>
      <div id="dash-rf-bar" style="display:flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);padding:5px 10px;flex-shrink:0">
        <span class="rf-dot off" id="rf-dot"></span>
-       <span id="dash-alert-ico" class="blink-ico" style="display:none" title="Há solicitação em aberto ou O.S. planejada atrasada">⚠️</span>
        <button class="btn btn-sm btn-gh" onclick="renderDash()" style="padding:4px 10px">🔄 Atualizar</button>
        <button class="btn btn-sm" id="rf-btn" onclick="toggleDashRefresh()" style="background:var(--surf3);color:var(--txt2);border:1px solid var(--bord);border-radius:var(--rs);padding:4px 10px;cursor:pointer;font-size:13px;font-family:var(--fw);font-weight:700">▶ 15s</button>
        <span id="rf-lbl" style="font-size:13px;color:var(--txt3);white-space:nowrap">Desligada</span>
