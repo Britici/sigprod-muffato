@@ -132,7 +132,7 @@ input[type=time]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.65
 .pg.on{display:block;animation:fadeUp .2s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .ph{margin-bottom:16px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.pt{font-family:var(--fw);font-size:27px;font-weight:800;font-variant:small-caps;letter-spacing:.04em}
+.pt{font-family:var(--fw);font-size:27px;font-weight:800;font-variant:small-caps;letter-spacing:.04em;line-height:1}
 .pt small{display:block;font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px}
 /* Marca "TB" discreta, no lugar de ® — ao lado de "Sistema de Gestão de Manutenção" (.pt único, fixo em toda página) */
 .tm{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border:1.2px solid currentColor;border-radius:50%;font-size:6px;font-weight:700;letter-spacing:0;vertical-align:super;margin-left:3px;opacity:.5;line-height:1}
