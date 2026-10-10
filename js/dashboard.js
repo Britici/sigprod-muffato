@@ -169,7 +169,7 @@ function renderDash() {
   // KPI Cards
   const corColor = disponib >= metaDisp ? 'var(--grn)' : disponib >= metaDisp-10 ? 'var(--org)' : 'var(--red)';
     document.getElementById('d-stats').innerHTML = `
-    <div class=\"sc-card\" style=\"background:var(--surf);border:1px solid var(--bord);padding:14px;display:flex;flex-direction:column;gap:10px\">
+    <div class=\"sc-card\" style=\"gap:10px\">
       <div style=\"display:flex;align-items:center;gap:8px\">
         <div style=\"font-size:22px\">${salaComAlerta.length === 0 ? '🟢' : '🔴'}</div>
         <div>
