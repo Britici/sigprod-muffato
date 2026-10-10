@@ -89,7 +89,7 @@
 
    <!-- DASHBOARD -->
    <div class="pg" id="pg-dashboard">
-    <div class="ph" style="flex-wrap:wrap;gap:8px">
+    <div class="ph" style="flex-wrap:wrap;gap:8px;align-items:center">
      <div class="pt"><small>Visão Geral</small>Dashboard</div>
      <span id="dash-alert-ico" class="blink-ico" style="display:none" title="Há solicitação em aberto ou O.S. planejada atrasada">⚠️</span>
      <select id="dash-periodo" onchange="renderDash()" style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 10px;font-size:14px;font-family:var(--fw);font-weight:600;cursor:pointer">
@@ -107,7 +107,7 @@
       <input type="hidden" id="dash-dt-fim">
       <input type="text" id="dash-dt-fim_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)" onchange="renderDash()" style="background:var(--inp);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 8px;font-size:14px;width:100px">
      </div>
-     <div id="dash-rf-bar" style="display:flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);padding:5px 10px;flex-shrink:0">
+     <div id="dash-rf-bar" style="display:flex;align-items:center;gap:6px;padding:5px 2px;flex-shrink:0">
        <span class="rf-dot off" id="rf-dot"></span>
        <button class="btn btn-sm btn-gh" onclick="renderDash()" style="padding:4px 10px">🔄 Atualizar</button>
        <button class="btn btn-sm" id="rf-btn" onclick="toggleDashRefresh()" style="background:var(--surf3);color:var(--txt2);border:1px solid var(--bord);border-radius:var(--rs);padding:4px 10px;cursor:pointer;font-size:13px;font-family:var(--fw);font-weight:700">▶ 15s</button>
@@ -233,7 +233,7 @@
       <div class="fg" id="ab-sl-outro-wrap" style="display:none"><label>Qual local? (Outros)</label><input type="text" id="ab-sl-outro" placeholder="Ex.: Pátio de descarga, doca 3..." maxlength="80" oninput="syncOutro('ab')"></div><div class="fg" id="ab-mq-outro-wrap" style="display:none"><label>Qual ativo? (Outros)</label><input type="text" id="ab-mq-outro" placeholder="Ex.: Portão elétrico do pátio..." maxlength="80" oninput="syncOutro('ab')"></div>
       <div class="fg"><label>Tipo de Ação</label><select id="ab-tp"><option value="">Selecione...</option><option>Corretiva</option><option>Inspeção</option><option>Melhoria</option><option>Preditiva</option><option>Preventiva</option></select></div>
       <div class="fg"><label>Prioridade</label><select id="ab-pr"><option value="">Selecione...</option><option value="1">🔴 1 – Crítico (Parada de Máquina)</option><option value="2">🟡 2 – Alta (Risco de Parada)</option><option value="3">🔵 3 – Média (Preventiva)</option><option value="4">🟢 4 – Baixa (Melhoria)</option></select></div>
-      <div class="fg"><label>Manutentor Responsável</label><input type="text" id="ab-mn" placeholder="Nome"></div>
+      <div class="fg"><label>Manutentor Responsável</label><select id="ab-mn" class="mn-select"><option value="">Selecione...</option></select></div>
      </div>
     </div>
     <div class="card">
@@ -346,7 +346,7 @@
       <div class="fg"><label>Data</label><input type="hidden" id="insp-dt"><input type="text" id="insp-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)"></div>
       <div class="fg"><label>Turno</label><select id="insp-tn"><option>1º Turno</option><option>2º Turno</option><option>3º Turno</option></select></div>
       <div class="fg" style="display:none"><label>Horas do Turno</label><input type="number" id="insp-horas" value="10" min="1" max="24"></div>
-      <div class="fg"><label>Manutentor</label><input type="text" id="insp-mn" placeholder="Nome"></div>
+      <div class="fg"><label>Manutentor</label><select id="insp-mn" class="mn-select"><option value="">Selecione...</option></select></div>
      </div>
     </div>
     <div id="insp-secs"></div>
@@ -543,7 +543,7 @@
         <input type="text" id="prev-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)">
         <input type="date" id="prev-dt" onchange="sv('prev-dt',this.value)" style="display:none">
       </div>
-      <div class="fg"><label>Manutentor</label><input type="text" id="prev-mn" placeholder="Nome"></div>
+      <div class="fg"><label>Manutentor</label><select id="prev-mn" class="mn-select"><option value="">Selecione...</option></select></div>
      </div>
      <div class="fg-row fg-3">
       <div class="fg"><label>Hora Início</label><input type="time" id="prev-hi"></div>
@@ -613,7 +613,7 @@
  <div class="mhd"><div class="mtit">Concluir Ordem de Serviço</div><button class="mcl" onclick="closeM('m-con')">×</button></div>
  <div id="mc-inf"></div>
  <div class="fg-row" style="margin-top:14px">
-  <div class="fg"><label>Manutentor</label><input type="text" id="mc-mn" placeholder="Nome"></div>
+  <div class="fg"><label>Manutentor</label><select id="mc-mn" class="mn-select"><option value="">Selecione...</option></select></div>
   <div class="fg"><label>Data</label><input type="hidden" id="mc-dt"><input type="text" id="mc-dt_disp" class="date-mask" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" oninput="dateMaskInput(this)"></div>
   <div class="fg"><label>Hora Início</label><input type="time" id="mc-in"></div>
   <div class="fg"><label>Hora Fim</label><input type="time" id="mc-fm"></div>
@@ -776,7 +776,7 @@
    <div style="padding:0 16px 4px;overflow-y:auto;max-height:70vh">
     <div class="fg-row">
       <div class="fg"><label>Data</label><input type="date" id="eoe-dt"></div>
-      <div class="fg"><label>Manutentor</label><input type="text" id="eoe-mn" placeholder="Nome do manutentor"></div>
+      <div class="fg"><label>Manutentor</label><select id="eoe-mn" class="mn-select"><option value="">Selecione...</option></select></div>
     </div>
     <div class="fg-row">
       <div class="fg"><label>Hora Início</label><input type="time" id="eoe-in"></div>
@@ -1397,6 +1397,20 @@ function populateAll() {
   populateAtMaqSala();
   populateSalaFilter('fe-sl');
   populateSalaFilter('insp-tmpl-sala');
+  populateMnSelects();
+}
+
+// Preenche todos os <select class="mn-select"> (manutentor/solicitante) com
+// os usuários cadastrados, preservando o valor atualmente selecionado (se
+// ainda existir na lista). Evita texto livre no campo de nome — só dá pra
+// escolher quem está cadastrado no sistema.
+function populateMnSelects() {
+  const nomes = [...new Set((db.usuarios || []).map(u => u.nome))].sort((a,b)=>a.localeCompare(b));
+  document.querySelectorAll('select.mn-select').forEach(sel => {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Selecione...</option>' + nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+    if (cur && nomes.includes(cur)) sel.value = cur;
+  });
 }
 
 function populateSalas(p) {
