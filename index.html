@@ -91,7 +91,7 @@
    <div class="pg" id="pg-dashboard">
     <div class="ph" style="flex-wrap:wrap;gap:8px;align-items:flex-end">
      <div class="pt"><small>Visão Geral</small>Dashboard</div>
-     <span id="dash-alert-ico" class="blink-ico" style="display:none" title="Há solicitação em aberto ou O.S. planejada atrasada">⚠️</span>
+     <span id="dash-alert-ico" class="blink-ico" style="display:none;align-self:center;cursor:pointer" title="Há solicitação em aberto ou O.S. planejada atrasada" onclick="irParaAlertaDash()">⚠️</span>
      <select id="dash-periodo" onchange="renderDash()" style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);padding:5px 10px;font-size:14px;font-family:var(--fw);font-weight:600;cursor:pointer">
       <option value="dia">Hoje</option>
       <option value="semana">Últimos 7 dias</option>
@@ -1474,6 +1474,17 @@ function irParaCard(pageId) {
   if (subEntry && subEntry.admin && CU.tipo !== 'administracao') return;
   if (!ok.includes(requiredId)) return; // sem permissão, clique não faz nada
   showPage(pageId);
+}
+
+// Clique no ícone de alerta do dashboard: leva para O.S. Planejadas já na
+// aba que motivou o alerta — prioridade: solicitação pendente > planejada
+// "outras" atrasada > preventiva atrasada (ordem de urgência/uso real).
+function irParaAlertaDash() {
+  irParaCard('planejadas');
+  const temSol = (db.solicitacoes || []).some(s => s.status !== 'Concluída');
+  const temOutraAtrasada = (db.planejadas || []).some(p => p.status === 'Atrasada' && typeof ehPreventivaPl_ === 'function' && !ehPreventivaPl_(p));
+  const aba = temSol ? 'solicitacoes' : (temOutraAtrasada ? 'outras' : 'preventivas');
+  if (typeof setPlanAba === 'function') setPlanAba(aba);
 }
 
 function goToPage(pageId) {
