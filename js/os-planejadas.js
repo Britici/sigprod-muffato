@@ -139,6 +139,10 @@ function renderSolPanel_() {
     // em core.js; produção e diretoria não têm).
     const podeExecutar = typeof CU !== 'undefined' && CU &&
       (CU.tipo === 'administracao' || CU.tipo === 'manutencao');
+    // Normalmente esta aba só lista não concluídas (filtrarSol_), então
+    // osGerada tende a não existir aqui — mas mantemos a mesma regra de
+    // "Ver" da tela de Solicitação por consistência, caso isso mude.
+    const osGerada = (db.ordens.find(o => o.origem==='sol' && o.origemNum===s.numero)||{}).numero;
     return '<div style="display:flex;align-items:flex-start;justify-content:space-between;' +
       'padding:10px 0;border-bottom:1px solid var(--bord,#2a3140);gap:10px">' +
       '<div>' +
@@ -150,6 +154,9 @@ function renderSolPanel_() {
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">' +
         tipoCorrecaoMelhoriaBadge_(s.tipo) + getCriticidadeBadge(s.maq) +
         (podeExecutar ? '<button class="btn btn-sm btn-g" onclick="abrirConcluir(\'' + s.numero.replace(/'/g, "\\'") + '\',\'sol\')">✓ Executar</button>' : '') +
+        (osGerada
+          ? '<button class="btn btn-sm btn-gh" onclick="verDet(\'' + osGerada.replace(/'/g, "\\'") + '\',\'os\')">Ver</button>'
+          : '<button class="btn btn-sm btn-gh" onclick="verDet(\'' + s.numero.replace(/'/g, "\\'") + '\',\'sol\')">Ver</button>') +
       '</div></div>';
   }).join('');
 }
