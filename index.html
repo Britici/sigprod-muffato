@@ -1400,12 +1400,26 @@ function populateAll() {
   populateMnSelects();
 }
 
-// Preenche todos os <select class="mn-select"> (manutentor/solicitante) com
-// os usuários cadastrados, preservando o valor atualmente selecionado (se
-// ainda existir na lista). Evita texto livre no campo de nome — só dá pra
-// escolher quem está cadastrado no sistema.
+// Preenche todos os <select class="mn-select"> (manutentor) somente com
+// usuários de nível Administração e Manutenção, preservando o valor
+// atualmente selecionado (se ainda existir na lista). Evita texto livre no
+// campo de nome — só dá pra escolher quem está cadastrado no sistema.
+// Mantém ativos e inativos desses níveis (histórico não quebra).
+const MN_TIPOS_PERMITIDOS = ['administracao', 'manutencao'];
+
+function _mnNormTipo(t) {
+  return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+
+function getNomesManutentores() {
+  const nomes = (db.usuarios || [])
+    .filter(u => u && u.nome && MN_TIPOS_PERMITIDOS.includes(_mnNormTipo(u.tipo)))
+    .map(u => u.nome);
+  return [...new Set(nomes)].sort((a,b)=>a.localeCompare(b));
+}
+
 function populateMnSelects() {
-  const nomes = [...new Set((db.usuarios || []).map(u => u.nome))].sort((a,b)=>a.localeCompare(b));
+  const nomes = getNomesManutentores();
   document.querySelectorAll('select.mn-select').forEach(sel => {
     const cur = sel.value;
     sel.innerHTML = '<option value="">Selecione...</option>' + nomes.map(n => `<option value="${n}">${n}</option>`).join('');
