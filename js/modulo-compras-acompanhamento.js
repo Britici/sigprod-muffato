@@ -441,9 +441,14 @@ async function _carregarOrdens(el, _tentativa = 1) {
   if (_tentativa === 1) lista.innerHTML = `<div class="cac-empty">Carregando ordens...</div>`;
   else lista.innerHTML = `<div class="cac-empty">⏳ Servidor demorando a responder — tentativa ${_tentativa}/${MAX_TENT}...</div>`;
   try {
-    const r = await fetch(`${_opts.gsUrl}?action=read&sheet=compras`, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+    const r = await fetch(`${_opts.gsUrl}?action=read&sheet=compras&token=${encodeURIComponent(getToken())}`, { signal: AbortSignal.timeout(TIMEOUT_MS) });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    authAplicarResposta(d);
+    if (d && d.ok === false) { // sem sessão / sem permissão: não adianta tentar de novo
+      lista.innerHTML = `<div class="cac-empty">❌ ${_esc(d.error || 'Acesso negado.')}</div>`;
+      return;
+    }
     _ordens = (d.data || []).sort((a, b) =>
       new Date(b.Data_Solicitacao) - new Date(a.Data_Solicitacao));
     _popularFiltroSala(el);
@@ -943,10 +948,12 @@ async function _post(url, payload, _tentativa = 1) {
   try {
     const r = await fetch(url, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(comToken(payload)),
       signal: AbortSignal.timeout(TIMEOUT_MS)
     });
-    return await r.json();
+    const j = await r.json();
+    authAplicarResposta(j);
+    return j;
   } catch (e) {
     if (_tentativa < MAX_TENT) {
       await new Promise(res => setTimeout(res, 3000));
