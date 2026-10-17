@@ -193,12 +193,7 @@ function renderSol() {
   const prioMap = { '1':1, 'Alta':2, '2':2, 'Média':3, '3':3, 'Baixa':4, '4':4 };
   const stMap   = { 'Não Executada':1, 'Concluída':2, 'Executada':3 };
   let list = [...db.solicitacoes];
-  if (CU && CU.tipo === 'producao') {
-    // v14: comparação tolerante (acento, caixa, espaços) e aceita nome ou login
-    const _n = v => String(v == null ? '' : v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
-    const meus = [_n(CU.nome), _n(CU.login)].filter(Boolean);
-    list = list.filter(s => meus.includes(_n(s.solicitante)));
-  }
+  // v14: produção vê TODAS as solicitações (sem filtro por solicitante)
   list.sort((a, b) => {
     let va = a[col] || '', vb = b[col] || '';
     if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
