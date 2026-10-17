@@ -886,7 +886,7 @@ async function doLogin() {
 function posLoginCarregar() {
   apiFlushQueue(); // reenvia o que ficou pendente deste usuário
   if (typeof USE_API === 'undefined' || !USE_API) return;
-  apiLoadAll(true, true).then(() => {
+  apiLoadAll(false, true).then(() => { // não silencioso: loga "✅ Dados carregados do Sheets"
     if (!CU) return;
     populateAll(); updStats(); updateNavDots();
     const pgAtual = document.querySelector('.pg.on');
