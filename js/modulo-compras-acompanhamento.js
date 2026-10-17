@@ -594,9 +594,10 @@ function _buildCard(ordem) {
 
   /* Fotos iniciais */
   const fotosIniciaisHtml = fotos.length
-    ? '<div class="cac-fotos-grid"><span class="cac-fotos-label">📎 Fotos da Solicitação</span>' +
-      fotos.map(url =>
-        '<img class="cac-photo-thumb" loading="lazy" decoding="async" src="' + _esc(driveThumb(url)) + '" data-full="' + _esc(driveThumb(url)) + '" alt="Foto">'
+    ? '<div class="cac-fotos-grid"><span class="cac-fotos-label">📎 Fotos / PDF da Solicitação</span>' +
+      fotos.map(url => /#pdf$/.test(url)
+        ? '<a href="' + _esc(url.replace(/#pdf$/, '')) + '" target="_blank" rel="noopener" title="Abrir PDF" style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:6px;border:1px solid var(--bord);background:var(--surf2);font-size:28px;text-decoration:none">📄</a>'
+        : '<img class="cac-photo-thumb" loading="lazy" decoding="async" src="' + _esc(driveThumb(url)) + '" data-full="' + _esc(driveThumb(url)) + '" alt="Foto">'
       ).join('') +
       '</div>'
     : '';
