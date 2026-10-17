@@ -1,0 +1,305 @@
+/* ══════════════════════════════════════════════════════════════════
+   SIGMAN — ABERTURA DE O.S.
+   Muffato Foods
+   ══════════════════════════════════════════════════════════════════ */
+
+// "Outros" em Sala/Máquina: sem isto, o valor gravado era o código interno
+// "__outros__", sem indicar o quê. Troca pelo texto digitado, ex. "Outros: Doca 3".
+function resolverOutro_(prefixo, campo, rotulo) {
+  const bruto = v(prefixo + '-' + campo);
+  if (bruto !== '__outros__') return { valor: bruto, erro: null };
+  const texto = v(prefixo + '-' + campo + '-outro').trim();
+  if (!texto) return { valor: null, erro: 'Descreva o(a) ' + rotulo + ' em "Outros".' };
+  return { valor: 'Outros: ' + texto, erro: null };
+}
+
+let _savingOS = false;
+async function salvarOS() {
+  if (_savingOS) return;
+  const tipo = v('ab-tp'),
+        pr   = v('ab-pr'), manut = v('ab-mn').trim(), data = v('ab-dt'),
+        ini  = v('ab-in').trim(), fim  = v('ab-fm').trim(),
+        prob = v('ab-pb').trim(), acao = v('ab-ac').trim(),
+        acaoPrev = v('ab-ap').trim(),
+        parada = v('ab-parada');
+  const rSala = resolverOutro_('ab', 'sl', 'local'), rMaq = resolverOutro_('ab', 'mq', 'ativo');
+  if (rSala.erro) { showAlert('al-ab', rSala.erro, 'er'); return; }
+  if (rMaq.erro)  { showAlert('al-ab', rMaq.erro, 'er'); return; }
+  const sala = rSala.valor, maq = rMaq.valor;
+  if (!sala||!maq||!tipo||!pr||!manut||!data||!ini||!fim||!prob||!acao) {
+    showAlert('al-ab','Preencha todos os campos obrigatórios: Sala, Máquina, Tipo, Prioridade, Manutentor, Data, Hora Início, Hora Fim, Problema e Ação Executada.','er'); return;
+  }
+  {
+    const [h1,m1]=ini.split(':').map(Number), [h2,m2]=fim.split(':').map(Number);
+    if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) { showAlert('al-ab','Horas inválidas. Use HH:MM','er'); return; }
+  }
+  let durMin = 0, paradaMin = parseInt(parada)||0;
+  {
+    const [h1,m1]=ini.split(':').map(Number), [h2,m2]=fim.split(':').map(Number);
+    durMin = (h2*60+m2)-(h1*60+m1);
+    if (durMin < 0) durMin += 1440; // turno que passa da meia-noite
+    durMin = Math.max(0, durMin);
+    if (!paradaMin) paradaMin = durMin;
+  }
+  _savingOS = true;
+  setBtnBusy('ab', true);
+  try {
+    const numero = genOS(), agora = new Date().toISOString();
+    if (db.ordens.find(o => o.numero === numero)) {
+      showAlert('al-ab', `Erro: ${numero} já existe. Recarregue a página e tente novamente.`, 'er');
+      return;
+    }
+    const os = { id: crypto.randomUUID(), numero, sala, maq, tipo, prioridade:pr, manut, data, ini, fim,
+                 durMin, paradaMin, prob, acao, acaoPrev, criadoEm:agora, origem:'direta',
+                 fotoUrl:'', fotos:[] };
+    db.osC++; db.ordens.push(os); saveDB(); updStats();
+    logEdit('Criou OS', numero, sala + ' · ' + maq + ' · ' + tipo);
+    showAlert('al-ab', `Registrando ${numero}...`, 'ok');
+    const fotos = await uploadFotos(numero, _abPhotos);
+    if (fotos.length) { os.fotoUrl = fotos[0]; os.fotos = fotos; saveDB(); }
+    const row = {
+      OS_Numero:numero, Data:data, Sala:sala, Maquina:maq, Tipo:tipo, Prioridade:pr,
+      Manutentor:manut, Hora_Inicio:ini, Hora_Fim:fim, Duracao_Min:durMin,
+      Tempo_Parada_Min:paradaMin, Problema:prob, Acao_Executada:acao,
+      Acao_Preventiva:acaoPrev, Foto_URL:fotos[0]||'', Fotos:JSON.stringify(fotos),
+      Tag_Maquina:db.maquinas.find(m => m.nome === maq && m.sala === sala)?.tag || '',
+      Origem:'direta', OS_Origem_Ref:'', Criado_Em:agora
+    };
+    const rAp = await apiAppendComRetryNumero('ordens', row, 'OS_Numero', 'OS-', 'osC');
+    if (rAp.numero !== numero) {
+      // Servidor detectou colisão com outro usuário e reatribuiu o número —
+      // reconcilia o registro local (a pasta de fotos no Drive já foi criada
+      // com o número antigo; caso raro, revisar manualmente se necessário).
+      os.numero = rAp.numero; saveDB();
+      showAlert('al-ab', `Número reatribuído para ${rAp.numero} (evitando colisão).`, 'war');
+    }
+    showAlert('al-ab', `Ordem ${rAp.numero} registrada!${fotos.length?' 📷 '+fotos.length+' foto(s).':''}`, 'ok');
+    clearAb();
+    setTimeout(()=>showPage('dashboard'), 1200);
+  } finally {
+    _savingOS = false;
+    setBtnBusy('ab', false);
+  }
+}
+
+function clearAb() {
+  ['ab-sl','ab-mq','ab-sl-outro','ab-mq-outro','ab-tp','ab-pr','ab-in','ab-fm','ab-pb','ab-ac','ab-ap','ab-parada'].forEach(id=>sv(id,''));
+  if (typeof syncOutro === 'function') syncOutro('ab');
+  sv('ab-dt', today());
+  if (CU && CU.tipo !== 'producao') sv('ab-mn', CU.nome);
+  clearPhotos('ab');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PLANEJAMENTO DE O.S.
+// ══════════════════════════════════════════════════════════════════════
+let _savingPlan = false;
+async function salvarPlan() {
+  if (_savingPlan) return;
+  const tipo=v('pl-tp'),
+        pr=v('pl-pr'),prazo=v('pl-pz'),desc=v('pl-ds').trim(),
+        horas=parseInt(v('pl-horas'))||8;
+  const rSala = resolverOutro_('pl', 'sl', 'local'), rMaq = resolverOutro_('pl', 'mq', 'ativo');
+  if (rSala.erro) { showAlert('al-pl', rSala.erro, 'er'); return; }
+  if (rMaq.erro)  { showAlert('al-pl', rMaq.erro, 'er'); return; }
+  const sala = rSala.valor, maq = rMaq.valor;
+  if (!sala||!maq||!tipo||!pr||!prazo) { showAlert('al-pl','Preencha todos os campos obrigatórios.','er'); return; }
+  _savingPlan = true;
+  setBtnBusy('pl', true);
+  try {
+    const numero = genPL(), agora = new Date().toISOString();
+    if (db.planejadas.find(p => p.numero === numero)) {
+      showAlert('al-pl', `Erro: ${numero} já existe. Recarregue e tente novamente.`, 'er');
+      return;
+    }
+    db.planejadas.push({id:crypto.randomUUID(),numero,sala,maq,tipo,prioridade:pr,prazo,horasTurno:horas,desc,
+      status:'Pendente',criadoEm:agora,manut:null,desc2:null,ini:null,fim:null,dtExec:null,durMin:0});
+    db.plC++; saveDB();
+    logEdit('Criou Planejada', numero, sala + ' · ' + maq + ' · Prazo: ' + prazo);
+    const row = {PL_Numero:numero,Sala:sala,Maquina:maq,Tipo:tipo,Prioridade:pr,
+      Prazo_Limite:prazo,Horas_Turno:horas,Descricao_Planejada:desc,Status:'Pendente',
+      Manutentor_Exec:'',Data_Execucao:'',Hora_Inicio:'',Hora_Fim:'',Duracao_Min:'',
+      Servico_Executado:'',Criado_Em:agora,Concluido_Em:''};
+    const rAp = await apiAppendComRetryNumero('planejadas', row, 'PL_Numero', 'PL-', 'plC');
+    if (rAp.numero !== numero) {
+      const p = db.planejadas.find(x => x.numero === numero);
+      if (p) { p.numero = rAp.numero; saveDB(); }
+      showAlert('al-pl', `Número reatribuído para ${rAp.numero} (evitando colisão).`, 'war');
+    }
+    showAlert('al-pl','O.S. Planejada criada!','ok');
+    clearPl();
+    setTimeout(()=>showPage('dashboard'),900);
+  } finally {
+    _savingPlan = false;
+    setBtnBusy('pl', false);
+  }
+}
+function clearPl(){['pl-sl','pl-mq','pl-sl-outro','pl-mq-outro','pl-tp','pl-pr','pl-pz','pl-ds'].forEach(id=>sv(id,''));sv('pl-horas','8');if(typeof syncOutro==='function')syncOutro('pl');}
+  
+// ══════════════════════════════════════════════════════════════════════
+// SOLICITAÇÕES
+// ══════════════════════════════════════════════════════════════════════
+let _savingSol = false;
+async function salvarSol() {
+  if (_savingSol) return;
+  const tipo=v('sol-tp'),
+        pr=v('sol-pr'),desc=v('sol-ds').trim();
+  const rSala = resolverOutro_('sol', 'sl', 'local'), rMaq = resolverOutro_('sol', 'mq', 'ativo');
+  if (rSala.erro) { showAlert('al-sol', rSala.erro, 'er'); return; }
+  if (rMaq.erro)  { showAlert('al-sol', rMaq.erro, 'er'); return; }
+  const sala = rSala.valor, maq = rMaq.valor;
+  if (!sala||!maq||!tipo||!pr||!desc){showAlert('al-sol','Preencha todos os campos.','er');return;}
+  _savingSol = true;
+  setBtnBusy('sol', true);
+  try {
+    const numero = genSOL(), agora = new Date().toISOString();
+    if (db.solicitacoes.find(s => s.numero === numero)) {
+      showAlert('al-sol', `Erro: ${numero} já existe. Recarregue e tente novamente.`, 'er');
+      return;
+    }
+    const solItem = {id:crypto.randomUUID(),numero,sala,maq,tipo,prioridade:pr,desc,
+      status:'Não Executada',solicitante:CU.nome,criadoEm:agora,fotoUrl:'',fotos:[]};
+    db.solicitacoes.push(solItem);
+    db.solC++; saveDB();
+    const fotos = await uploadFotos(numero, _solPhotos);
+    if (fotos.length) { solItem.fotoUrl = fotos[0]; solItem.fotos = fotos; saveDB(); }
+    const row = {SOL_Numero:numero,Sala:sala,Maquina:maq,Tipo:tipo,Prioridade:pr,
+      Descricao:desc,Status:'Não Executada',Solicitante:CU.nome,
+      Foto_URL:fotos[0]||'', Fotos:JSON.stringify(fotos),
+      Manutentor_Exec:'',Data_Execucao:'',Servico_Executado:'',Criado_Em:agora,Concluido_Em:''};
+    const rAp = await apiAppendComRetryNumero('solicitacoes', row, 'SOL_Numero', 'SOL-', 'solC');
+    if (rAp.numero !== numero) {
+      solItem.numero = rAp.numero; saveDB();
+      showAlert('al-sol', `Número reatribuído para ${rAp.numero} (evitando colisão).`, 'war');
+    }
+    logEdit('Criou Solicitação', rAp.numero, sala + ' · ' + maq + ' · ' + tipo);
+    showAlert('al-sol','Solicitação enviada!','ok');
+    clearSol();renderSol();
+    setTimeout(()=>showPage('dashboard'),900);
+  } finally {
+    _savingSol = false;
+    setBtnBusy('sol', false);
+  }
+}
+function clearSol() {
+  ['sol-sl','sol-mq','sol-sl-outro','sol-mq-outro','sol-tp','sol-pr','sol-ds'].forEach(id=>sv(id,''));
+  if (typeof syncOutro === 'function') syncOutro('sol');
+  clearPhotos('sol');
+}
+
+function renderSol() {
+  const sortVal = (document.getElementById('sol-sort') || {}).value || 'numero-desc';
+  const [col, dir] = sortVal.split('-');
+  const prioMap = { '1':1, 'Alta':2, '2':2, 'Média':3, '3':3, 'Baixa':4, '4':4 };
+  const stMap   = { 'Não Executada':1, 'Concluída':2, 'Executada':3 };
+  let list = [...db.solicitacoes];
+  // v14: produção vê TODAS as solicitações (sem filtro por solicitante)
+  list.sort((a, b) => {
+    let va = a[col] || '', vb = b[col] || '';
+    if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
+    if (col === 'status')     { va = stMap[va]   || 9; vb = stMap[vb]   || 9; return dir === 'asc' ? va - vb : vb - va; }
+    const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
+    return dir === 'asc' ? cmp : -cmp;
+  });
+  const c = document.getElementById('sol-lista');
+  if (!c) return; // tela de Solicitação não está aberta nesta página (ex.: chamado via aba de Planejadas)
+  const cC = document.getElementById('sol-lista-concluidas');
+  const rowHtml = s => {
+    const osGerada = (db.ordens.find(o => o.origem==='sol' && o.origemNum===s.numero)||{}).numero;
+    return `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bord);gap:10px">
+      <div>
+        <span class="osn">${s.numero}</span>${osGerada?` <span style="font-size:11px;color:var(--txt2)">(${osGerada})</span>`:''}
+        <div style="font-size:15px;font-weight:500;margin-top:2px">${s.sala} · ${s.maq}</div>
+        <div style="font-size:13px;color:var(--txt3)">${fd((s.criadoEm||'').slice(0,10))} · ${s.solicitante}</div>
+        <div style="font-size:14px;color:var(--txt2);margin-top:3px">${s.desc}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        ${prio(s.prioridade)}${stBadge(s.status)}
+        ${(CU&&(CU.tipo==='administracao'||CU.tipo==='manutencao'))&&s.status==='Não Executada'
+          ?`<button class="btn btn-sm btn-g" onclick="abrirConcluir('${s.numero}','sol')">✓ Executar</button>`:''}
+        ${osGerada
+          ?`<button class="btn btn-sm btn-gh" onclick="verDet('${osGerada}','os')">Ver</button>`
+          :`<button class="btn btn-sm btn-gh" onclick="verDet('${s.numero}','sol')">Ver</button>`}
+      </div>
+    </div>`;
+  };
+
+  const naoConcl = list.filter(s => s.status !== 'Concluída');
+  const concl    = list.filter(s => s.status === 'Concluída');
+
+  c.innerHTML = naoConcl.length ? naoConcl.map(rowHtml).join('')
+    : '<div class="empty"><div class="ei">✅</div><p>Nenhuma solicitação não concluída.</p></div>';
+  if (cC) {
+    cC.innerHTML = concl.length ? concl.map(rowHtml).join('')
+      : '<div class="empty"><div class="ei">✅</div><p>Nenhuma solicitação concluída.</p></div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CONCLUIR OS (planejada ou solicitação)
+// ══════════════════════════════════════════════════════════════════════
+let _cid=null, _ctp=null;
+
+function abrirConcluir(id, tipo) {
+  _cid=id; _ctp=tipo;
+  const item = tipo==='plan'
+    ? db.planejadas.find(x=>x.numero===id)
+    : db.solicitacoes.find(x=>x.numero===id);
+  if (!item) {
+    showToast('Erro: item "'+id+'" não encontrado. Recarregue a página.','er',6000);
+    return;
+  }
+  document.getElementById('mc-inf').innerHTML = `
+    <div style="background:var(--surf2);border:1px solid var(--bord);border-radius:var(--rs);padding:12px">
+      <div class="osdisp">${item.numero}</div>
+      <div style="font-weight:600;margin:4px 0">${item.sala} · ${item.maq}</div>
+      <div style="font-size:14px;color:var(--txt3)">${item.tipo} · ${item.prioridade||''}</div>
+      ${item.desc?`<div style="font-size:14px;color:var(--txt2);margin-top:8px;padding-top:8px;border-top:1px solid var(--bord)">${item.desc}</div>`:''}
+      ${(()=>{const fs=item.fotos&&item.fotos.length?item.fotos:(item.fotoUrl?[item.fotoUrl]:[]);return fs.length?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bord)"><div style="font-size:13px;font-weight:700;color:var(--txt3);font-variant:small-caps;margin-bottom:6px">📷 Foto(s) da Solicitação</div><div style="display:flex;flex-wrap:wrap;gap:6px">${fs.map(u=>`<a href="${u}" target="_blank"><img src="${driveThumb(u)}" loading="lazy" decoding="async" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid var(--bord)" alt="Foto"></a>`).join('')}</div></div>`:''})()}
+    </div>`;
+  sv('mc-dt',today()); sv('mc-mn',CU?CU.nome:'');
+  ['mc-in','mc-fm','mc-ds','mc-parada'].forEach(fid=>sv(fid,''));
+  openM('m-con');
+}
+
+let _savingConcluir = false;
+async function concluir() {
+  if (_savingConcluir) return;
+  const manut=v('mc-mn').trim(), data=v('mc-dt'), ini=v('mc-in'),
+        fim=v('mc-fm'), desc=v('mc-ds').trim(), parada=parseInt(v('mc-parada'))||0;
+  if (!manut||!desc){showToast('Preencha o manutentor e a descrição do serviço executado.','er');return;}
+  _savingConcluir = true;
+  setBtnBusy('mc', true);
+  try {
+  const item = _ctp==='plan'
+    ? db.planejadas.find(x=>x.numero===_cid)
+    : db.solicitacoes.find(x=>x.numero===_cid);
+  if (!item) { showToast('Item não encontrado. Recarregue a página e tente novamente.','er'); return; }
+  const agora=new Date().toISOString();
+  let durMin=0,paradaMin=parada;
+    if(ini&&fim){const[h1,m1]=ini.split(':').map(Number),[h2,m2]=fim.split(':').map(Number);durMin=(h2*60+m2)-(h1*60+m1);if(durMin<0)durMin+=1440;durMin=Math.max(0,durMin);if(!paradaMin)paradaMin=durMin;}
+  Object.assign(item,{status:'Concluída',concluidoEm:agora,manut,ini,fim,dtExec:data,desc2:desc,durMin});
+  const numero=genOS();
+  const os={id:crypto.randomUUID(),numero,sala:item.sala,maq:item.maq,tipo:item.tipo,prioridade:item.prioridade,
+    manut,data:data||today(),ini,fim,durMin,paradaMin,prob:item.desc||'',acao:desc,
+    fotoUrl:item.fotoUrl||'',criadoEm:agora,origem:_ctp,origemNum:item.numero};
+  db.osC++;db.ordens.push(os);saveDB();closeM('m-con');
+  logEdit('Concluiu', item.numero, item.sala + ' · ' + item.maq);
+  // Atualiza qualquer tela aberta: a mesma conclusão pode ter sido disparada
+  // da tela de Solicitação OU da aba "Solicitações" em Planejadas.
+  if (typeof renderPlan === 'function') renderPlan();
+  if (typeof renderSol === 'function') renderSol();
+  updStats();
+  if(_ctp==='plan'){apiUpdate('planejadas',item.numero,'PL_Numero',{Status:'Concluída',Manutentor_Exec:manut,Data_Execucao:data,Hora_Inicio:ini,Hora_Fim:fim,Duracao_Min:durMin,Servico_Executado:desc,Concluido_Em:agora});}
+  else{apiUpdate('solicitacoes',item.numero,'SOL_Numero',{Status:'Concluída',Manutentor_Exec:manut,Data_Execucao:data,Servico_Executado:desc,Concluido_Em:agora});}
+  const row = {OS_Numero:numero,Data:data||today(),Sala:item.sala,Maquina:item.maq,Tipo:item.tipo,
+    Prioridade:item.prioridade,Manutentor:manut,Hora_Inicio:ini,Hora_Fim:fim,Duracao_Min:durMin,
+    Tempo_Parada_Min:paradaMin,Problema:item.desc||'',Acao_Executada:desc,Origem:_ctp,
+    OS_Origem_Ref:item.numero,Criado_Em:agora};
+  const rAp = await apiAppendComRetryNumero('ordens', row, 'OS_Numero', 'OS-', 'osC');
+  if (rAp.numero !== numero) { os.numero = rAp.numero; saveDB(); }
+    if (document.getElementById('pg-dashboard').classList.contains('on')) renderDash();
+    } catch(e) { showToast('Erro ao concluir: '+e.message,'er',8000); }
+    finally { _savingConcluir = false; setBtnBusy('mc', false); }
+  }
