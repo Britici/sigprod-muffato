@@ -43,7 +43,7 @@ async function init() {
         enterApp();
         document.getElementById('loading-screen').style.display = 'none';
         if (USE_API) {
-          apiLoadAll(true, true).then(() => {
+          apiLoadAll(false, true).then(() => { // não silencioso: loga "✅ Dados carregados do Sheets"
             setOffline(false);
             revalidarSessao();
             if (!CU) return;
