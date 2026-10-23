@@ -4,7 +4,8 @@
    ══════════════════════════════════════════════════════════════════ */
 
 var planSort = { col: 'numero', dir: 'desc' };
-var solSort  = { col: 'crit', dir: 'asc' }; // aba Solicitações: padrão = mais crítico primeiro
+var solSort  = { col: 'crit', dir: 'asc' }; // aba Solicitações (Planejadas): padrão = mais crítico primeiro
+var solPgSort = { col: 'numero', dir: 'desc' }; // tela Solicitação de O.S.: padrão = mais recente primeiro
 
 // ── Abas Preventivas / Outras + geração manual ───────────────────────
 // Preventivas = Tipo 'Preventiva' (criadas pelo backend). A geração diária
@@ -77,8 +78,9 @@ function filtrarSol_(concl) {
   return data;
 }
 
-function ordenarSol_(data) {
-  const col = solSort.col, m = solSort.dir === 'asc' ? 1 : -1;
+function ordenarSol_(data, st) {
+  st = st || solSort;
+  const col = st.col, m = st.dir === 'asc' ? 1 : -1;
   const prioMap = { '1':1, '2':2, '3':3, '4':4, 'Urgente':1, 'Alta':2, 'Média':3, 'Baixa':4 };
   const porNumero = (a, b) => String(b.numero || '').localeCompare(String(a.numero || ''), 'pt-BR', { numeric: true });
   data.sort((a, b) => {
@@ -100,14 +102,23 @@ function ordenarSol_(data) {
   });
 }
 
-function sortSol(col) {
-  if (solSort.col === col) {
-    solSort.dir = solSort.dir === 'asc' ? 'desc' : 'asc';
+function _alternaSort_(st, col) {
+  if (st.col === col) {
+    st.dir = st.dir === 'asc' ? 'desc' : 'asc';
   } else {
-    solSort.col = col;
-    solSort.dir = (col === 'numero' || col === 'criado') ? 'desc' : 'asc';
+    st.col = col;
+    st.dir = (col === 'numero' || col === 'criado') ? 'desc' : 'asc';
   }
+}
+
+function sortSol(col) {   // aba Solicitações de Planejadas
+  _alternaSort_(solSort, col);
   renderSolPanel_();
+}
+
+function sortSolPg(col) { // tela Solicitação de O.S.
+  _alternaSort_(solPgSort, col);
+  if (typeof renderSol === 'function') renderSol();
 }
 
 function setPlanAba(aba) {
@@ -226,9 +237,10 @@ function solRowHtml_(s) {
     '</div></td></tr>';
 }
 
-function solTabelaHtml_(lista, ordenavel, vazio) {
+function solTabelaHtml_(lista, ordenavel, vazio, st, handler) {
+  st = st || solSort; handler = handler || 'sortSol';
   const th = (col, rotulo, estilo) => ordenavel
-    ? '<th class="sortable' + (solSort.col === col ? ' ' + solSort.dir : '') + '" onclick="sortSol(\'' + col + '\')"' + (estilo ? ' style="' + estilo + '"' : '') + '>' + rotulo + '</th>'
+    ? '<th class="sortable' + (st.col === col ? ' ' + st.dir : '') + '" onclick="' + handler + '(\'' + col + '\')"' + (estilo ? ' style="' + estilo + '"' : '') + '>' + rotulo + '</th>'
     : '<th' + (estilo ? ' style="' + estilo + '"' : '') + '>' + rotulo + '</th>';
   return '<div class="tw"><table><thead><tr>' +
     th('numero', 'SOL #', 'width:100px;min-width:100px') + th('sala', 'Sala') + th('maq', 'Máquina') +
