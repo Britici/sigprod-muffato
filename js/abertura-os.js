@@ -188,52 +188,17 @@ function clearSol() {
 }
 
 function renderSol() {
-  const sortVal = (document.getElementById('sol-sort') || {}).value || 'numero-desc';
-  const [col, dir] = sortVal.split('-');
-  const prioMap = { '1':1, 'Alta':2, '2':2, 'Média':3, '3':3, 'Baixa':4, '4':4 };
-  const stMap   = { 'Não Executada':1, 'Concluída':2, 'Executada':3 };
-  let list = [...db.solicitacoes];
-  // v14: produção vê TODAS as solicitações (sem filtro por solicitante)
-  list.sort((a, b) => {
-    let va = a[col] || '', vb = b[col] || '';
-    if (col === 'prioridade') { va = prioMap[va] || 9; vb = prioMap[vb] || 9; return dir === 'asc' ? va - vb : vb - va; }
-    if (col === 'status')     { va = stMap[va]   || 9; vb = stMap[vb]   || 9; return dir === 'asc' ? va - vb : vb - va; }
-    const cmp = va.localeCompare(vb, 'pt-BR', { numeric: true });
-    return dir === 'asc' ? cmp : -cmp;
-  });
   const c = document.getElementById('sol-lista');
   if (!c) return; // tela de Solicitação não está aberta nesta página (ex.: chamado via aba de Planejadas)
   const cC = document.getElementById('sol-lista-concluidas');
-  const rowHtml = s => {
-    const osGerada = (db.ordens.find(o => o.origem==='sol' && o.origemNum===s.numero)||{}).numero;
-    return `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bord);gap:10px">
-      <div>
-        <span class="osn">${s.numero}</span>${osGerada?` <span style="font-size:11px;color:var(--txt2)">(${osGerada})</span>`:''}
-        <div style="font-size:15px;font-weight:500;margin-top:2px">${s.sala} · ${s.maq}</div>
-        <div style="font-size:13px;color:var(--txt3)">${fd((s.criadoEm||'').slice(0,10))} · ${s.solicitante}</div>
-        <div style="font-size:14px;color:var(--txt2);margin-top:3px">${s.desc}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-        ${prio(s.prioridade)}${stBadge(s.status)}
-        ${(CU&&(CU.tipo==='administracao'||CU.tipo==='manutencao'))&&s.status==='Não Executada'
-          ?`<button class="btn btn-sm btn-g" onclick="abrirConcluir('${s.numero}','sol')">✓ Executar</button>`:''}
-        ${osGerada
-          ?`<button class="btn btn-sm btn-gh" onclick="verDet('${osGerada}','os')">Ver</button>`
-          :`<button class="btn btn-sm btn-gh" onclick="verDet('${s.numero}','sol')">Ver</button>`}
-      </div>
-    </div>`;
-  };
-
+  // v14: produção vê TODAS as solicitações (sem filtro por solicitante)
+  // Mesmo visual da aba Solicitações de Planejadas (tabela de os-planejadas.js).
+  const list = [...db.solicitacoes];
+  ordenarSol_(list, solPgSort);
   const naoConcl = list.filter(s => s.status !== 'Concluída');
   const concl    = list.filter(s => s.status === 'Concluída');
-
-  c.innerHTML = naoConcl.length ? naoConcl.map(rowHtml).join('')
-    : '<div class="empty"><div class="ei">✅</div><p>Nenhuma solicitação não concluída.</p></div>';
-  if (cC) {
-    cC.innerHTML = concl.length ? concl.map(rowHtml).join('')
-      : '<div class="empty"><div class="ei">✅</div><p>Nenhuma solicitação concluída.</p></div>';
-  }
+  c.innerHTML = solTabelaHtml_(naoConcl, true, 'Nenhuma solicitação não concluída.', solPgSort, 'sortSolPg');
+  if (cC) cC.innerHTML = solTabelaHtml_(concl, false, 'Nenhuma solicitação concluída.', solPgSort, 'sortSolPg');
 }
 
 // ══════════════════════════════════════════════════════════════════════
