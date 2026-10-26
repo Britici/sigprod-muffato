@@ -225,6 +225,7 @@ function abrirConcluir(id, tipo) {
     </div>`;
   sv('mc-dt',today()); sv('mc-mn',CU?CU.nome:'');
   ['mc-in','mc-fm','mc-ds','mc-parada'].forEach(fid=>sv(fid,''));
+  clearPhotos('mc'); // fotos da conclusão (opcional)
   openM('m-con');
 }
 
@@ -242,13 +243,16 @@ async function concluir() {
     : db.solicitacoes.find(x=>x.numero===_cid);
   if (!item) { showToast('Item não encontrado. Recarregue a página e tente novamente.','er'); return; }
   const agora=new Date().toISOString();
+  // Número da OS e fotos da conclusão: sobe antes de gravar, com o modal ainda aberto
+  // (botão em "ocupado"), no mesmo padrão da Abertura de O.S.
+  const numero=genOS();
+  const fotosConc=await uploadFotos(numero,_mcPhotos);
   let durMin=0,paradaMin=parada;
     if(ini&&fim){const[h1,m1]=ini.split(':').map(Number),[h2,m2]=fim.split(':').map(Number);durMin=(h2*60+m2)-(h1*60+m1);if(durMin<0)durMin+=1440;durMin=Math.max(0,durMin);if(!paradaMin)paradaMin=durMin;}
   Object.assign(item,{status:'Concluída',concluidoEm:agora,manut,ini,fim,dtExec:data,desc2:desc,durMin});
-  const numero=genOS();
   const os={id:crypto.randomUUID(),numero,sala:item.sala,maq:item.maq,tipo:item.tipo,prioridade:item.prioridade,
     manut,data:data||today(),ini,fim,durMin,paradaMin,prob:item.desc||'',acao:desc,
-    fotoUrl:item.fotoUrl||'',criadoEm:agora,origem:_ctp,origemNum:item.numero};
+    fotoUrl:fotosConc[0]||item.fotoUrl||'',fotos:fotosConc,criadoEm:agora,origem:_ctp,origemNum:item.numero};
   db.osC++;db.ordens.push(os);saveDB();closeM('m-con');
   logEdit('Concluiu', item.numero, item.sala + ' · ' + item.maq);
   // Atualiza qualquer tela aberta: a mesma conclusão pode ter sido disparada
@@ -261,6 +265,7 @@ async function concluir() {
   const row = {OS_Numero:numero,Data:data||today(),Sala:item.sala,Maquina:item.maq,Tipo:item.tipo,
     Prioridade:item.prioridade,Manutentor:manut,Hora_Inicio:ini,Hora_Fim:fim,Duracao_Min:durMin,
     Tempo_Parada_Min:paradaMin,Problema:item.desc||'',Acao_Executada:desc,Origem:_ctp,
+    Foto_URL:fotosConc[0]||'',Fotos:JSON.stringify(fotosConc),
     OS_Origem_Ref:item.numero,Criado_Em:agora};
   const rAp = await apiAppendComRetryNumero('ordens', row, 'OS_Numero', 'OS-', 'osC');
   if (rAp.numero !== numero) { os.numero = rAp.numero; saveDB(); }

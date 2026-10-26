@@ -230,7 +230,7 @@ function solRowHtml_(s) {
     '<td style="min-width:180px;max-width:260px;white-space:normal;font-size:13px;color:var(--txt2)">' + _escPl(s.desc || '—') + '</td>' +
     '<td>' + stBadge(s.status) + '</td>' +
     '<td><div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center">' +
-      (s.status !== 'Concluída' && podeExecutar ? '<button class="btn btn-sm btn-g" onclick="abrirConcluir(\'' + num + '\',\'sol\')">Executar</button>' : '') +
+      (s.status !== 'Concluída' && podeExecutar ? '<button class="btn btn-sm btn-g" onclick="abrirConcluir(\'' + num + '\',\'sol\')">Concluir</button>' : '') +
       (osGerada
         ? '<button class="btn btn-sm btn-gh" onclick="verDet(\'' + String(osGerada).replace(/'/g, "\\'") + '\',\'os\')">Ver</button>'
         : '<button class="btn btn-sm btn-gh" onclick="verDet(\'' + num + '\',\'sol\')">Ver</button>') +
