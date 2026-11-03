@@ -4,6 +4,12 @@
 // Arquivo ÚNICO compartilhado por sigman-muffato e sigprod-muffato (colado
 // direto no editor do Apps Script; cópias de Code.gs no GitHub não valem).
 //
+// v17 — ModelosItens ganha a coluna Freq (Q/M/T/S/A): cada item do checklist diz a partir de qual
+//   frequência entra (a OS anual inclui os itens das frequências menores).
+//   • SCHEMAS.ModelosItens: Freq no fim. Freq é obrigatória e validada no servidor (Q/M/T/S/A exato).
+//   • pmCriarAbas() agora CONFERE o cabeçalho das 3 abas PM e acrescenta no fim a coluna que faltar
+//     (migra a aba já criada sem tocar nos dados). Rode pmCriarAbas() UMA vez após colar esta versão.
+//   • Gravar em ModelosItens antes da migração é recusado (evita perder Freq em silêncio).
 // v16 — PLANO DE MANUTENÇÃO (PM) · Etapa 2 · SEM geração automática de OS
 //   • Abas novas: PlanosPM (plano por máquina e frequência), ModelosItens (itens do
 //     checklist por modelo) e ExecucaoItens (resposta de cada item: OK/CORRIGI/CORRETIVA/PARAR).
@@ -277,7 +283,7 @@ var SCHEMAS = {
     'Ciclo_Dias','Tol_Dias','Duracao_Min','Parada','Ativo','Criado_Em','Atualizado_Em','Idempotency_Key'
   ],
   'ModelosItens': [
-    'ID_Item','Modelo','Disciplina','Ordem','Descricao','Ativo'
+    'ID_Item','Modelo','Disciplina','Ordem','Descricao','Ativo','Freq'
   ],
   'ExecucaoItens': [
     'ID_Exec','OS_Numero','Chave','ID_Maquina','Venc','Tol_Ate','Feita_Em','Manutentor',
@@ -299,7 +305,7 @@ var REQUIRED_FIELDS = {
   compras:      ['ID','Sala','Descricao'],
   manuaisSenhas:['ID','Sala','Equipamento'],
   planosPM:     ['ID_Plano','ID_Maquina','Freq','Primeira'],
-  modelosItens: ['ID_Item','Modelo','Disciplina','Descricao'],
+  modelosItens: ['ID_Item','Modelo','Disciplina','Descricao','Freq'],
   execItens:    ['ID_Exec','Chave','ID_Maquina','Item','Resultado']
 };
 
@@ -320,6 +326,7 @@ function validarObrigatorios(key, rowObj, isUpdate) {
     }
   }
   if (key === 'planosPM') return pmValidarPlanoRow_(rowObj, isUpdate);
+  if (key === 'modelosItens') return pmValidarItemRow_(rowObj, isUpdate);
   return null;
 }
 
@@ -2109,6 +2116,31 @@ function pmValidarPlanoRow_(r, isUpdate) {
   return null;
 }
 
+// Validação de gravação em ModelosItens. Freq exata (Q/M/T/S/A, maiúscula; regex, não lookup em objeto).
+// Recusa gravar se a aba ainda não tem a coluna Freq (senão appendRow descartaria Freq sem avisar).
+function pmValidarItemRow_(r, isUpdate) {
+  if (r.Freq !== undefined || !isUpdate) {
+    if (!/^[QMTSA]$/.test(String(r.Freq === undefined ? '' : r.Freq))) return 'Frequência inválida (use Q, M, T, S ou A).';
+    var sh = getSheet('modelosItens');
+    var h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    if (h.indexOf('Freq') < 0) return 'A aba ModelosItens ainda não tem a coluna Freq. Rode pmCriarAbas() no editor.';
+  }
+  return null;
+}
+
+// Garante que as colunas do SCHEMAS existam no cabeçalho. Só ACRESCENTA no fim o que faltar;
+// nunca remove nem reordena (dados já gravados ficam onde estão).
+function pmGarantirColunas_(key) {
+  var sh = getSheet(key), nome = SHEET_NAMES[key], cols = SCHEMAS[nome];
+  var h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  var falta = cols.filter(function(c) { return h.indexOf(c) < 0; });
+  if (!falta.length) return 0;
+  sh.getRange(1, h.length + 1, 1, falta.length).setValues([falta]);
+  formatHeader(sh, h.length + falta.length);
+  Logger.log('➕ ' + nome + ': coluna(s) acrescentada(s): ' + falta.join(', '));
+  return falta.length;
+}
+
 function pmMaquinaExiste_(id) {
   var dados = getSheet('maquinas').getDataRange().getValues();
   var idx = dados[0].indexOf('ID_Maquina');
@@ -2132,12 +2164,13 @@ function pmCriarAbas() {
       if (i >= 0) sh.getRange(2, i + 1, 2000, 1).setNumberFormat('@');
     });
   });
-  getSheet('modelosItens');
+  ['planosPM', 'modelosItens', 'execItens'].forEach(pmGarantirColunas_);
   var listas = [
     ['planosPM', 'Freq', ['Q', 'M', 'T', 'S', 'A']],
     ['planosPM', 'Ativo', ['Sim', 'Nao']],
     ['modelosItens', 'Ativo', ['Sim', 'Nao']],
     ['modelosItens', 'Disciplina', ['Mecanico', 'Eletrico']],
+    ['modelosItens', 'Freq', ['Q', 'M', 'T', 'S', 'A']],
     ['execItens', 'Resultado', ['OK', 'CORRIGI', 'CORRETIVA', 'PARAR']]
   ];
   listas.forEach(function(l) {
