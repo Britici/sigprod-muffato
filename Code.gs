@@ -4,6 +4,8 @@
 // Arquivo ÚNICO compartilhado por sigman-muffato e sigprod-muffato (colado
 // direto no editor do Apps Script; cópias de Code.gs no GitHub não valem).
 //
+// v21 — FASE 2: inspeção diária lida da aba InspecaoItens; gravação da inspeção validada e idempotente; alerta de NÃO OK (GET inspAlertas).
+//   Detalhes no bloco "v21 — INSPEÇÃO DIÁRIA". Rode pmCriarAbas() uma vez (cria a aba InspecaoItens) e importe o CSV da lista.
 // v20.1 — migrações pontuais removidas (migrarColunasV18/V19 já rodaram): pmCriarAbas() agora confere/cria as colunas de Ordens,
 //   Planejadas, Solicitações, PlanosPM, ModelosItens e ExecucaoItens, o formato texto das datas e as listas suspensas (idempotente).
 //   Colunas ausentes agora mandam rodar pmCriarAbas().
@@ -81,13 +83,14 @@ var SHEET_NAMES = {
   manuaisSenhas: 'ManuaisSenhas',
   planosPM:      'PlanosPM',
   modelosItens:  'ModelosItens',
-  execItens:     'ExecucaoItens'
+  execItens:     'ExecucaoItens',
+  inspecaoItens: 'InspecaoItens'
 };
 
 // ── Sheets excluídas do readAll (muito grandes / lidas sob demanda). Inclui
 // manuaisSenhas de propósito: credenciais de equipamento só saem pela action
 // explícita 'readManuaisSenhas', nunca no carregamento em massa.
-var SKIP_READ_ALL = ['historico', 'compras', 'inspecoes', 'racs', 'manuaisSenhas', 'planosPM', 'modelosItens', 'execItens'];
+var SKIP_READ_ALL = ['historico', 'compras', 'inspecoes', 'racs', 'manuaisSenhas', 'planosPM', 'modelosItens', 'execItens', 'inspecaoItens'];
 
 // ── Planilha aberta UMA vez por execução ────────────────────────────────────
 // Variável global vive só durante a execução atual (cada request do Web App
@@ -256,6 +259,9 @@ var SCHEMAS = {
     'ID_Item','Modelo','Disciplina','Ordem','Descricao','Ativo','Freq',
     'Status','Freq_Origem','Aprovado_Por','Aprovado_Em'
   ],
+  'InspecaoItens': [
+    'ID_Item','Sala','Equipamento','Sub_Item','Ordem','Ativo'
+  ],
   'ExecucaoItens': [
     'ID_Exec','OS_Numero','Chave','ID_Maquina','Venc','Tol_Ate','Feita_Em','Manutentor',
     'Modelo','Disciplina','Ordem','Item','Resultado','Observacao','Foto_URL','OS_Corretiva',
@@ -277,7 +283,8 @@ var REQUIRED_FIELDS = {
   manuaisSenhas:['ID','Sala','Equipamento'],
   planosPM:     ['ID_Plano','ID_Maquina','Freq','Primeira'],
   modelosItens: ['ID_Item','Modelo','Disciplina','Descricao','Freq'],
-  execItens:    ['ID_Exec','Chave','ID_Maquina','Item','Resultado']
+  execItens:    ['ID_Exec','Chave','ID_Maquina','Item','Resultado'],
+  inspecaoItens:['ID_Item','Sala','Equipamento']
 };
 
 function validarObrigatorios(key, rowObj, isUpdate) {
@@ -375,7 +382,8 @@ var ACL_LEITURA = {
   usuarios: P_OPER,
   inspecoes: P_OPER, racs: [P_ADM], historico: P_GEST, compras: P_GEST,
   preventiva: [P_ADM], manuaisSenhas: P_OPER,
-  planosPM: [P_ADM], modelosItens: P_OPER, execItens: P_GEST
+  planosPM: [P_ADM], modelosItens: P_OPER, execItens: P_GEST,
+  inspecaoItens: P_OPER
 };
 
 // Escrita por aba e operação. Aba/operação ausente = negado.
@@ -395,6 +403,7 @@ var ACL_ESCRITA = {
   compras:       { update: [P_ADM] },
   planosPM:      { append: [P_ADM], update: [P_ADM], delete: [P_ADM] },
   modelosItens:  { append: [P_ADM], update: [P_ADM], delete: [P_ADM] },
+  inspecaoItens: { append: [P_ADM], update: [P_ADM], delete: [P_ADM] },
   execItens:     { update: [P_ADM] } // v18: sem append genérico; a gravação do checklist é só por pmGravarChecklist
 };
 
@@ -577,7 +586,7 @@ function checarEscrita_(sess, acao, sheet) {
 
 function doGet(e) {
   if (!e || !e.parameter) {
-    return jsonOut({ ok: true, msg: 'SIGMAN API v20 online', ts: new Date().toISOString() });
+    return jsonOut({ ok: true, msg: 'SIGMAN API v21 online', ts: new Date().toISOString() });
   }
   var sess = null;
   try {
@@ -602,6 +611,12 @@ function doGet(e) {
       case 'readCompras':
         nega = checarLeitura_(sess, 'compras');
         return resp_(nega || { ok: true, data: readSheet('compras') }, sess);
+      case 'readInspItens':
+        nega = checarLeitura_(sess, 'inspecaoItens');
+        return resp_(nega || inspItens_(), sess);
+      case 'inspAlertas': // SÓ LEITURA: NÃO OK da inspeção sem OK posterior
+        if (!pode_(sess, P_GEST)) return resp_(negar_(), sess);
+        return resp_(inspAlertas_(p.dias), sess);
       case 'readInspecoes':
         nega = checarLeitura_(sess, 'inspecoes');
         return resp_(nega || { ok: true, data: readSheet('inspecoes') }, sess);
@@ -656,6 +671,7 @@ function doPost(e) {
         nega = checarEscrita_(sess, 'append', d.sheet);
         if (!nega && APPEND_BATCH_PERMITIDO.indexOf(d.sheet) < 0) nega = negar_('Gravação em lote não permitida para ' + d.sheet + '.'); // v18.1
         if (!nega && (!Array.isArray(d.rows) || d.rows.length > 500)) nega = { ok: false, code: 'VALIDATION', error: 'Lote inválido (máx. 500 linhas).' };
+        if (!nega && d.sheet === 'inspecoes') return resp_(inspGravar_(sess, d.rows), sess); // v21: valida, idempotente, texto
         return resp_(nega || appendBatch(d.sheet, d.rows, usuario), sess);
       case 'update':
         nega = checarEscrita_(sess, 'update', d.sheet);
@@ -807,6 +823,7 @@ var NUMERO_COLS = {
   solicitacoes: 'SOL_Numero',
   planosPM:     'ID_Plano',
   modelosItens: 'ID_Item',
+  inspecaoItens:'ID_Item',
   configuracoes:'Chave',      // v20: Chave repetida fazia o front ler uma linha e o update gravar em outra
   usuarios:     'Login',
   salas:        'ID_Sala',
@@ -2151,9 +2168,9 @@ function pmMaquinaExiste_(id) {
 // suspensas em Freq, Ativo e Resultado.
 function pmCriarAbas() {
   // Garante primeiro as colunas (acrescenta só o que falta, no fim) e depois formata: texto nas datas e listas suspensas.
-  ['ordens', 'planejadas', 'solicitacoes', 'planosPM', 'modelosItens', 'execItens'].forEach(pmGarantirColunas_);
+  ['ordens', 'planejadas', 'solicitacoes', 'planosPM', 'modelosItens', 'execItens', 'inspecoes', 'inspecaoItens'].forEach(pmGarantirColunas_);
   var txt = { planosPM: ['Primeira'], execItens: ['Venc', 'Tol_Ate', 'Feita_Em'], modelosItens: ['Aprovado_Em'],
-              planejadas: ['Impressa_Em'], solicitacoes: ['Impressa_Em'] };
+              planejadas: ['Impressa_Em'], solicitacoes: ['Impressa_Em'], inspecoes: ['ID_Inspecao', 'Data', 'Hora', 'Criado_Em'] };
   Object.keys(txt).forEach(function(k) {
     var sh = getSheet(k), h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
     txt[k].forEach(function(c) {
@@ -2165,6 +2182,7 @@ function pmCriarAbas() {
     ['planosPM', 'Freq', ['Q', 'M', 'T', 'S', 'A']],
     ['planosPM', 'Ativo', ['Sim', 'Nao']],
     ['modelosItens', 'Ativo', ['Sim', 'Nao']],
+    ['inspecaoItens', 'Ativo', ['Sim', 'Nao']],
     ['modelosItens', 'Disciplina', ['Mecanico', 'Eletrico']],
     ['modelosItens', 'Freq', ['Q', 'M', 'T', 'S', 'A']],
     ['modelosItens', 'Status', PM_STATUS_ITEM],
@@ -2177,7 +2195,7 @@ function pmCriarAbas() {
     var regra = SpreadsheetApp.newDataValidation().requireValueInList(l[2], true).setAllowInvalid(false).build();
     sh.getRange(2, i + 1, 2000, 1).setDataValidation(regra);
   });
-  Logger.log('✅ Colunas, formatos e listas conferidos (Ordens, Planejadas, Solicitações, PlanosPM, ModelosItens, ExecucaoItens).');
+  Logger.log('✅ Colunas, formatos e listas conferidos (Ordens, Planejadas, Solicitações, PlanosPM, ModelosItens, ExecucaoItens, Inspeções, InspecaoItens).');
 }
 
 // ── TESTE NO EDITOR (só lê; não precisa implantar nada) ─────────────────────────────────────────────────
@@ -3023,6 +3041,179 @@ function pmImportarModelosReal() {
   if (!res.ok) { Logger.log('❌ ' + res.error); return; }
   pmImportarLog_(res.r, true);
   logGravacao('editor', 'pmImportarModelos', 'modelosItens', '', 'sucesso', res.r.novos.length + ' novos, ' + res.r.atualizar.length + ' atualizados');
+}
+
+// ═════════════════════════════════════════════════════════════════
+// v21 — INSPEÇÃO DIÁRIA: lista de itens vinda da aba, gravação validada/idempotente e alerta de NÃO OK
+//   • Aba InspecaoItens (ID_Item, Sala, Equipamento, Sub_Item, Ordem, Ativo) = a lista que o inspetor vê. Sub_Item vazio = o próprio equipamento.
+//   • GET readInspItens (P_OPER): itens ativos em ordem + avisos de linhas inválidas/duplicadas (o PCM edita a aba direto).
+//   • appendBatch em 'inspecoes' passa por inspGravar_: valida tudo (tudo ou nada), é idempotente por ID_Inspecao, grava Data/Hora/
+//     Criado_Em como TEXTO e usa o horário do servidor em Criado_Em.
+//   • GET inspAlertas (P_GEST): último status de cada item na janela (padrão 30 dias); NÃO OK sem OK posterior = alerta. Só alerta, sem O.S.
+// ═════════════════════════════════════════════════════════════════
+var INSP_TURNOS = ['1º Turno', '2º Turno', '3º Turno'];
+var INSP_JANELA_DIAS = 30;      // alerta olha este tanto para trás (1 a 90 por parâmetro)
+var INSP_RETRO_MAX_DIAS = 31;   // uma inspeção pode ser gravada com data até 31 dias atrás (fila offline); futura, só amanhã
+var INSP_LINHAS_CAUDA = 6000;   // lê só o fim da aba (o alerta não precisa do histórico inteiro)
+var INSP_LOTE_MAX = 500;
+
+function inspChave_(sala, equip, sub) {
+  function n(x) { return normLower_(x).replace(/\s+/g, ' ').trim(); }
+  return n(sala) + '|' + n(equip) + '|' + n(sub);
+}
+function inspTurnoRank_(t) { var i = INSP_TURNOS.indexOf(String(t === undefined || t === null ? '' : t).trim()); return i < 0 ? 0 : i + 1; }
+function inspDataValida_(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  var p = s.split('-'), d = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+  return d.getUTCFullYear() === +p[0] && d.getUTCMonth() === +p[1] - 1 && d.getUTCDate() === +p[2];
+}
+function inspDiasEntre_(de, ate) { // ate - de, em dias (ambas AAAA-MM-DD válidas)
+  var a = de.split('-'), b = ate.split('-');
+  return Math.round((Date.UTC(+b[0], +b[1] - 1, +b[2]) - Date.UTC(+a[0], +a[1] - 1, +a[2])) / 864e5);
+}
+function inspTxt_(v) { return String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').trim(); }
+
+// Puro. Valida o lote de uma inspeção. hoje = 'AAAA-MM-DD'; agora = 'AAAA-MM-DD HH:mm' (servidor). Tudo ou nada.
+function inspValidarLote_(rows, hoje, agora) {
+  if (!Array.isArray(rows) || !rows.length) return vErro_('Nenhum item avaliado para gravar.');
+  if (rows.length > INSP_LOTE_MAX) return vErro_('Lote inválido (máx. ' + INSP_LOTE_MAX + ' linhas).');
+  var out = [], vistos = {}, id = '', data = '', turno = '', manut = '';
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i], n = i + 1;
+    if (!r || typeof r !== 'object' || Array.isArray(r)) return vErro_('Linha ' + n + ': inválida.');
+    var rid = inspTxt_(r.ID_Inspecao), d = inspTxt_(r.Data), t = inspTxt_(r.Turno), m = inspTxt_(r.Manutentor);
+    var sala = inspTxt_(r.Sala), eq = inspTxt_(r.Equipamento), sub = inspTxt_(r.Sub_Item), hora = inspTxt_(r.Hora), obs = inspTxt_(r.Observacoes);
+    var st = normLower_(inspTxt_(r.Status)), hs = inspTxt_(r.Horas_Turno === undefined ? '10' : r.Horas_Turno);
+    if (!/^[A-Za-z0-9-]{8,64}$/.test(rid)) return vErro_('Linha ' + n + ': ID_Inspecao inválido.');
+    if (!inspDataValida_(d)) return vErro_('Linha ' + n + ': data inválida (use AAAA-MM-DD).');
+    if (d > pmSomaDias_(hoje, 1)) return vErro_('Linha ' + n + ': data no futuro.');
+    if (d < pmSomaDias_(hoje, -INSP_RETRO_MAX_DIAS)) return vErro_('Linha ' + n + ': data anterior a ' + INSP_RETRO_MAX_DIAS + ' dias.');
+    if (!inspTurnoRank_(t)) return vErro_('Linha ' + n + ': turno inválido.');
+    if (!m || m.length > 80) return vErro_('Linha ' + n + ': manutentor vazio ou acima de 80 caracteres.');
+    if (!sala || sala.length > 80 || !eq || eq.length > 80 || sub.length > 80) return vErro_('Linha ' + n + ': sala/equipamento/sub-item vazio ou acima de 80 caracteres.');
+    if (st !== 'ok' && st !== 'nok') return vErro_('Linha ' + n + ': status inválido (ok ou nok).');
+    if (hora !== '' && !/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) return vErro_('Linha ' + n + ': hora inválida (HH:MM).');
+    if (obs.length > 500) return vErro_('Linha ' + n + ': observação acima de 500 caracteres.');
+    if (!/^\d{1,2}$/.test(hs) || +hs < 1 || +hs > 24) return vErro_('Linha ' + n + ': horas do turno inválidas (1 a 24).');
+    if (i === 0) { id = rid; data = d; turno = t; manut = m; }
+    else if (rid !== id || d !== data || t !== turno || m !== manut) return vErro_('Linha ' + n + ': o lote mistura inspeções diferentes (ID, data, turno ou manutentor).');
+    var k = inspChave_(sala, eq, sub);
+    if (own_(vistos, k)) return vErro_('Linha ' + n + ': item repetido no lote (' + eq + (sub ? ' / ' + sub : '') + ').');
+    vistos[k] = 1;
+    out.push({ ID_Inspecao: rid, Data: d, Turno: t, Horas_Turno: +hs, Manutentor: m, Sala: sala, Equipamento: eq, Sub_Item: sub,
+               Status: st, Hora: hora, Observacoes: obs, Criado_Em: agora });
+  }
+  return { ok: true, id: id, linhas: out };
+}
+
+// appendBatch de 'inspecoes'. Idempotente: o mesmo ID_Inspecao já gravado (cauda da aba) devolve ok sem gravar de novo.
+function inspGravar_(sess, rows) {
+  var usuario = sess ? sess.nome : '';
+  if (Array.isArray(rows) && !rows.length) return { ok: true, sheet: 'inspecoes', count: 0 }; // lote vazio = nada a fazer (compatível com v18.1)
+  var v = inspValidarLote_(rows, pmHoje_(), agoraTxt_());
+  if (!v.ok) { logGravacao(usuario, 'appendBatch', 'inspecoes', '', 'falha', v.error); return v; }
+  var res = comLock(function() {
+    var sh = getSheet('inspecoes'), c = cabecalho_(sh, SCHEMAS.Inspecoes_Diarias);
+    if (c.falta.length) return erroMigracao_(c.falta, 'Inspecoes_Diarias');
+    var h = c.h, ult = sh.getLastRow(), iId = h.indexOf('ID_Inspecao');
+    if (ult > 1) {
+      var ini = Math.max(2, ult - INSP_LINHAS_CAUDA + 1), col = sh.getRange(ini, iId + 1, ult - ini + 1, 1).getValues();
+      for (var i = 0; i < col.length; i++) if (String(col[i][0]).trim() === v.id) return { ok: true, sheet: 'inspecoes', count: 0, duplicado: true };
+    }
+    var matriz = v.linhas.map(function(o) { return h.map(function(col2) { return o[col2] !== undefined ? o[col2] : ''; }); });
+    var alvo = ult + 1;
+    ['ID_Inspecao', 'Data', 'Hora', 'Criado_Em'].forEach(function(nome) { // texto: o Sheets não converte em Data/Hora
+      var ci = h.indexOf(nome); if (ci >= 0) sh.getRange(alvo, ci + 1, matriz.length, 1).setNumberFormat('@');
+    });
+    sh.getRange(alvo, 1, matriz.length, h.length).setValues(matriz);
+    return { ok: true, sheet: 'inspecoes', count: matriz.length };
+  });
+  logGravacao(usuario, 'appendBatch', 'inspecoes', v.id, res.ok ? 'sucesso' : 'falha', res.error || (res.duplicado ? 'duplicado ignorado' : res.count + ' linha(s)'));
+  return res;
+}
+
+// Puro. rows = objetos da aba InspecaoItens. Devolve itens ativos e válidos, em ordem, + avisos.
+function inspItensCalc_(rows) {
+  var avisos = [], ids = {}, chaves = {}, lista = [];
+  rows.forEach(function(r, i) {
+    var linha = i + 2, id = inspTxt_(r.ID_Item), sala = inspTxt_(r.Sala), eq = inspTxt_(r.Equipamento), sub = inspTxt_(r.Sub_Item);
+    if (!id && !sala && !eq && !sub) return; // linha em branco
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) { avisos.push('Linha ' + linha + ': ID_Item inválido; ignorada.'); return; }
+    if (!sala || sala.length > 80 || !eq || eq.length > 80 || sub.length > 80) { avisos.push('Linha ' + linha + ' (' + id + '): sala/equipamento vazio ou longo; ignorada.'); return; }
+    if (own_(ids, id)) { avisos.push('Linha ' + linha + ': ID_Item repetido (' + id + '); ignorada.'); return; }
+    ids[id] = 1;
+    var k = inspChave_(sala, eq, sub);
+    if (own_(chaves, k)) { avisos.push('Linha ' + linha + ' (' + id + '): mesmo equipamento/sub-item de ' + chaves[k] + '; ignorada.'); return; }
+    chaves[k] = id;
+    if (!ativoSim_(r.Ativo)) return;
+    var o = Number(inspTxt_(r.Ordem));
+    lista.push({ ID_Item: id, Sala: sala, Equipamento: eq, Sub_Item: sub, Ordem: isFinite(o) && inspTxt_(r.Ordem) !== '' ? o : 9999, _i: i });
+  });
+  var temEq = {};
+  lista.forEach(function(x) { if (!x.Sub_Item) temEq[inspChave_(x.Sala, x.Equipamento, '')] = 1; });
+  var itens = lista.filter(function(x) {
+    if (x.Sub_Item && !own_(temEq, inspChave_(x.Sala, x.Equipamento, ''))) { avisos.push(x.ID_Item + ': sub-item sem a linha do equipamento (Sub_Item vazio) ativa; ignorado.'); return false; }
+    return true;
+  }).sort(function(a, b) { return a.Ordem - b.Ordem || a._i - b._i; }).map(function(x) { delete x._i; return x; });
+  return { itens: itens, avisos: avisos };
+}
+
+function inspItens_() {
+  var r = inspItensCalc_(sheetToObjects(getSheet('inspecaoItens')));
+  return { ok: true, itens: r.itens, avisos: r.avisos };
+}
+
+// Puro. rows = linhas da aba (Data 'AAAA-MM-DD', Hora 'HH:MM' já em texto; _ord = posição na aba). ativos (opcional) = {chave:1} dos itens
+// ativos em InspecaoItens: se informado, item fora dele não gera alerta (equipamento desativado/removido).
+function inspAlertasCalc_(rows, hoje, dias, ativos) {
+  var ini = pmSomaDias_(hoje, -dias), porItem = {}, ignoradas = 0;
+  rows.forEach(function(r, i) {
+    var d = inspTxt_(r.Data), st = normLower_(inspTxt_(r.Status));
+    if (!inspDataValida_(d) || d < ini || d > pmSomaDias_(hoje, 1) || (st !== 'ok' && st !== 'nok') || !inspTxt_(r.Sala) || !inspTxt_(r.Equipamento)) { ignoradas++; return; }
+    var k = inspChave_(r.Sala, r.Equipamento, r.Sub_Item);
+    (porItem[k] = porItem[k] || []).push({
+      r: r, st: st, d: d, ord: d + '|' + inspTurnoRank_(r.Turno) + '|' + inspTxt_(r.Criado_Em) + '|' + ('00000000' + (r._ord === undefined ? i : r._ord)).slice(-8)
+    });
+  });
+  var alertas = [];
+  Object.keys(porItem).forEach(function(k) {
+    if (ativos && !own_(ativos, k)) return;
+    var l = porItem[k].sort(function(a, b) { return a.ord < b.ord ? -1 : a.ord > b.ord ? 1 : 0; });
+    var ult = l[l.length - 1];
+    if (ult.st !== 'nok') return;
+    var j = l.length - 1; while (j > 0 && l[j - 1].st === 'nok') j--; // início da sequência atual de NÃO OK
+    alertas.push({
+      sala: inspTxt_(ult.r.Sala), equipamento: inspTxt_(ult.r.Equipamento), sub_item: inspTxt_(ult.r.Sub_Item),
+      data: ult.d, turno: inspTxt_(ult.r.Turno), hora: inspTxt_(ult.r.Hora), manutentor: inspTxt_(ult.r.Manutentor), obs: inspTxt_(ult.r.Observacoes),
+      desde: l[j].d, dias: Math.max(0, inspDiasEntre_(l[j].d, hoje)), ocorrencias: l.length - j
+    });
+  });
+  alertas.sort(function(a, b) { return b.dias - a.dias || (a.sala < b.sala ? -1 : a.sala > b.sala ? 1 : 0) || (a.equipamento < b.equipamento ? -1 : a.equipamento > b.equipamento ? 1 : 0); });
+  return { alertas: alertas, ignoradas: ignoradas };
+}
+
+// GET inspAlertas?dias=30. Só lê. Lê o fim da aba; truncado=true quando a janela pode ter linhas mais antigas fora da leitura.
+function inspAlertas_(diasParam) {
+  var dias = parseInt(diasParam, 10);
+  if (!isFinite(dias) || dias < 1 || dias > 90) dias = INSP_JANELA_DIAS;
+  var hoje = pmHoje_(), sh = getSheet('inspecoes'), c = cabecalho_(sh, SCHEMAS.Inspecoes_Diarias);
+  if (c.falta.length) return erroMigracao_(c.falta, 'Inspecoes_Diarias');
+  var h = c.h, ult = sh.getLastRow(), rows = [], truncado = false;
+  function txt(v, fmt) { return v instanceof Date ? Utilities.formatDate(v, PM_TZ, fmt) : String(v === undefined || v === null ? '' : v).trim(); }
+  if (ult > 1) {
+    var ini = Math.max(2, ult - INSP_LINHAS_CAUDA + 1), vals = sh.getRange(ini, 1, ult - ini + 1, h.length).getValues();
+    vals.forEach(function(l, i) {
+      var o = {}; h.forEach(function(col, j) { o[col] = l[j]; });
+      o.Data = txt(o.Data, 'yyyy-MM-dd'); o.Hora = txt(o.Hora, 'HH:mm'); o.Criado_Em = txt(o.Criado_Em, 'yyyy-MM-dd HH:mm'); o._ord = ini + i;
+      rows.push(o);
+    });
+    var primeira = rows.length ? rows[0].Data : '';
+    truncado = ini > 2 && inspDataValida_(primeira) && primeira >= pmSomaDias_(hoje, -dias);
+  }
+  var ativos = null, it = inspItensCalc_(sheetToObjects(getSheet('inspecaoItens'))).itens;
+  if (it.length) { ativos = {}; it.forEach(function(x) { ativos[inspChave_(x.Sala, x.Equipamento, x.Sub_Item)] = 1; }); }
+  var r = inspAlertasCalc_(rows, hoje, dias, ativos);
+  return { ok: true, hoje: hoje, dias: dias, total: r.alertas.length, alertas: r.alertas, truncado: truncado };
 }
 
 // ═════════════════════════════════════════════════════════════════

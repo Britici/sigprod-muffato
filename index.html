@@ -119,6 +119,7 @@
      </div>
     </div>
     <div id="dash-banner" style="display:none"></div>
+    <div id="dash-insp-alert" style="display:none"></div>
     <div class="stats" id="d-stats"></div>
 
   <!-- Disponibilidade + Meta PCM + Tendência na mesma linha -->
@@ -808,15 +809,15 @@
      </div>
   </div></div>
   
-  <script src="js/core.js?v=202610182030"></script>
+  <script src="js/core.js?v=202611211000"></script>
   <script src="js/helpers.js?v=202610151700"></script>
   <script src="js/modais-helpers.js?v=202608261950"></script>
   <script src="js/utils-offline.js?v=202610171700"></script>
-  <script src="js/dashboard.js?v=202610231800"></script>
+  <script src="js/dashboard.js?v=202611211000"></script>
   <script src="js/os-planejadas.js?v=202610231800"></script>
   <script src="js/os-executadas.js?v=202608261950"></script>
   <script src="js/abertura-os.js?v=202610231800"></script>
-  <script src="js/inspecao.js?v=202608261950"></script>
+  <script src="js/inspecao.js?v=202611211000"></script>
   <script src="js/ativos.js?v=202608261950"></script>
   <script src="js/usuarios.js?v=202608261950"></script>
   <script src="js/preventiva.js?v=202608261950"></script>
@@ -1158,7 +1159,7 @@ function showPage(pid) {
   if (pid === 'solicitacao') { renderSol(); renderPhotoGrid('sol'); apiLoadAll(true).then(renderSol).catch(()=>showToast('Erro ao sincronizar Solicitações.','er')); }
   if (pid === 'ativos')      { renderAtivos();  apiLoadAll(true).then(renderAtivos).catch(()=>showToast('Erro ao sincronizar Ativos.','er')); }
   if (pid === 'usuarios')      renderUsuarios();
-  if (pid === 'inspecao')      { buildInsp(); apiLoadInspecoes().then(buildInsp).catch(()=>{}); }
+  if (pid === 'inspecao')      inspAbrirPagina_();
   if (pid === 'preventiva')    initPreventiva();
   if (pid === 'analise-causa-raiz') { renderRACR(); apiLoadRacs().then(renderRACR).catch(()=>{}); }
   if (pid === 'manuais-senhas') { initManuaisSenhas(); apiLoadManuaisSenhas().then(renderMSLista).catch(()=>{}); }
