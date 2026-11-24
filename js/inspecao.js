@@ -3,10 +3,127 @@
    Muffato Foods
    ══════════════════════════════════════════════════════════════════ */
 
+// Lista de inspeção (Sala → equipamentos → sub-itens): vem da aba InspecaoItens (GET readInspItens), com cópia local p/ uso sem rede.
+let INSP_TMPL = [];
+const INSP_TMPL_KEY = 'sigman_insp_tmpl_v1';
+const INSP_ALERTAS_TTL_MS = 60 * 1000;
+let _inspUltimaAssin = '', _inspUltimoId = '';   // mesmo conteúdo = mesmo ID: reenvio/fila não duplica no servidor
+let _salvandoInsp = false;
+let _inspAlertasTs = 0, _inspAlertasRes = null, _inspAlertasUser = '';
+
+// ═══ INSP-PURO:INICIO ═══
+// itens (do servidor, já em ordem; Sub_Item vazio = o próprio equipamento) → [{sala, equips:[{id, nome, subs:[{id, nome}]}]}]
+function inspMontarTmpl_(itens) {
+  const norm = x => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().toLowerCase();
+  const salas = [], porSala = {}, porEq = {};
+  (Array.isArray(itens) ? itens : []).forEach(it => {
+    if (!it || typeof it !== 'object') return;
+    const id = String(it.ID_Item == null ? '' : it.ID_Item).trim(), sala = String(it.Sala == null ? '' : it.Sala).trim();
+    const eq = String(it.Equipamento == null ? '' : it.Equipamento).trim(), sub = String(it.Sub_Item == null ? '' : it.Sub_Item).trim();
+    if (!id || !sala || !eq) return;
+    if (!sub) {
+      const k = norm(sala) + '|' + norm(eq);
+      if (porEq[k]) return;                                   // equipamento repetido: fica o primeiro
+      let sec = porSala[norm(sala)];
+      if (!sec) { sec = { sala, equips: [] }; porSala[norm(sala)] = sec; salas.push(sec); }
+      porEq[k] = { id, nome: eq, subs: [] }; sec.equips.push(porEq[k]);
+    }
+  });
+  (Array.isArray(itens) ? itens : []).forEach(it => {
+    if (!it || typeof it !== 'object') return;
+    const id = String(it.ID_Item == null ? '' : it.ID_Item).trim(), sala = String(it.Sala == null ? '' : it.Sala).trim();
+    const eq = String(it.Equipamento == null ? '' : it.Equipamento).trim(), sub = String(it.Sub_Item == null ? '' : it.Sub_Item).trim();
+    if (!id || !sala || !eq || !sub) return;
+    const pai = porEq[norm(sala) + '|' + norm(eq)];
+    if (pai && !pai.subs.some(s => norm(s.nome) === norm(sub))) pai.subs.push({ id, nome: sub });   // sub sem equipamento: ignorado
+  });
+  return salas;
+}
+
+// Resultado de GET inspAlertas → HTML do banner do dashboard ('' = nada a mostrar). Todo texto vem escapado.
+function inspAlertasHtml_(res) {
+  if (!res || !res.ok || !Array.isArray(res.alertas) || !res.alertas.length) return '';
+  const dm = d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? String(d).slice(8, 10) + '/' + String(d).slice(5, 7) : '';
+  const linha = a => {
+    const dias = Number(a.dias) || 0;
+    return `<div style="padding:5px 0;border-top:1px solid rgba(196,18,48,.25);font-size:14px;line-height:1.45">
+      <strong>${_esc(a.sala)}</strong> · ${_esc(a.equipamento)}${a.sub_item ? ' / ' + _esc(a.sub_item) : ''}
+      — <span style="color:#ff2244">NÃO OK desde ${_esc(dm(a.desde))}</span> <span style="color:var(--txt3)">(${dias > 0 ? _esc(dias) + ' dia' + (dias > 1 ? 's' : '') : 'hoje'})</span>
+      ${a.manutentor ? ' · ' + _esc(a.manutentor) : ''}${a.obs ? ' · “' + _esc(a.obs) + '”' : ''}
+    </div>`;
+  };
+  const MAX = 5, n = res.alertas.length;
+  const resto = n > MAX ? `<details style="margin-top:2px"><summary style="cursor:pointer;font-size:13px;color:var(--txt3);padding:4px 0">Ver os outros ${_esc(n - MAX)}</summary>${res.alertas.slice(MAX).map(linha).join('')}</details>` : '';
+  return `<div style="background:rgba(196,18,48,.12);border:1px solid rgba(196,18,48,.4);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:22px">⚠️</span>
+      <div><strong style="color:#ff2244;font-size:15px">Inspeção: ${_esc(n)} ${n > 1 ? 'itens' : 'item'} NÃO OK</strong>
+      <div style="font-size:12px;color:var(--txt3)">Sai do alerta quando uma inspeção posterior marcar OK.${res.truncado ? ' (Leitura parcial do histórico.)' : ''}</div></div>
+    </div>
+    ${res.alertas.slice(0, MAX).map(linha).join('')}${resto}
+  </div>`;
+}
+// ═══ INSP-PURO:FIM ═══
+
+function inspTmplLerCache_() {
+  try { const o = JSON.parse(localStorage.getItem(INSP_TMPL_KEY) || 'null'); return o && Array.isArray(o.tmpl) ? o.tmpl : []; } catch (e) { return []; }
+}
+function inspTmplGravarCache_(t) { try { localStorage.setItem(INSP_TMPL_KEY, JSON.stringify({ tmpl: t, em: Date.now() })); } catch (e) {} }
+
+// Busca a lista no servidor. true = a lista mudou. Lista vazia/inválida NUNCA apaga a cópia local.
+async function inspCarregarTmpl_() {
+  const r = await apiGet({ action: 'readInspItens' });
+  if (!r || !r.ok || !Array.isArray(r.itens)) return false;
+  const t = inspMontarTmpl_(r.itens);
+  if (!t.length) return false;
+  const mudou = JSON.stringify(t) !== JSON.stringify(INSP_TMPL);
+  INSP_TMPL = t; inspTmplGravarCache_(t);
+  if (r.avisos && r.avisos.length) console.warn('[SIGMAN] avisos da lista de inspeção:', r.avisos);
+  return mudou;
+}
+
+// Há algo marcado/digitado no formulário? (nesse caso nunca reconstruímos a tela)
+function inspTemMarcas_() {
+  return Array.from(document.querySelectorAll('#insp-secs .insp-row')).some(row =>
+    row.dataset.status || Array.from(row.querySelectorAll('input')).some(i => String(i.value || '').trim() !== ''));
+}
+
+function inspAbrirPagina_() {
+  if (!INSP_TMPL.length) INSP_TMPL = inspTmplLerCache_();
+  buildInsp();
+  apiLoadInspecoes().catch(() => {});   // histórico do relatório; não mexe no formulário
+  inspCarregarTmpl_().then(mudou => {
+    if (!mudou) return;
+    if (inspTemMarcas_()) showToast('A lista de inspeção foi atualizada. Salve esta inspeção e reabra a tela para ver as mudanças.');
+    else buildInsp();
+  }).catch(() => {});
+}
+
+// Alerta de NÃO OK no dashboard (só alerta; não abre O.S.). force=true ignora o intervalo de 1 minuto.
+async function inspAlertasAtualizar_(force) {
+  const box = document.getElementById('dash-insp-alert');
+  if (!box) return;
+  const login = (typeof CU !== 'undefined' && CU) ? CU.login : '';
+  if (!login || ['administracao', 'manutencao', 'diretoria'].indexOf(CU.tipo) < 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  if (_inspAlertasUser !== login) { _inspAlertasUser = login; _inspAlertasRes = null; _inspAlertasTs = 0; }
+  const pintar = () => { const h = inspAlertasHtml_(_inspAlertasRes); box.innerHTML = h; box.style.display = h ? 'block' : 'none'; };
+  pintar();
+  if (!force && Date.now() - _inspAlertasTs < INSP_ALERTAS_TTL_MS) return;
+  _inspAlertasTs = Date.now();          // marca antes de esperar: renderDash roda várias vezes seguidas
+  try {
+    const r = await apiGet({ action: 'inspAlertas' });
+    if (r && r.ok && _inspAlertasUser === login) { _inspAlertasRes = r; pintar(); } else if (!(r && r.ok)) _inspAlertasTs = 0;
+  } catch (e) { _inspAlertasTs = 0; }
+}
+
 function buildInsp() {
   const c = document.getElementById('insp-secs');
   // Sempre reconstrói para resetar estado
   c.dataset.built = '1';
+  if (!INSP_TMPL.length) {
+    c.innerHTML = '<div class="empty"><div class="ei">🔍</div><p>A lista de inspeção ainda não foi carregada. Conecte-se à internet e reabra esta tela.</p></div>';
+    return;
+  }
   c.innerHTML = INSP_TMPL.map(sec => `
     <div class="insp-sec open">
       <div class="insp-hd" onclick="this.parentElement.classList.toggle('open')">
@@ -72,45 +189,60 @@ function collectInsp() {
 }
 
 async function salvarInsp() {
+  if (_salvandoInsp) return;
   const data=v('insp-dt'),turno=v('insp-tn'),manut=v('insp-mn').trim(),
         horas=parseInt(v('insp-horas'))||8;
   if(!data||!manut){showAlert('al-insp','Informe data e manutentor.','er');return;}
   const itens=collectInsp();
-  const id=crypto.randomUUID(), agora=new Date().toISOString();
-  db.inspecoes.push({id,data,turno,horasTurno:horas,manut,itens,criadoEm:agora});
-  db.inspC++; saveDB();
   // Monta TODAS as linhas em memória e envia em UMA única chamada POST
   const rows = [];
   itens.forEach(sec => {
     sec.equips.forEach(eq => {
       if (!eq.status) return; // item não avaliado: não grava
       rows.push({
-        ID_Inspecao:id, Data:data, Turno:turno, Horas_Turno:horas,
+        Data:data, Turno:turno, Horas_Turno:horas,
         Manutentor:manut, Sala:sec.sala, Equipamento:eq.nome,
         Sub_Item:'', Status:eq.status, Hora:eq.hora||'',
-        Observacoes:eq.obs||'', Criado_Em:agora
+        Observacoes:eq.obs||''
       });
       (eq.subs||[]).forEach(s => {
         if (!s.status) return;
         rows.push({
-          ID_Inspecao:id, Data:data, Turno:turno, Horas_Turno:horas,
+          Data:data, Turno:turno, Horas_Turno:horas,
           Manutentor:manut, Sala:sec.sala, Equipamento:eq.nome,
           Sub_Item:s.nome, Status:s.status, Hora:s.hora||'',
-          Observacoes:s.obs||'', Criado_Em:agora
+          Observacoes:s.obs||''
         });
       });
     });
   });
-  if (rows.length > 0) {
+  if (!rows.length) { showAlert('al-insp','Avalie ao menos um item (OK ou NÃO OK) antes de salvar.','er'); return; }
+  // Mesmo conteúdo = mesmo ID: se a 1ª tentativa ficou na fila offline e o usuário salva de novo, o servidor reconhece e não duplica.
+  const assin = JSON.stringify([data, turno, manut, horas, rows.map(r => [r.Sala, r.Equipamento, r.Sub_Item, r.Status, r.Hora, r.Observacoes])]);
+  if (assin !== _inspUltimaAssin) { _inspUltimaAssin = assin; _inspUltimoId = crypto.randomUUID(); }
+  const id=_inspUltimoId, agora=new Date().toISOString();
+  rows.forEach(r => { r.ID_Inspecao = id; });
+  _salvandoInsp = true;
+  document.querySelectorAll('button[onclick="salvarInsp()"]').forEach(b => { b.disabled = true; });
+  try {
+    db.inspecoes = db.inspecoes.filter(i => i.id !== id);
+    db.inspecoes.push({id,data,turno,horasTurno:horas,manut,itens,criadoEm:agora});
+    db.inspC++; saveDB();
     showAlert('al-insp', `Salvando ${rows.length} itens...`, 'ok');
     const r = await apiPost({ action:'appendBatch', sheet:'inspecoes', rows });
-    if (!r || !r.ok) {
-      showAlert('al-insp', 'Erro ao salvar no Sheets. Dados gravados localmente.', 'er');
+    if (!r) { showAlert('al-insp', 'Sem conexão: a inspeção ficou guardada e será enviada automaticamente.', 'er'); return; }
+    if (!r.ok) {
+      showAlert('al-insp', _erroPermanente(r) ? 'O servidor recusou a inspeção: ' + (r.error || r.code) : 'Servidor indisponível: a inspeção ficou guardada e será reenviada.', 'er');
       return;
     }
+    _inspUltimaAssin = ''; _inspUltimoId = '';
+    showAlert('al-insp', r.duplicado ? 'Esta inspeção já estava salva.' : `Inspeção salva! ${rows.length} itens gravados.`, 'ok');
+    inspAlertasAtualizar_(true);
+    setTimeout(()=>showPage('dashboard'), 900);
+  } finally {
+    _salvandoInsp = false;
+    document.querySelectorAll('button[onclick="salvarInsp()"]').forEach(b => { b.disabled = false; });
   }
-  showAlert('al-insp', `Inspeção salva! ${rows.length} itens gravados.`, 'ok');
-  setTimeout(()=>showPage('dashboard'), 900);
 }
 
 function gerarTextoRel(insp) {

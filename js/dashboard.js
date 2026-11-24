@@ -165,6 +165,8 @@ function renderDash() {
       </div>`;
     } else { banner.style.display = 'none'; }
   }
+  // Alerta de NÃO OK da inspeção diária (só alerta; não abre O.S.). Busca no servidor no máx. 1x por minuto.
+  if (typeof inspAlertasAtualizar_ === 'function') inspAlertasAtualizar_();
 
   // KPI Cards
   const corColor = disponib >= metaDisp ? 'var(--grn)' : disponib >= metaDisp-10 ? 'var(--org)' : 'var(--red)';
